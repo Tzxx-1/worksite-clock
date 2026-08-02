@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Worksite Clock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #E7E9ED;
+    --bg-2: #DADDE3;
+    --panel: #15191E;
+    --panel-2: #1E242B;
+    --bezel: #0D0F12;
+    --amber: #FFB020;
+    --amber-dim: #7A5A18;
+    --green: #3FA772;
+    --green-dim: #1F4A34;
+    --red: #E2574C;
+    --text-onlight: #1C2126;
+    --text-onlight-mut: #5B6470;
+    --text-ondark: #ECEDEF;
+    --text-ondark-mut: #8B929C;
+    --line: #C7CBD3;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 50% 0%, var(--bg-2), var(--bg) 60%);
+    min-height:100vh;
+    font-family:'Manrope',sans-serif;
+    color:var(--text-onlight);
+    display:flex;
+    justify-content:center;
+    padding:40px 16px 64px;
+  }
+  .wrap{
+    width:100%;
+    max-width:420px;
+  }
+  .eyebrow{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--text-onlight-mut);
+    margin-bottom:14px;
+    padding-left:2px;
+  }
+  .eyebrow .sq{
+    width:8px;height:8px;
+    background:var(--amber);
+    border-radius:1px;
+    flex-shrink:0;
+  }
+
+  /* ---- Device panel ---- */
+  .device{
+    background:var(--bezel);
+    border-radius:22px;
+    padding:8px;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.06) inset,
+      0 24px 48px -18px rgba(20,22,26,0.45),
+      0 4px 10px -4px rgba(20,22,26,0.3);
+  }
+  .screen{
+    background:linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+    border-radius:16px;
+    padding:26px 22px 22px;
+    position:relative;
+    overflow:hidden;
+  }
+  .screen::before{
+    content:"";
+    position:absolute;
+    top:0;left:0;right:0;height:1px;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
+  }
+
+  .status-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .status-pill{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--text-ondark-mut);
+  }
+  .led{
+    width:9px;height:9px;
+    border-radius:50%;
+    background:var(--red);
+    box-shadow:0 0 8px 1px rgba(226,87,76,0.7);
+    transition:all .35s ease;
+  }
+  .led.on{
+    background:var(--green);
+    box-shadow:0 0 9px 2px rgba(63,167,114,0.85);
+  }
+  .status-pill.on{ color: #8FD9B4; }
+
+  .id-tag{
+    font-size:11px;
+    font-weight:600;
+    color:var(--text-ondark-mut);
+    letter-spacing:0.02em;
+  }
+
+  .clock-face{
+    text-align:center;
+    padding:6px 0 20px;
+  }
+  .time{
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700;
+    font-size:44px;
+    letter-spacing:0.01em;
+    color:var(--amber);
+    text-shadow:0 0 18px rgba(255,176,32,0.35);
+    line-height:1;
+  }
+  .date{
+    margin-top:8px;
+    font-size:12.5px;
+    font-weight:500;
+    color:var(--text-ondark-mut);
+    letter-spacing:0.04em;
+  }
+
+  .divider{
+    height:1px;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,0.09), transparent);
+    margin:2px 0 18px;
+  }
+
+  .loc-row{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    padding:12px 13px;
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.06);
+    border-radius:10px;
+    margin-bottom:18px;
+    min-height:46px;
+  }
+  .loc-icon{
+    flex-shrink:0;
+    width:18px;height:18px;
+    margin-top:1px;
+    color:var(--text-ondark-mut);
+  }
+  .loc-text{
+    font-size:12.5px;
+    color:var(--text-ondark-mut);
+    line-height:1.5;
+  }
+  .loc-text b{ color:var(--text-ondark); font-weight:600; }
+  .loc-text.err{ color:#E58A82; }
+
+  .name-field{
+    margin-bottom:16px;
+  }
+  .name-field label{
+    display:block;
+    font-size:10.5px;
+    font-weight:700;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--text-ondark-mut);
+    margin-bottom:6px;
+  }
+  .name-field input{
+    width:100%;
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:9px;
+    padding:11px 12px;
+    font-family:'Manrope',sans-serif;
+    font-size:14px;
+    font-weight:600;
+    color:var(--text-ondark);
+    outline:none;
+    transition:border-color .2s ease;
+  }
+  .name-field input::placeholder{ color:#5D6470; font-weight:500; }
+  .name-field input:focus{ border-color:var(--amber); }
+
+  .punch-btn{
+    width:100%;
+    border:none;
+    border-radius:12px;
+    padding:17px 18px;
+    font-family:'Manrope',sans-serif;
+    font-size:15px;
+    font-weight:800;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:9px;
+    transition: transform .08s ease, box-shadow .2s ease, background .2s ease;
+    background:var(--amber);
+    color:#20160A;
+    box-shadow:0 10px 22px -8px rgba(255,176,32,0.55);
+  }
+  .punch-btn.out{
+    background:var(--panel-2);
+    color:var(--text-ondark);
+    border:1.5px solid rgba(255,255,255,0.14);
+    box-shadow:none;
+  }
+  .punch-btn:active{ transform:scale(0.98); }
+  .punch-btn:disabled{ opacity:0.6; cursor:wait; }
+  .punch-btn .spin{
+    width:14px;height:14px;
+    border-radius:50%;
+    border:2px solid rgba(0,0,0,0.25);
+    border-top-color:#20160A;
+    animation:spin .7s linear infinite;
+  }
+  .punch-btn.out .spin{
+    border:2px solid rgba(255,255,255,0.25);
+    border-top-color:var(--text-ondark);
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .flash{
+    position:absolute;
+    inset:0;
+    background:var(--amber);
+    opacity:0;
+    pointer-events:none;
+  }
+  .flash.play{
+    animation:flashfade .5s ease-out;
+  }
+  @keyframes flashfade{
+    0%{ opacity:0.16; }
+    100%{ opacity:0; }
+  }
+
+  /* ---- Log ---- */
+  .log-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin:26px 2px 10px;
+  }
+  .log-head h2{
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--text-onlight-mut);
+    margin:0;
+  }
+  .log-head span{
+    font-size:11px;
+    color:var(--text-onlight-mut);
+    font-weight:600;
+  }
+  .log-list{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .log-empty{
+    padding:22px 16px;
+    text-align:center;
+    font-size:13px;
+    color:var(--text-onlight-mut);
+    background:#fff;
+    border:1px dashed var(--line);
+    border-radius:12px;
+  }
+  .log-item{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:12px 14px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .log-badge{
+    flex-shrink:0;
+    width:38px;height:38px;
+    border-radius:9px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:0.02em;
+  }
+  .log-badge.in{ background:var(--green-dim); color:#8FD9B4; }
+  .log-badge.out{ background:#F0E4D8; color:#8A5A1F; }
+  .log-mid{ flex:1; min-width:0; }
+  .log-time{
+    font-family:'JetBrains Mono', monospace;
+    font-size:14px;
+    font-weight:700;
+    color:var(--text-onlight);
+  }
+  .log-sub{
+    font-size:11.5px;
+    color:var(--text-onlight-mut);
+    margin-top:2px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .footnote{
+    margin-top:22px;
+    font-size:11px;
+    line-height:1.6;
+    color:var(--text-onlight-mut);
+    text-align:center;
+    padding:0 8px;
+  }
+
+  /* ---- Auth screens ---- */
+  .auth-head{
+    text-align:center;
+    padding:8px 4px 22px;
+  }
+  .auth-head .badge{
+    width:44px;height:44px;
+    margin:0 auto 14px;
+    border-radius:11px;
+    background:rgba(255,176,32,0.12);
+    border:1px solid rgba(255,176,32,0.25);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .auth-head h1{
+    font-size:17px;
+    font-weight:800;
+    color:var(--text-ondark);
+    margin:0 0 5px;
+    letter-spacing:0.01em;
+  }
+  .auth-head p{
+    font-size:12.5px;
+    color:var(--text-ondark-mut);
+    margin:0;
+    line-height:1.5;
+  }
+  .field{ margin-bottom:14px; }
+  .field label{
+    display:block;
+    font-size:10.5px;
+    font-weight:700;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--text-ondark-mut);
+    margin-bottom:6px;
+  }
+  .field input{
+    width:100%;
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:9px;
+    padding:11px 12px;
+    font-family:'Manrope',sans-serif;
+    font-size:14px;
+    font-weight:600;
+    color:var(--text-ondark);
+    outline:none;
+    transition:border-color .2s ease;
+  }
+  .field input::placeholder{ color:#5D6470; font-weight:500; }
+  .field input:focus{ border-color:var(--amber); }
+  .field input:invalid:not(:placeholder-shown){ border-color:var(--red); }
+
+  .auth-error{
+    display:none;
+    font-size:12px;
+    line-height:1.5;
+    color:#E58A82;
+    background:rgba(226,87,76,0.1);
+    border:1px solid rgba(226,87,76,0.25);
+    border-radius:9px;
+    padding:10px 12px;
+    margin-bottom:14px;
+  }
+  .auth-error.show{ display:block; }
+
+  .auth-switch{
+    text-align:center;
+    margin-top:16px;
+    font-size:12.5px;
+    color:var(--text-ondark-mut);
+  }
+  .auth-switch button{
+    background:none;
+    border:none;
+    color:var(--amber);
+    font-weight:700;
+    font-size:12.5px;
+    cursor:pointer;
+    padding:0;
+    font-family:'Manrope',sans-serif;
+  }
+  .auth-switch button:hover{ text-decoration:underline; }
+
+  .signed-in-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:11px 13px;
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.06);
+    border-radius:10px;
+    margin-bottom:18px;
+  }
+  .signed-in-email{
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--text-ondark);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .signed-in-row .signed-in-label{
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--text-ondark-mut);
+    display:block;
+    margin-bottom:2px;
+  }
+  .signout-btn{
+    flex-shrink:0;
+    background:none;
+    border:1px solid rgba(255,255,255,0.14);
+    color:var(--text-ondark-mut);
+    font-family:'Manrope',sans-serif;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
+    padding:7px 10px;
+    border-radius:7px;
+    cursor:pointer;
+  }
+  .signout-btn:hover{ color:var(--text-ondark); border-color:rgba(255,255,255,0.3); }
+
+  .hidden{ display:none !important; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="eyebrow"><span class="sq"></span>Worksite Clock — Prototype</div>
+
+  <!-- ===== SIGN IN ===== -->
+  <div class="device" id="signInView">
+    <div class="screen">
+      <div class="auth-head">
+        <div class="badge">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFB020" stroke-width="1.8">
+            <rect x="3" y="11" width="18" height="10" rx="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+        <h1>Sign in</h1>
+        <p>Use your company email to clock in and out.</p>
+      </div>
+
+      <div class="auth-error" id="signInError"></div>
+
+      <form id="signInForm">
+        <div class="field">
+          <label for="signInEmail">Company email</label>
+          <input id="signInEmail" type="email" placeholder="you@company.com" autocomplete="username" required>
+        </div>
+        <div class="field">
+          <label for="signInPassword">Password</label>
+          <input id="signInPassword" type="password" placeholder="••••••••" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="punch-btn" id="signInBtn">
+          <span id="signInLabel">Sign In</span>
+        </button>
+      </form>
+
+      <div class="auth-switch">
+        Don't have an account? <button type="button" id="goToSignUp">Create one</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SIGN UP ===== -->
+  <div class="device hidden" id="signUpView">
+    <div class="screen">
+      <div class="auth-head">
+        <div class="badge">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFB020" stroke-width="1.8">
+            <circle cx="12" cy="8" r="3.6"/>
+            <path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7"/>
+          </svg>
+        </div>
+        <h1>Create account</h1>
+        <p>Sign up with your company email address.</p>
+      </div>
+
+      <div class="auth-error" id="signUpError"></div>
+
+      <form id="signUpForm">
+        <div class="field">
+          <label for="signUpName">Full name</label>
+          <input id="signUpName" type="text" placeholder="e.g. Alex Tan" autocomplete="name" required>
+        </div>
+        <div class="field">
+          <label for="signUpEmail">Company email</label>
+          <input id="signUpEmail" type="email" placeholder="you@company.com" autocomplete="username" required>
+        </div>
+        <div class="field">
+          <label for="signUpPassword">Password</label>
+          <input id="signUpPassword" type="password" placeholder="At least 6 characters" autocomplete="new-password" required minlength="6">
+        </div>
+        <button type="submit" class="punch-btn" id="signUpBtn">
+          <span id="signUpLabel">Create Account</span>
+        </button>
+      </form>
+
+      <div class="auth-switch">
+        Already have an account? <button type="button" id="goToSignIn">Sign in</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CLOCK APP (shown once signed in) ===== -->
+  <div id="appView" class="hidden">
+    <div class="device">
+      <div class="screen">
+        <div class="flash" id="flash"></div>
+
+        <div class="status-row">
+          <div class="status-pill" id="statusPill">
+            <span class="led" id="led"></span>
+            <span id="statusText">Clocked Out</span>
+          </div>
+        </div>
+
+        <div class="clock-face">
+          <div class="time" id="timeDisplay">--:--:--</div>
+          <div class="date" id="dateDisplay">-</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="loc-row">
+          <svg class="loc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M12 21s-7-6.2-7-11.2A7 7 0 0 1 19 9.8C19 14.8 12 21 12 21z"/>
+            <circle cx="12" cy="9.8" r="2.4"/>
+          </svg>
+          <div class="loc-text" id="locText">Location will be captured when you clock in or out.</div>
+        </div>
+
+        <div class="signed-in-row">
+          <div>
+            <span class="signed-in-label">Signed in as</span>
+            <span class="signed-in-email" id="signedInEmail">-</span>
+          </div>
+          <button class="signout-btn" id="signOutBtn">Sign Out</button>
+        </div>
+
+        <button class="punch-btn" id="punchBtn">
+          <span id="punchLabel">Clock In</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="log-head">
+      <h2>Today's Log</h2>
+      <span id="logCount">0 entries</span>
+    </div>
+    <div class="log-list" id="logList">
+      <div class="log-empty">No punches yet. Clock in to get started.</div>
+    </div>
+
+    <div class="footnote">
+      Punches are saved live to Firestore — refresh, or open this on another device, and the log stays.
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
+  import {
+    getFirestore, collection, addDoc, query, orderBy, where, limit,
+    onSnapshot, serverTimestamp, Timestamp
+  } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
+  import {
+    getAuth, onAuthStateChanged, signInWithEmailAndPassword,
+    createUserWithEmailAndPassword, updateProfile, signOut
+  } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js";
+
+  // EDIT THIS: only emails ending in this domain can create an account.
+  const COMPANY_DOMAIN = "yourcompany.com";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA0xw-kjBcOyNqcSafVwz4qPuCIkvea_Ds",
+    authDomain: "omni-7744f.firebaseapp.com",
+    projectId: "omni-7744f",
+    storageBucket: "omni-7744f.firebasestorage.app",
+    messagingSenderId: "438095814227",
+    appId: "1:438095814227:web:de21ba922a38f236f930a6",
+    measurementId: "G-HWQJNJB1E6"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+  const punchesRef = collection(db, "punches");
+
+  const timeDisplay = document.getElementById('timeDisplay');
+  const dateDisplay = document.getElementById('dateDisplay');
+  const led = document.getElementById('led');
+  const statusPill = document.getElementById('statusPill');
+  const statusText = document.getElementById('statusText');
+  const locText = document.getElementById('locText');
+  const punchBtn = document.getElementById('punchBtn');
+  const punchLabel = document.getElementById('punchLabel');
+  const flash = document.getElementById('flash');
+  const logList = document.getElementById('logList');
+  const logCount = document.getElementById('logCount');
+  const signedInEmail = document.getElementById('signedInEmail');
+  const signOutBtn = document.getElementById('signOutBtn');
+
+  const signInView = document.getElementById('signInView');
+  const signUpView = document.getElementById('signUpView');
+  const appView = document.getElementById('appView');
+  const signInForm = document.getElementById('signInForm');
+  const signUpForm = document.getElementById('signUpForm');
+  const signInError = document.getElementById('signInError');
+  const signUpError = document.getElementById('signUpError');
+  const signInBtn = document.getElementById('signInBtn');
+  const signUpBtn = document.getElementById('signUpBtn');
+
+  function showView(view){
+    signInView.classList.toggle('hidden', view !== 'signin');
+    signUpView.classList.toggle('hidden', view !== 'signup');
+    appView.classList.toggle('hidden', view !== 'app');
+  }
+
+  document.getElementById('goToSignUp').addEventListener('click', () => {
+    signInError.classList.remove('show');
+    showView('signup');
+  });
+  document.getElementById('goToSignIn').addEventListener('click', () => {
+    signUpError.classList.remove('show');
+    showView('signin');
+  });
+
+  function friendlyAuthError(err){
+    const map = {
+      'auth/invalid-email': 'That email address looks invalid.',
+      'auth/user-not-found': 'No account found with that email.',
+      'auth/wrong-password': 'Incorrect password.',
+      'auth/invalid-credential': 'Incorrect email or password.',
+      'auth/email-already-in-use': 'An account already exists for that email.',
+      'auth/weak-password': 'Password should be at least 6 characters.',
+    };
+    return map[err.code] || err.message;
+  }
+
+  signInForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    signInError.classList.remove('show');
+    signInBtn.disabled = true;
+    document.getElementById('signInLabel').innerHTML = '<span class="spin"></span>';
+    const email = document.getElementById('signInEmail').value.trim();
+    const password = document.getElementById('signInPassword').value;
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      // onAuthStateChanged below handles switching to the app view.
+    } catch (err) {
+      signInError.textContent = friendlyAuthError(err);
+      signInError.classList.add('show');
+    }
+    signInBtn.disabled = false;
+    document.getElementById('signInLabel').textContent = 'Sign In';
+  });
+
+  signUpForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    signUpError.classList.remove('show');
+    const name = document.getElementById('signUpName').value.trim();
+    const email = document.getElementById('signUpEmail').value.trim();
+    const password = document.getElementById('signUpPassword').value;
+
+    if(!email.toLowerCase().endsWith('@' + COMPANY_DOMAIN)){
+      signUpError.textContent = `Please use your company email address (@${COMPANY_DOMAIN}).`;
+      signUpError.classList.add('show');
+      return;
+    }
+
+    signUpBtn.disabled = true;
+    document.getElementById('signUpLabel').innerHTML = '<span class="spin"></span>';
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(cred.user, { displayName: name });
+      // onAuthStateChanged below handles switching to the app view.
+    } catch (err) {
+      signUpError.textContent = friendlyAuthError(err);
+      signUpError.classList.add('show');
+    }
+    signUpBtn.disabled = false;
+    document.getElementById('signUpLabel').textContent = 'Create Account';
+  });
+
+  signOutBtn.addEventListener('click', () => signOut(auth));
+
+  let unsubscribePunches = null;
+
+  onAuthStateChanged(auth, (user) => {
+    if(unsubscribePunches){ unsubscribePunches(); unsubscribePunches = null; }
+    if(user){
+      signedInEmail.textContent = user.displayName ? `${user.displayName} · ${user.email}` : user.email;
+      showView('app');
+      signInForm.reset();
+      signUpForm.reset();
+      watchPunches(user.uid);
+    } else {
+      showView('signin');
+      entries = [];
+      renderLog();
+      setStatus(false);
+    }
+  });
+
+  let clockedIn = false;
+  let entries = [];
+  let busy = false;
+
+  // Live-sync this signed-in user's own punches from Firestore.
+  // Sorted client-side so we don't require a composite Firestore index.
+  function watchPunches(uid){
+    const myQuery = query(punchesRef, where("uid", "==", uid), limit(50));
+    unsubscribePunches = onSnapshot(myQuery, (snapshot) => {
+      entries = snapshot.docs
+        .map(doc => doc.data())
+        .sort((a, b) => (a.createdAt?.toMillis?.() || 0) - (b.createdAt?.toMillis?.() || 0));
+      renderLog();
+      if (entries.length > 0) {
+        setStatus(entries[entries.length - 1].type === 'IN');
+      } else {
+        setStatus(false);
+      }
+    }, (err) => {
+      locText.classList.add('err');
+      locText.textContent = 'Could not connect to database: ' + err.message;
+    });
+  }
+
+  function tick(){
+    const now = new Date();
+    timeDisplay.textContent = now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    dateDisplay.textContent = now.toLocaleDateString([], {weekday:'long', month:'long', day:'numeric'});
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  function setStatus(isIn){
+    clockedIn = isIn;
+    led.classList.toggle('on', isIn);
+    statusPill.classList.toggle('on', isIn);
+    statusText.textContent = isIn ? 'Clocked In' : 'Clocked Out';
+    punchLabel.textContent = isIn ? 'Clock Out' : 'Clock In';
+    punchBtn.classList.toggle('out', isIn);
+  }
+
+  function getLocation(){
+    return new Promise((resolve) => {
+      if(!('geolocation' in navigator)){
+        resolve({ok:false, message:'Location not supported on this device/browser.'});
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          resolve({
+            ok:true,
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            accuracy: Math.round(pos.coords.accuracy)
+          });
+        },
+        (err) => {
+          let msg = 'Location unavailable.';
+          if(err.code === err.PERMISSION_DENIED) msg = 'Location permission denied.';
+          else if(err.code === err.TIMEOUT) msg = 'Location request timed out.';
+          resolve({ok:false, message:msg});
+        },
+        { enableHighAccuracy:true, timeout:8000, maximumAge:0 }
+      );
+    });
+  }
+
+  function renderLog(){
+    logCount.textContent = entries.length + (entries.length === 1 ? ' entry' : ' entries');
+    if(entries.length === 0){
+      logList.innerHTML = '<div class="log-empty">No punches yet. Clock in to get started.</div>';
+      return;
+    }
+    logList.innerHTML = entries.slice().reverse().map(e => {
+      const badgeClass = e.type === 'IN' ? 'in' : 'out';
+      const locSub = e.loc.ok
+        ? `${e.loc.lat.toFixed(5)}, ${e.loc.lng.toFixed(5)} (±${e.loc.accuracy}m)`
+        : e.loc.message;
+      return `
+        <div class="log-item">
+          <div class="log-badge ${badgeClass}">${e.type}</div>
+          <div class="log-mid">
+            <div class="log-time">${e.time}</div>
+            <div class="log-sub">${e.name} · ${locSub}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  punchBtn.addEventListener('click', async () => {
+    if(busy) return;
+    busy = true;
+    punchBtn.disabled = true;
+    const willBeIn = !clockedIn;
+    punchLabel.innerHTML = '<span class="spin"></span>';
+    locText.textContent = 'Getting location…';
+    locText.classList.remove('err');
+
+    const loc = await getLocation();
+    const now = new Date();
+    const user = auth.currentUser;
+    if(!user){
+      busy = false;
+      punchBtn.disabled = false;
+      return;
+    }
+
+    if(loc.ok){
+      locText.classList.remove('err');
+      locText.innerHTML = `<b>${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)}</b> &nbsp;·&nbsp; accuracy ±${loc.accuracy}m`;
+    } else {
+      locText.classList.add('err');
+      locText.textContent = loc.message + ' Punch recorded without location.';
+    }
+
+    try {
+      await addDoc(punchesRef, {
+        type: willBeIn ? 'IN' : 'OUT',
+        time: now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'}),
+        name: user.displayName || user.email,
+        uid: user.uid,
+        loc,
+        createdAt: serverTimestamp()
+      });
+      // onSnapshot listener above will re-render the log and status
+      // once Firestore confirms the write.
+      flash.classList.remove('play');
+      void flash.offsetWidth;
+      flash.classList.add('play');
+    } catch (err) {
+      locText.classList.add('err');
+      locText.textContent = 'Could not save punch: ' + err.message;
+    }
+
+    busy = false;
+    punchBtn.disabled = false;
+  });
+</script>
+
+</body>
+</html>
