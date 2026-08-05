@@ -427,13 +427,19 @@
     display:flex;
     align-items:center;
     justify-content:space-between;
+    gap:10px;
     padding:11px 13px;
     background:rgba(255,255,255,0.03);
     border:1px solid rgba(255,255,255,0.06);
     border-radius:10px;
     margin-bottom:18px;
   }
+  .signed-in-info{
+    flex:1;
+    min-width:0;
+  }
   .signed-in-email{
+    display:block;
     font-size:12.5px;
     font-weight:600;
     color:var(--text-ondark);
@@ -467,6 +473,19 @@
   .signout-btn:hover{ color:var(--text-ondark); border-color:rgba(255,255,255,0.3); }
 
   .hidden{ display:none !important; }
+
+  /* ---- Mobile tightening ---- */
+  @media (max-width: 400px){
+    body{ padding:24px 12px 48px; }
+    .screen{ padding:22px 16px 18px; }
+    .time{ font-size:36px; }
+    .signed-in-row{ padding:10px 11px; }
+    .signed-in-label{ font-size:9.5px; }
+    .signed-in-email{ font-size:12px; }
+    .signout-btn{ padding:7px 9px; font-size:10px; }
+    .punch-btn{ padding:15px 14px; font-size:14px; }
+    .auth-head h1{ font-size:16px; }
+  }
 </style>
 </head>
 <body>
@@ -579,7 +598,7 @@
         </div>
 
         <div class="signed-in-row">
-          <div>
+          <div class="signed-in-info">
             <span class="signed-in-label">Signed in as</span>
             <span class="signed-in-email" id="signedInEmail">-</span>
           </div>
@@ -618,7 +637,7 @@
   } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js";
 
   // EDIT THIS: only emails ending in this domain can create an account.
-  const COMPANY_DOMAIN = "omni.com";
+  const COMPANY_DOMAIN = "yourcompany.com";
 
   const firebaseConfig = {
     apiKey: "AIzaSyA0xw-kjBcOyNqcSafVwz4qPuCIkvea_Ds",
