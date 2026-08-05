@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Manager Dashboard — Worksite Clock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #E7E9ED;
+    --bg-2: #DADDE3;
+    --panel: #15191E;
+    --panel-2: #1E242B;
+    --bezel: #0D0F12;
+    --amber: #FFB020;
+    --green: #3FA772;
+    --green-dim: #E6F5EC;
+    --green-text: #1F7A4C;
+    --red: #E2574C;
+    --red-dim: #FBEAE9;
+    --red-text: #B3382F;
+    --text-onlight: #1C2126;
+    --text-onlight-mut: #5B6470;
+    --text-ondark: #ECEDEF;
+    --text-ondark-mut: #8B929C;
+    --line: #C7CBD3;
+    --card: #ffffff;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: radial-gradient(circle at 50% 0%, var(--bg-2), var(--bg) 60%);
+    min-height:100vh;
+    font-family:'Manrope',sans-serif;
+    color:var(--text-onlight);
+    padding:32px 20px 64px;
+  }
+  .wrap{ max-width:920px; margin:0 auto; }
+
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:22px;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .eyebrow{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--text-onlight-mut);
+  }
+  .eyebrow .sq{ width:8px;height:8px; background:var(--amber); border-radius:1px; flex-shrink:0; }
+
+  .topbar-right{ display:flex; align-items:center; gap:10px; font-size:12.5px; color:var(--text-onlight-mut); }
+  .topbar-right b{ color:var(--text-onlight); font-weight:700; }
+  .signout-btn{
+    background:none;
+    border:1px solid var(--line);
+    color:var(--text-onlight-mut);
+    font-family:'Manrope',sans-serif;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
+    padding:7px 11px;
+    border-radius:7px;
+    cursor:pointer;
+  }
+  .signout-btn:hover{ color:var(--text-onlight); border-color:#9AA1AC; }
+
+  /* ---- Auth card (reused for sign-in gate) ---- */
+  .auth-wrap{ display:flex; justify-content:center; padding-top:40px; }
+  .device{
+    background:var(--bezel);
+    border-radius:22px;
+    padding:8px;
+    width:100%;
+    max-width:400px;
+    box-shadow:0 24px 48px -18px rgba(20,22,26,0.45);
+  }
+  .screen{
+    background:linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+    border-radius:16px;
+    padding:28px 22px 22px;
+  }
+  .auth-head{ text-align:center; padding:8px 4px 22px; }
+  .auth-head .badge{
+    width:44px;height:44px; margin:0 auto 14px; border-radius:11px;
+    background:rgba(255,176,32,0.12); border:1px solid rgba(255,176,32,0.25);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .auth-head h1{ font-size:17px; font-weight:800; color:var(--text-ondark); margin:0 0 5px; }
+  .auth-head p{ font-size:12.5px; color:var(--text-ondark-mut); margin:0; line-height:1.5; }
+  .field{ margin-bottom:14px; }
+  .field label{
+    display:block; font-size:10.5px; font-weight:700; letter-spacing:0.1em;
+    text-transform:uppercase; color:var(--text-ondark-mut); margin-bottom:6px;
+  }
+  .field input{
+    width:100%; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1);
+    border-radius:9px; padding:11px 12px; font-family:'Manrope',sans-serif; font-size:14px;
+    font-weight:600; color:var(--text-ondark); outline:none; transition:border-color .2s ease;
+  }
+  .field input:focus{ border-color:var(--amber); }
+  .auth-error{
+    display:none; font-size:12px; line-height:1.5; color:#E58A82;
+    background:rgba(226,87,76,0.1); border:1px solid rgba(226,87,76,0.25);
+    border-radius:9px; padding:10px 12px; margin-bottom:14px;
+  }
+  .auth-error.show{ display:block; }
+  .primary-btn{
+    width:100%; border:none; border-radius:12px; padding:15px 16px;
+    font-family:'Manrope',sans-serif; font-size:14px; font-weight:800; letter-spacing:0.03em;
+    text-transform:uppercase; cursor:pointer; background:var(--amber); color:#20160A;
+    box-shadow:0 10px 22px -8px rgba(255,176,32,0.55);
+  }
+  .primary-btn:disabled{ opacity:0.6; cursor:wait; }
+  .spin{
+    width:14px;height:14px; border-radius:50%; display:inline-block;
+    border:2px solid rgba(0,0,0,0.25); border-top-color:#20160A; animation:spin .7s linear infinite;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .not-admin-note{
+    font-size:12px; color:var(--text-ondark-mut); text-align:center; margin-top:14px; line-height:1.6;
+  }
+
+  /* ---- Dashboard ---- */
+  .stats-row{ display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
+  .stat-card{
+    flex:1; min-width:130px; background:var(--card); border:1px solid var(--line);
+    border-radius:12px; padding:14px 16px;
+  }
+  .stat-card .num{ font-family:'JetBrains Mono', monospace; font-size:22px; font-weight:700; color:var(--text-onlight); }
+  .stat-card .lbl{ font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-onlight-mut); margin-top:2px; }
+
+  .filter-bar{
+    display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;
+  }
+  .filter-bar input, .filter-bar select{
+    font-family:'Manrope',sans-serif; font-size:13px; font-weight:600;
+    padding:10px 12px; border-radius:9px; border:1px solid var(--line);
+    background:var(--card); color:var(--text-onlight); outline:none;
+  }
+  .filter-bar input{ flex:1; min-width:180px; }
+  .filter-bar input:focus, .filter-bar select:focus{ border-color:var(--amber); }
+
+  .table-card{
+    background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden;
+  }
+  table{ width:100%; border-collapse:collapse; }
+  thead th{
+    text-align:left; font-size:10.5px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text-onlight-mut); padding:12px 14px; border-bottom:1px solid var(--line);
+    background:#FAFAFB;
+  }
+  tbody td{
+    padding:12px 14px; font-size:13px; border-bottom:1px solid #EFF0F3; vertical-align:middle;
+  }
+  tbody tr:last-child td{ border-bottom:none; }
+  tbody tr:hover{ background:#FAFAFB; }
+  .emp-name{ font-weight:700; color:var(--text-onlight); }
+  .emp-email{ font-size:11.5px; color:var(--text-onlight-mut); }
+  .type-pill{
+    display:inline-block; font-family:'JetBrains Mono', monospace; font-size:10.5px; font-weight:700;
+    padding:3px 8px; border-radius:6px; letter-spacing:0.03em;
+  }
+  .type-pill.in{ background:var(--green-dim); color:var(--green-text); }
+  .type-pill.out{ background:var(--red-dim); color:var(--red-text); }
+  .mono{ font-family:'JetBrains Mono', monospace; font-size:12.5px; }
+  .loc-cell{ font-size:12px; color:var(--text-onlight-mut); }
+  .loc-cell.bad{ color:#B3382F; }
+
+  .empty-state{
+    padding:40px 20px; text-align:center; color:var(--text-onlight-mut); font-size:13px;
+  }
+
+  .hidden{ display:none !important; }
+
+  @media (max-width: 640px){
+    .table-card{ overflow-x:auto; }
+    table{ min-width:640px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- ===== SIGN IN GATE ===== -->
+  <div id="authGate" class="auth-wrap">
+    <div class="device">
+      <div class="screen">
+        <div class="auth-head">
+          <div class="badge">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFB020" stroke-width="1.8">
+              <rect x="3" y="11" width="18" height="10" rx="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </div>
+          <h1>Manager Sign In</h1>
+          <p>Sign in with your company email to view team records.</p>
+        </div>
+
+        <div class="auth-error" id="authError"></div>
+
+        <form id="signInForm">
+          <div class="field">
+            <label for="email">Company email</label>
+            <input id="email" type="email" placeholder="you@company.com" autocomplete="username" required>
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" required>
+          </div>
+          <button type="submit" class="primary-btn" id="signInBtn">
+            <span id="signInLabel">Sign In</span>
+          </button>
+        </form>
+
+        <div class="not-admin-note">Use the same account you sign up with in the employee app.<br>Your account needs manager access enabled — see setup notes.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== NOT AUTHORIZED ===== -->
+  <div id="notAdminGate" class="auth-wrap hidden">
+    <div class="device">
+      <div class="screen">
+        <div class="auth-head">
+          <div class="badge">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E2574C" stroke-width="1.8">
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M12 8v5M12 16h.01"/>
+            </svg>
+          </div>
+          <h1>Not authorized</h1>
+          <p id="notAdminEmail" style="margin-bottom:16px;"></p>
+        </div>
+        <button class="primary-btn" id="signOutFromDenied">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== DASHBOARD ===== -->
+  <div id="dashboard" class="hidden">
+    <div class="topbar">
+      <div class="eyebrow"><span class="sq"></span>Manager Dashboard</div>
+      <div class="topbar-right">
+        Signed in as <b id="adminEmail">-</b>
+        <button class="signout-btn" id="signOutBtn">Sign Out</button>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="num" id="statTotal">0</div>
+        <div class="lbl">Total records</div>
+      </div>
+      <div class="stat-card">
+        <div class="num" id="statEmployees">0</div>
+        <div class="lbl">Employees</div>
+      </div>
+      <div class="stat-card">
+        <div class="num" id="statToday">0</div>
+        <div class="lbl">Punches today</div>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <input type="text" id="searchInput" placeholder="Search by employee name or email…">
+      <select id="employeeFilter">
+        <option value="">All employees</option>
+      </select>
+      <select id="typeFilter">
+        <option value="">All types</option>
+        <option value="IN">Clock in only</option>
+        <option value="OUT">Clock out only</option>
+      </select>
+    </div>
+
+    <div class="table-card">
+      <table id="recordsTable">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Type</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Location</th>
+          </tr>
+        </thead>
+        <tbody id="recordsBody"></tbody>
+      </table>
+      <div class="empty-state hidden" id="emptyState">No records match your filters.</div>
+    </div>
+  </div>
+
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
+  import {
+    getFirestore, collection, query, orderBy, limit, getDocs, doc, getDoc
+  } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
+  import {
+    getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut
+  } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA0xw-kjBcOyNqcSafVwz4qPuCIkvea_Ds",
+    authDomain: "omni-7744f.firebaseapp.com",
+    projectId: "omni-7744f",
+    storageBucket: "omni-7744f.firebasestorage.app",
+    messagingSenderId: "438095814227",
+    appId: "1:438095814227:web:de21ba922a38f236f930a6",
+    measurementId: "G-HWQJNJB1E6"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+  const punchesRef = collection(db, "punches");
+
+  const authGate = document.getElementById('authGate');
+  const notAdminGate = document.getElementById('notAdminGate');
+  const dashboard = document.getElementById('dashboard');
+  const authError = document.getElementById('authError');
+  const signInForm = document.getElementById('signInForm');
+  const signInBtn = document.getElementById('signInBtn');
+
+  function showGate(which){
+    authGate.classList.toggle('hidden', which !== 'auth');
+    notAdminGate.classList.toggle('hidden', which !== 'denied');
+    dashboard.classList.toggle('hidden', which !== 'dashboard');
+  }
+
+  function friendlyAuthError(err){
+    const map = {
+      'auth/invalid-email': 'That email address looks invalid.',
+      'auth/user-not-found': 'No account found with that email.',
+      'auth/wrong-password': 'Incorrect password.',
+      'auth/invalid-credential': 'Incorrect email or password.',
+    };
+    return map[err.code] || err.message;
+  }
+
+  signInForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    authError.classList.remove('show');
+    signInBtn.disabled = true;
+    document.getElementById('signInLabel').innerHTML = '<span class="spin"></span>';
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (err) {
+      authError.textContent = friendlyAuthError(err);
+      authError.classList.add('show');
+    }
+    signInBtn.disabled = false;
+    document.getElementById('signInLabel').textContent = 'Sign In';
+  });
+
+  document.getElementById('signOutBtn').addEventListener('click', () => signOut(auth));
+  document.getElementById('signOutFromDenied').addEventListener('click', () => signOut(auth));
+
+  let allRecords = [];
+
+  onAuthStateChanged(auth, async (user) => {
+    if(!user){
+      showGate('auth');
+      signInForm.reset();
+      return;
+    }
+    // Check the admins collection for this user's uid.
+    const adminDoc = await getDoc(doc(db, "admins", user.uid));
+    if(!adminDoc.exists()){
+      document.getElementById('notAdminEmail').textContent =
+        `${user.email} is signed in but doesn't have manager access yet.`;
+      showGate('denied');
+      return;
+    }
+    document.getElementById('adminEmail').textContent = user.email;
+    showGate('dashboard');
+    await loadRecords();
+  });
+
+  async function loadRecords(){
+    const q = query(punchesRef, orderBy("createdAt", "desc"), limit(500));
+    const snap = await getDocs(q);
+    allRecords = snap.docs.map(d => d.data());
+    populateEmployeeFilter();
+    renderStats();
+    renderTable();
+  }
+
+  function populateEmployeeFilter(){
+    const select = document.getElementById('employeeFilter');
+    const names = [...new Set(allRecords.map(r => r.name).filter(Boolean))].sort();
+    select.innerHTML = '<option value="">All employees</option>' +
+      names.map(n => `<option value="${n}">${n}</option>`).join('');
+  }
+
+  function renderStats(){
+    document.getElementById('statTotal').textContent = allRecords.length;
+    document.getElementById('statEmployees').textContent =
+      new Set(allRecords.map(r => r.uid)).size;
+    const todayStr = new Date().toDateString();
+    const todayCount = allRecords.filter(r => {
+      const d = r.createdAt?.toDate?.();
+      return d && d.toDateString() === todayStr;
+    }).length;
+    document.getElementById('statToday').textContent = todayCount;
+  }
+
+  function getFiltered(){
+    const search = document.getElementById('searchInput').value.trim().toLowerCase();
+    const empFilter = document.getElementById('employeeFilter').value;
+    const typeFilter = document.getElementById('typeFilter').value;
+    return allRecords.filter(r => {
+      if(empFilter && r.name !== empFilter) return false;
+      if(typeFilter && r.type !== typeFilter) return false;
+      if(search){
+        const hay = `${r.name || ''}`.toLowerCase();
+        if(!hay.includes(search)) return false;
+      }
+      return true;
+    });
+  }
+
+  function renderTable(){
+    const rows = getFiltered();
+    const body = document.getElementById('recordsBody');
+    const empty = document.getElementById('emptyState');
+
+    if(rows.length === 0){
+      body.innerHTML = '';
+      empty.classList.remove('hidden');
+      return;
+    }
+    empty.classList.add('hidden');
+
+    body.innerHTML = rows.map(r => {
+      const d = r.createdAt?.toDate?.();
+      const dateStr = d ? d.toLocaleDateString([], {month:'short', day:'numeric', year:'numeric'}) : '-';
+      const typeClass = r.type === 'IN' ? 'in' : 'out';
+      let locHtml;
+      if(r.loc && r.loc.ok){
+        locHtml = `<span class="loc-cell">${r.loc.lat.toFixed(5)}, ${r.loc.lng.toFixed(5)} <span class="mono">(±${r.loc.accuracy}m)</span></span>`;
+      } else {
+        locHtml = `<span class="loc-cell bad">${r.loc?.message || 'No location'}</span>`;
+      }
+      return `
+        <tr>
+          <td>
+            <div class="emp-name">${r.name || 'Unknown'}</div>
+          </td>
+          <td><span class="type-pill ${typeClass}">${r.type}</span></td>
+          <td class="mono">${dateStr}</td>
+          <td class="mono">${r.time || '-'}</td>
+          <td>${locHtml}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  document.getElementById('searchInput').addEventListener('input', renderTable);
+  document.getElementById('employeeFilter').addEventListener('change', renderTable);
+  document.getElementById('typeFilter').addEventListener('change', renderTable);
+</script>
+
+</body>
+</html>
