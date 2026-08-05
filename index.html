@@ -524,7 +524,44 @@
       </form>
 
       <div class="auth-switch">
+        <button type="button" id="goToForgot">Forgot password?</button>
+      </div>
+      <div class="auth-switch">
         Don't have an account? <button type="button" id="goToSignUp">Create one</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== FORGOT PASSWORD ===== -->
+  <div class="device hidden" id="forgotView">
+    <div class="screen">
+      <div class="auth-head">
+        <div class="badge">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFB020" stroke-width="1.8">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M12 8v5M12 16h.01" style="display:none"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+        </div>
+        <h1>Reset password</h1>
+        <p>Enter your company email and we'll send a reset link.</p>
+      </div>
+
+      <div class="auth-error" id="forgotError"></div>
+      <div class="auth-error" id="forgotSuccess" style="color:#8FD9B4;background:rgba(63,167,114,0.1);border-color:rgba(63,167,114,0.3);"></div>
+
+      <form id="forgotForm">
+        <div class="field">
+          <label for="forgotEmail">Company email</label>
+          <input id="forgotEmail" type="email" placeholder="you@company.com" autocomplete="username" required>
+        </div>
+        <button type="submit" class="punch-btn" id="forgotBtn">
+          <span id="forgotLabel">Send Reset Link</span>
+        </button>
+      </form>
+
+      <div class="auth-switch">
+        <button type="button" id="goToSignInFromForgot">Back to sign in</button>
       </div>
     </div>
   </div>
@@ -633,7 +670,7 @@
   } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
   import {
     getAuth, onAuthStateChanged, signInWithEmailAndPassword,
-    createUserWithEmailAndPassword, updateProfile, signOut
+    createUserWithEmailAndPassword, updateProfile, signOut, sendPasswordResetEmail
   } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js";
 
   // EDIT THIS: only emails ending in this domain can create an account.
