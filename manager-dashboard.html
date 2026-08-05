@@ -181,6 +181,31 @@
     padding:40px 20px; text-align:center; color:var(--text-onlight-mut); font-size:13px;
   }
 
+  .section-head{
+    display:flex; align-items:baseline; justify-content:space-between;
+    gap:12px; margin:0 0 10px; flex-wrap:wrap;
+  }
+  .section-head h2{
+    font-size:13px; font-weight:800; color:var(--text-onlight); margin:0;
+  }
+  .section-head .hint{
+    font-size:11.5px; font-weight:500; color:var(--text-onlight-mut);
+  }
+  .export-btn{
+    display:flex; align-items:center; gap:6px;
+    background:var(--card); border:1px solid var(--line); color:var(--text-onlight);
+    font-family:'Manrope',sans-serif; font-size:12px; font-weight:700;
+    padding:8px 12px; border-radius:8px; cursor:pointer;
+  }
+  .export-btn:hover{ border-color:#9AA1AC; }
+
+  .status-pill2{
+    display:inline-block; font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px;
+  }
+  .status-pill2.complete{ background:var(--green-dim); color:var(--green-text); }
+  .status-pill2.ongoing{ background:#FFF4E0; color:#8A5A1F; }
+  .status-pill2.orphan{ background:var(--red-dim); color:var(--red-text); }
+
   .hidden{ display:none !important; }
 
   @media (max-width: 640px){
@@ -285,6 +310,31 @@
       </select>
     </div>
 
+    <div class="section-head">
+      <h2>Shift Summary <span class="hint">— clock in paired with clock out, hours calculated</span></h2>
+      <button class="export-btn" id="exportShiftsBtn">Export CSV</button>
+    </div>
+    <div class="table-card" style="margin-bottom:28px;">
+      <table id="shiftsTable">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Date</th>
+            <th>Clock In</th>
+            <th>Clock Out</th>
+            <th>Hours</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="shiftsBody"></tbody>
+      </table>
+      <div class="empty-state hidden" id="shiftsEmptyState">No shifts match your filters.</div>
+    </div>
+
+    <div class="section-head">
+      <h2>Raw Punches <span class="hint">— every individual clock in/out event</span></h2>
+      <button class="export-btn" id="exportRawBtn">Export CSV</button>
+    </div>
     <div class="table-card">
       <table id="recordsTable">
         <thead>
@@ -379,17 +429,23 @@
       signInForm.reset();
       return;
     }
-    // Check the admins collection for this user's uid.
-    const adminDoc = await getDoc(doc(db, "admins", user.uid));
-    if(!adminDoc.exists()){
+    try {
+      // Check the admins collection for this user's uid.
+      const adminDoc = await getDoc(doc(db, "admins", user.uid));
+      if(!adminDoc.exists()){
+        document.getElementById('notAdminEmail').textContent =
+          `${user.email} is signed in but doesn't have manager access yet.`;
+        showGate('denied');
+        return;
+      }
+      document.getElementById('adminEmail').textContent = user.email;
+      showGate('dashboard');
+      await loadRecords();
+    } catch (err) {
       document.getElementById('notAdminEmail').textContent =
-        `${user.email} is signed in but doesn't have manager access yet.`;
+        `Couldn't check manager access for ${user.email}. (${err.message})`;
       showGate('denied');
-      return;
     }
-    document.getElementById('adminEmail').textContent = user.email;
-    showGate('dashboard');
-    await loadRecords();
   });
 
   async function loadRecords(){
@@ -399,6 +455,7 @@
     populateEmployeeFilter();
     renderStats();
     renderTable();
+    renderShifts();
   }
 
   function populateEmployeeFilter(){
@@ -471,8 +528,138 @@
     }).join('');
   }
 
-  document.getElementById('searchInput').addEventListener('input', renderTable);
-  document.getElementById('employeeFilter').addEventListener('change', renderTable);
+  // ---- Shift Summary: pair each Clock In with the next Clock Out per employee ----
+  function computeShifts(records){
+    const byUid = {};
+    records.forEach(r => {
+      if(!r.uid) return;
+      (byUid[r.uid] = byUid[r.uid] || []).push(r);
+    });
+
+    function makeShift(inRec, outRec){
+      const inDate = inRec?.createdAt?.toDate?.();
+      const outDate = outRec?.createdAt?.toDate?.();
+      let duration = '-', status = 'orphan', statusLabel = 'Missing clock-in';
+      if(inDate && outDate){
+        const ms = outDate - inDate;
+        const hrs = Math.floor(ms / 3600000);
+        const mins = Math.round((ms % 3600000) / 60000);
+        duration = `${hrs}h ${mins}m`;
+        status = 'complete'; statusLabel = 'Complete';
+      } else if(inDate && !outDate){
+        status = 'ongoing'; statusLabel = 'Still clocked in';
+      } else if(!inDate && outDate){
+        status = 'orphan'; statusLabel = 'Missing clock-in';
+      }
+      const base = inDate || outDate;
+      return {
+        name: (inRec || outRec)?.name || 'Unknown',
+        dateStr: base ? base.toLocaleDateString([], {month:'short', day:'numeric', year:'numeric'}) : '-',
+        inTime: inRec?.time || '-',
+        outTime: outRec?.time || '-',
+        duration, status, statusLabel,
+        sortKey: (outDate || inDate)?.getTime() || 0
+      };
+    }
+
+    const shifts = [];
+    Object.values(byUid).forEach(list => {
+      list.sort((a, b) => (a.createdAt?.toMillis?.() || 0) - (b.createdAt?.toMillis?.() || 0));
+      let open = null;
+      list.forEach(r => {
+        if(r.type === 'IN'){
+          if(open) shifts.push(makeShift(open, null)); // previous IN never got an OUT
+          open = r;
+        } else if(r.type === 'OUT'){
+          if(open){ shifts.push(makeShift(open, r)); open = null; }
+          else shifts.push(makeShift(null, r)); // OUT with no matching IN
+        }
+      });
+      if(open) shifts.push(makeShift(open, null));
+    });
+
+    shifts.sort((a, b) => b.sortKey - a.sortKey);
+    return shifts;
+  }
+
+  function getFilteredShifts(){
+    const search = document.getElementById('searchInput').value.trim().toLowerCase();
+    const empFilter = document.getElementById('employeeFilter').value;
+    return computeShifts(allRecords).filter(s => {
+      if(empFilter && s.name !== empFilter) return false;
+      if(search && !s.name.toLowerCase().includes(search)) return false;
+      return true;
+    });
+  }
+
+  function renderShifts(){
+    const shifts = getFilteredShifts();
+    const body = document.getElementById('shiftsBody');
+    const empty = document.getElementById('shiftsEmptyState');
+
+    if(shifts.length === 0){
+      body.innerHTML = '';
+      empty.classList.remove('hidden');
+      return;
+    }
+    empty.classList.add('hidden');
+
+    body.innerHTML = shifts.map(s => `
+      <tr>
+        <td><div class="emp-name">${s.name}</div></td>
+        <td class="mono">${s.dateStr}</td>
+        <td class="mono">${s.inTime}</td>
+        <td class="mono">${s.outTime}</td>
+        <td class="mono">${s.duration}</td>
+        <td><span class="status-pill2 ${s.status}">${s.statusLabel}</span></td>
+      </tr>
+    `).join('');
+  }
+
+  // ---- CSV export ----
+  function csvEscape(val){
+    const s = String(val ?? '');
+    if(/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+  function downloadCSV(filename, rows){
+    const csv = rows.map(row => row.map(csvEscape).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  document.getElementById('exportShiftsBtn').addEventListener('click', () => {
+    const shifts = getFilteredShifts();
+    const rows = [
+      ['Employee', 'Date', 'Clock In', 'Clock Out', 'Hours', 'Status'],
+      ...shifts.map(s => [s.name, s.dateStr, s.inTime, s.outTime, s.duration, s.statusLabel])
+    ];
+    downloadCSV(`shift-summary-${new Date().toISOString().slice(0,10)}.csv`, rows);
+  });
+
+  document.getElementById('exportRawBtn').addEventListener('click', () => {
+    const rows = getFiltered();
+    const csvRows = [
+      ['Employee', 'Type', 'Date', 'Time', 'Latitude', 'Longitude', 'Accuracy (m)'],
+      ...rows.map(r => {
+        const d = r.createdAt?.toDate?.();
+        const dateStr = d ? d.toLocaleDateString([], {month:'short', day:'numeric', year:'numeric'}) : '-';
+        return [
+          r.name || 'Unknown', r.type, dateStr, r.time || '-',
+          r.loc?.ok ? r.loc.lat.toFixed(6) : '', r.loc?.ok ? r.loc.lng.toFixed(6) : '',
+          r.loc?.ok ? r.loc.accuracy : ''
+        ];
+      })
+    ];
+    downloadCSV(`raw-punches-${new Date().toISOString().slice(0,10)}.csv`, csvRows);
+  });
+
+  document.getElementById('searchInput').addEventListener('input', () => { renderTable(); renderShifts(); });
+  document.getElementById('employeeFilter').addEventListener('change', () => { renderTable(); renderShifts(); });
   document.getElementById('typeFilter').addEventListener('change', renderTable);
 </script>
 
