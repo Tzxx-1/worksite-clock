@@ -150,6 +150,9 @@
   }
   .filter-bar input{ flex:1; min-width:180px; }
   .filter-bar input:focus, .filter-bar select:focus{ border-color:var(--amber); }
+  .filter-bar input[type="date"]{ flex:0 1 160px; min-width:140px; }
+  .filter-bar select{ flex:0 1 200px; }
+  .date-sep{ font-size:12.5px; color:var(--text-onlight-mut); font-weight:600; align-self:center; }
 
   .table-card{
     background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden;
@@ -308,6 +311,20 @@
         <option value="IN">Clock in only</option>
         <option value="OUT">Clock out only</option>
       </select>
+    </div>
+
+    <div class="filter-bar">
+      <select id="dateRangePreset">
+        <option value="all">All time</option>
+        <option value="today">Today</option>
+        <option value="7days">Last 7 days</option>
+        <option value="thisweek">This week (Mon–today)</option>
+        <option value="thismonth">This month</option>
+        <option value="custom">Custom range…</option>
+      </select>
+      <input type="date" id="dateFrom" class="hidden">
+      <span class="date-sep hidden" id="dateSep">to</span>
+      <input type="date" id="dateTo" class="hidden">
     </div>
 
     <div class="section-head">
@@ -477,13 +494,73 @@
     document.getElementById('statToday').textContent = todayCount;
   }
 
+  // ---- Date range filter ----
+  function computeDateRange(preset){
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const endExclusive = new Date(startOfToday);
+    endExclusive.setDate(endExclusive.getDate() + 1);
+
+    switch(preset){
+      case 'today':
+        return { start: startOfToday, end: endExclusive };
+      case '7days': {
+        const s = new Date(startOfToday);
+        s.setDate(s.getDate() - 6);
+        return { start: s, end: endExclusive };
+      }
+      case 'thisweek': {
+        const day = startOfToday.getDay(); // 0 = Sunday
+        const diff = (day === 0) ? 6 : day - 1; // days since Monday
+        const s = new Date(startOfToday);
+        s.setDate(s.getDate() - diff);
+        return { start: s, end: endExclusive };
+      }
+      case 'thismonth':
+        return { start: new Date(now.getFullYear(), now.getMonth(), 1), end: endExclusive };
+      case 'custom': {
+        const fromVal = document.getElementById('dateFrom').value;
+        const toVal = document.getElementById('dateTo').value;
+        const s = fromVal ? new Date(fromVal + 'T00:00:00') : null;
+        let e = toVal ? new Date(toVal + 'T00:00:00') : null;
+        if(e) e.setDate(e.getDate() + 1); // make upper bound exclusive/inclusive of chosen day
+        return { start: s, end: e };
+      }
+      default:
+        return { start: null, end: null }; // all time
+    }
+  }
+  function inDateRange(date, range){
+    if(!date) return false;
+    if(range.start && date < range.start) return false;
+    if(range.end && date >= range.end) return false;
+    return true;
+  }
+  function currentRange(){
+    return computeDateRange(document.getElementById('dateRangePreset').value);
+  }
+
+  document.getElementById('dateRangePreset').addEventListener('change', (e) => {
+    const isCustom = e.target.value === 'custom';
+    document.getElementById('dateFrom').classList.toggle('hidden', !isCustom);
+    document.getElementById('dateSep').classList.toggle('hidden', !isCustom);
+    document.getElementById('dateTo').classList.toggle('hidden', !isCustom);
+    renderTable(); renderShifts();
+  });
+  document.getElementById('dateFrom').addEventListener('change', () => { renderTable(); renderShifts(); });
+  document.getElementById('dateTo').addEventListener('change', () => { renderTable(); renderShifts(); });
+
   function getFiltered(){
     const search = document.getElementById('searchInput').value.trim().toLowerCase();
     const empFilter = document.getElementById('employeeFilter').value;
     const typeFilter = document.getElementById('typeFilter').value;
+    const range = currentRange();
     return allRecords.filter(r => {
       if(empFilter && r.name !== empFilter) return false;
       if(typeFilter && r.type !== typeFilter) return false;
+      if(range.start || range.end){
+        if(!inDateRange(r.createdAt?.toDate?.(), range)) return false;
+      }
       if(search){
         const hay = `${r.name || ''}`.toLowerCase();
         if(!hay.includes(search)) return false;
@@ -554,6 +631,7 @@
       const base = inDate || outDate;
       return {
         name: (inRec || outRec)?.name || 'Unknown',
+        dateObj: base || null,
         dateStr: base ? base.toLocaleDateString([], {month:'short', day:'numeric', year:'numeric'}) : '-',
         inTime: inRec?.time || '-',
         outTime: outRec?.time || '-',
@@ -585,9 +663,13 @@
   function getFilteredShifts(){
     const search = document.getElementById('searchInput').value.trim().toLowerCase();
     const empFilter = document.getElementById('employeeFilter').value;
+    const range = currentRange();
     return computeShifts(allRecords).filter(s => {
       if(empFilter && s.name !== empFilter) return false;
       if(search && !s.name.toLowerCase().includes(search)) return false;
+      if(range.start || range.end){
+        if(!inDateRange(s.dateObj, range)) return false;
+      }
       return true;
     });
   }
