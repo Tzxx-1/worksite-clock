@@ -710,14 +710,20 @@
   const appView = document.getElementById('appView');
   const signInForm = document.getElementById('signInForm');
   const signUpForm = document.getElementById('signUpForm');
+  const forgotForm = document.getElementById('forgotForm');
   const signInError = document.getElementById('signInError');
   const signUpError = document.getElementById('signUpError');
+  const forgotError = document.getElementById('forgotError');
+  const forgotSuccess = document.getElementById('forgotSuccess');
   const signInBtn = document.getElementById('signInBtn');
   const signUpBtn = document.getElementById('signUpBtn');
+  const forgotBtn = document.getElementById('forgotBtn');
+  const forgotView = document.getElementById('forgotView');
 
   function showView(view){
     signInView.classList.toggle('hidden', view !== 'signin');
     signUpView.classList.toggle('hidden', view !== 'signup');
+    forgotView.classList.toggle('hidden', view !== 'forgot');
     appView.classList.toggle('hidden', view !== 'app');
   }
 
@@ -729,6 +735,19 @@
     signUpError.classList.remove('show');
     showView('signin');
   });
+  document.getElementById('goToForgot').addEventListener('click', () => {
+    signInError.classList.remove('show');
+    forgotError.classList.remove('show');
+    forgotSuccess.classList.remove('show');
+    // Carry over whatever email was already typed on the sign-in form.
+    document.getElementById('forgotEmail').value = document.getElementById('signInEmail').value.trim();
+    showView('forgot');
+  });
+  document.getElementById('goToSignInFromForgot').addEventListener('click', () => {
+    forgotError.classList.remove('show');
+    forgotSuccess.classList.remove('show');
+    showView('signin');
+  });
 
   function friendlyAuthError(err){
     const map = {
@@ -738,9 +757,38 @@
       'auth/invalid-credential': 'Incorrect email or password.',
       'auth/email-already-in-use': 'An account already exists for that email.',
       'auth/weak-password': 'Password should be at least 6 characters.',
+      'auth/too-many-requests': 'Too many attempts. Please wait a bit and try again.',
     };
     return map[err.code] || err.message;
   }
+
+  forgotForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    forgotError.classList.remove('show');
+    forgotSuccess.classList.remove('show');
+    const email = document.getElementById('forgotEmail').value.trim();
+    forgotBtn.disabled = true;
+    document.getElementById('forgotLabel').innerHTML = '<span class="spin"></span>';
+    try {
+      await sendPasswordResetEmail(auth, email);
+      forgotSuccess.textContent = `Reset link sent to ${email}. Check your inbox (and spam folder).`;
+      forgotSuccess.classList.add('show');
+      forgotForm.reset();
+    } catch (err) {
+      // Don't reveal whether the email exists — just show a generic success-style
+      // message unless it's clearly a malformed email.
+      if(err.code === 'auth/invalid-email'){
+        forgotError.textContent = friendlyAuthError(err);
+        forgotError.classList.add('show');
+      } else {
+        forgotSuccess.textContent = `If an account exists for ${email}, a reset link has been sent.`;
+        forgotSuccess.classList.add('show');
+        forgotForm.reset();
+      }
+    }
+    forgotBtn.disabled = false;
+    document.getElementById('forgotLabel').textContent = 'Send Reset Link';
+  });
 
   signInForm.addEventListener('submit', async (e) => {
     e.preventDefault();
