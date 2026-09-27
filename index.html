@@ -676,7 +676,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
   import {
     getFirestore, collection, addDoc, query, orderBy, where, limit,
-    onSnapshot, serverTimestamp, Timestamp
+    onSnapshot, serverTimestamp, Timestamp, setDoc, doc
   } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
   import {
     getAuth, onAuthStateChanged, signInWithEmailAndPassword,
@@ -836,6 +836,20 @@
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(cred.user, { displayName: name });
+
+      // Create the starter employee profile doc — HR will fill in salary,
+      // schedule, and assigned location later from the People tab.
+      await setDoc(doc(db, "employee_profiles", cred.user.uid), {
+        name: name,
+        email: email,
+        locationId: null,
+        basicSalary: null,
+        requiredDailyHours: null,
+        scheduledStartTime: null,
+        offDays: [],
+        createdAt: serverTimestamp(),
+      });
+
       // onAuthStateChanged below handles switching to the app view.
     } catch (err) {
       signUpError.textContent = friendlyAuthError(err);
