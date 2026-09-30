@@ -36,7 +36,7 @@
     color:var(--text-onlight);
     padding:32px 20px 64px;
   }
-  .wrap{ max-width:920px; margin:0 auto; }
+  .wrap{ max-width:980px; margin:0 auto; }
 
   .topbar{
     display:flex;
@@ -131,6 +131,18 @@
     font-size:12px; color:var(--text-ondark-mut); text-align:center; margin-top:14px; line-height:1.6;
   }
 
+  /* ---- Tabs ---- */
+  .tab-nav{
+    display:flex; gap:4px; margin-bottom:20px; border-bottom:1px solid var(--line);
+  }
+  .tab-btn{
+    background:none; border:none; padding:10px 16px; font-family:'Manrope',sans-serif;
+    font-size:13px; font-weight:700; color:var(--text-onlight-mut); cursor:pointer;
+    border-bottom:2px solid transparent; margin-bottom:-1px;
+  }
+  .tab-btn.active{ color:var(--text-onlight); border-bottom-color:var(--amber); }
+  .tab-btn:hover{ color:var(--text-onlight); }
+
   /* ---- Dashboard ---- */
   .stats-row{ display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
   .stat-card{
@@ -201,6 +213,7 @@
     padding:8px 12px; border-radius:8px; cursor:pointer;
   }
   .export-btn:hover{ border-color:#9AA1AC; }
+  .export-btn:disabled{ opacity:0.6; cursor:wait; }
 
   .status-pill2{
     display:inline-block; font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px;
@@ -209,11 +222,43 @@
   .status-pill2.ongoing{ background:#FFF4E0; color:#8A5A1F; }
   .status-pill2.orphan{ background:var(--red-dim); color:var(--red-text); }
 
+  /* ---- Locations & People forms ---- */
+  .form-label{
+    display:block; font-size:10px; font-weight:700; letter-spacing:0.06em;
+    text-transform:uppercase; color:var(--text-onlight-mut); margin-bottom:4px;
+  }
+  .form-input{
+    font-family:'Manrope',sans-serif; font-size:13px; font-weight:600;
+    padding:9px 11px; border-radius:9px; border:1px solid var(--line);
+    background:var(--card); color:var(--text-onlight); outline:none; width:100%;
+  }
+  .form-input:focus{ border-color:var(--amber); }
+  .add-location-form{
+    display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:16px; margin-bottom:20px;
+  }
+  .add-location-form > div{ flex:1; min-width:130px; }
+  .add-location-form .radius-field{ flex:0 0 110px; min-width:90px; }
+  .day-toggles{ display:flex; gap:3px; }
+  .day-btn{
+    width:22px; height:22px; border-radius:5px; border:1px solid var(--line); background:var(--card);
+    font-size:10px; font-weight:700; color:var(--text-onlight-mut); cursor:pointer; padding:0;
+  }
+  .day-btn.active{ background:var(--amber); border-color:var(--amber); color:#20160A; }
+  .delete-btn{
+    background:none; border:1px solid var(--red-dim); color:var(--red-text);
+    font-family:'Manrope',sans-serif; font-size:11.5px; font-weight:700;
+    padding:6px 10px; border-radius:7px; cursor:pointer;
+  }
+  .delete-btn:hover{ background:var(--red-dim); }
+
   .hidden{ display:none !important; }
 
   @media (max-width: 640px){
     .table-card{ overflow-x:auto; }
     table{ min-width:640px; }
+    #peopleTable{ min-width:760px; }
   }
 </style>
 </head>
@@ -286,86 +331,162 @@
       </div>
     </div>
 
-    <div class="stats-row">
-      <div class="stat-card">
-        <div class="num" id="statTotal">0</div>
-        <div class="lbl">Total records</div>
+    <div class="tab-nav">
+      <button class="tab-btn active" data-tab="attendance">Attendance</button>
+      <button class="tab-btn" data-tab="locations">Locations</button>
+      <button class="tab-btn" data-tab="people">People</button>
+    </div>
+
+    <!-- ===== ATTENDANCE TAB ===== -->
+    <div id="attendanceTab">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="num" id="statTotal">0</div>
+          <div class="lbl">Total records</div>
+        </div>
+        <div class="stat-card">
+          <div class="num" id="statEmployees">0</div>
+          <div class="lbl">Employees</div>
+        </div>
+        <div class="stat-card">
+          <div class="num" id="statToday">0</div>
+          <div class="lbl">Punches today</div>
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="num" id="statEmployees">0</div>
-        <div class="lbl">Employees</div>
+
+      <div class="filter-bar">
+        <input type="text" id="searchInput" placeholder="Search by employee name or email…">
+        <select id="employeeFilter">
+          <option value="">All employees</option>
+        </select>
+        <select id="typeFilter">
+          <option value="">All types</option>
+          <option value="IN">Clock in only</option>
+          <option value="OUT">Clock out only</option>
+        </select>
       </div>
-      <div class="stat-card">
-        <div class="num" id="statToday">0</div>
-        <div class="lbl">Punches today</div>
+
+      <div class="filter-bar">
+        <select id="dateRangePreset">
+          <option value="all">All time</option>
+          <option value="today">Today</option>
+          <option value="7days">Last 7 days</option>
+          <option value="thisweek">This week (Mon–today)</option>
+          <option value="thismonth">This month</option>
+          <option value="custom">Custom range…</option>
+        </select>
+        <input type="date" id="dateFrom" class="hidden">
+        <span class="date-sep hidden" id="dateSep">to</span>
+        <input type="date" id="dateTo" class="hidden">
+      </div>
+
+      <div class="section-head">
+        <h2>Shift Summary <span class="hint">— clock in paired with clock out, hours calculated</span></h2>
+        <button class="export-btn" id="exportShiftsBtn">Export CSV</button>
+      </div>
+      <div class="table-card" style="margin-bottom:28px;">
+        <table id="shiftsTable">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Date</th>
+              <th>Clock In</th>
+              <th>Clock Out</th>
+              <th>Hours</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="shiftsBody"></tbody>
+        </table>
+        <div class="empty-state hidden" id="shiftsEmptyState">No shifts match your filters.</div>
+      </div>
+
+      <div class="section-head">
+        <h2>Raw Punches <span class="hint">— every individual clock in/out event</span></h2>
+        <button class="export-btn" id="exportRawBtn">Export CSV</button>
+      </div>
+      <div class="table-card">
+        <table id="recordsTable">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Type</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Location</th>
+            </tr>
+          </thead>
+          <tbody id="recordsBody"></tbody>
+        </table>
+        <div class="empty-state hidden" id="emptyState">No records match your filters.</div>
       </div>
     </div>
 
-    <div class="filter-bar">
-      <input type="text" id="searchInput" placeholder="Search by employee name or email…">
-      <select id="employeeFilter">
-        <option value="">All employees</option>
-      </select>
-      <select id="typeFilter">
-        <option value="">All types</option>
-        <option value="IN">Clock in only</option>
-        <option value="OUT">Clock out only</option>
-      </select>
+    <!-- ===== LOCATIONS TAB ===== -->
+    <div id="locationsTab" class="hidden">
+      <div class="section-head">
+        <h2>Locations <span class="hint">— gym branches used for geofencing</span></h2>
+      </div>
+
+      <form id="addLocationForm" class="add-location-form">
+        <div>
+          <label class="form-label">Name</label>
+          <input type="text" id="locName" class="form-input" placeholder="e.g. Bukit Jalil" required>
+        </div>
+        <div>
+          <label class="form-label">Latitude</label>
+          <input type="number" step="any" id="locLat" class="form-input" placeholder="3.1390" required>
+        </div>
+        <div>
+          <label class="form-label">Longitude</label>
+          <input type="number" step="any" id="locLng" class="form-input" placeholder="101.6869" required>
+        </div>
+        <div class="radius-field">
+          <label class="form-label">Radius (m)</label>
+          <input type="number" id="locRadius" class="form-input" value="150" required>
+        </div>
+        <button type="submit" class="primary-btn" id="addLocationBtn" style="width:auto; padding:10px 18px;">Add Location</button>
+      </form>
+
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Latitude</th>
+              <th>Longitude</th>
+              <th>Radius</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="locationsBody"></tbody>
+        </table>
+        <div class="empty-state hidden" id="locationsEmptyState">No locations added yet.</div>
+      </div>
     </div>
 
-    <div class="filter-bar">
-      <select id="dateRangePreset">
-        <option value="all">All time</option>
-        <option value="today">Today</option>
-        <option value="7days">Last 7 days</option>
-        <option value="thisweek">This week (Mon–today)</option>
-        <option value="thismonth">This month</option>
-        <option value="custom">Custom range…</option>
-      </select>
-      <input type="date" id="dateFrom" class="hidden">
-      <span class="date-sep hidden" id="dateSep">to</span>
-      <input type="date" id="dateTo" class="hidden">
-    </div>
-
-    <div class="section-head">
-      <h2>Shift Summary <span class="hint">— clock in paired with clock out, hours calculated</span></h2>
-      <button class="export-btn" id="exportShiftsBtn">Export CSV</button>
-    </div>
-    <div class="table-card" style="margin-bottom:28px;">
-      <table id="shiftsTable">
-        <thead>
-          <tr>
-            <th>Employee</th>
-            <th>Date</th>
-            <th>Clock In</th>
-            <th>Clock Out</th>
-            <th>Hours</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="shiftsBody"></tbody>
-      </table>
-      <div class="empty-state hidden" id="shiftsEmptyState">No shifts match your filters.</div>
-    </div>
-
-    <div class="section-head">
-      <h2>Raw Punches <span class="hint">— every individual clock in/out event</span></h2>
-      <button class="export-btn" id="exportRawBtn">Export CSV</button>
-    </div>
-    <div class="table-card">
-      <table id="recordsTable">
-        <thead>
-          <tr>
-            <th>Employee</th>
-            <th>Type</th>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Location</th>
-          </tr>
-        </thead>
-        <tbody id="recordsBody"></tbody>
-      </table>
-      <div class="empty-state hidden" id="emptyState">No records match your filters.</div>
+    <!-- ===== PEOPLE TAB ===== -->
+    <div id="peopleTab" class="hidden">
+      <div class="section-head">
+        <h2>People <span class="hint">— assign location, salary, schedule, and off days per employee</span></h2>
+      </div>
+      <div class="table-card">
+        <table id="peopleTable">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Location</th>
+              <th>Basic Salary</th>
+              <th>Daily Hours</th>
+              <th>Start Time</th>
+              <th>Off Days</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="peopleBody"></tbody>
+        </table>
+        <div class="empty-state hidden" id="peopleEmptyState">No employee profiles yet — they're created automatically when someone signs up.</div>
+      </div>
     </div>
   </div>
 
@@ -374,7 +495,8 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
   import {
-    getFirestore, collection, query, orderBy, limit, getDocs, doc, getDoc
+    getFirestore, collection, query, orderBy, limit, getDocs, doc, getDoc,
+    addDoc, updateDoc, deleteDoc, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
   import {
     getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut
@@ -394,6 +516,8 @@
   const db = getFirestore(app);
   const auth = getAuth(app);
   const punchesRef = collection(db, "punches");
+  const locationsRef = collection(db, "locations");
+  const profilesRef = collection(db, "employee_profiles");
 
   const authGate = document.getElementById('authGate');
   const notAdminGate = document.getElementById('notAdminGate');
@@ -438,7 +562,22 @@
   document.getElementById('signOutBtn').addEventListener('click', () => signOut(auth));
   document.getElementById('signOutFromDenied').addEventListener('click', () => signOut(auth));
 
+  // ---- Tab switching ----
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  const tabPanels = {
+    attendance: document.getElementById('attendanceTab'),
+    locations: document.getElementById('locationsTab'),
+    people: document.getElementById('peopleTab'),
+  };
+  tabButtons.forEach(btn => btn.addEventListener('click', () => {
+    tabButtons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    Object.entries(tabPanels).forEach(([key, el]) => el.classList.toggle('hidden', key !== btn.dataset.tab));
+  }));
+
   let allRecords = [];
+  let allLocations = [];
+  let allProfiles = [];
 
   onAuthStateChanged(auth, async (user) => {
     if(!user){
@@ -447,7 +586,6 @@
       return;
     }
     try {
-      // Check the admins collection for this user's uid.
       const adminDoc = await getDoc(doc(db, "admins", user.uid));
       if(!adminDoc.exists()){
         document.getElementById('notAdminEmail').textContent =
@@ -457,6 +595,8 @@
       }
       document.getElementById('adminEmail').textContent = user.email;
       showGate('dashboard');
+      await loadLocations();
+      await loadPeople();
       await loadRecords();
     } catch (err) {
       document.getElementById('notAdminEmail').textContent =
@@ -464,6 +604,8 @@
       showGate('denied');
     }
   });
+
+  // ================= ATTENDANCE =================
 
   async function loadRecords(){
     const q = query(punchesRef, orderBy("createdAt", "desc"), limit(500));
@@ -510,8 +652,8 @@
         return { start: s, end: endExclusive };
       }
       case 'thisweek': {
-        const day = startOfToday.getDay(); // 0 = Sunday
-        const diff = (day === 0) ? 6 : day - 1; // days since Monday
+        const day = startOfToday.getDay();
+        const diff = (day === 0) ? 6 : day - 1;
         const s = new Date(startOfToday);
         s.setDate(s.getDate() - diff);
         return { start: s, end: endExclusive };
@@ -523,11 +665,11 @@
         const toVal = document.getElementById('dateTo').value;
         const s = fromVal ? new Date(fromVal + 'T00:00:00') : null;
         let e = toVal ? new Date(toVal + 'T00:00:00') : null;
-        if(e) e.setDate(e.getDate() + 1); // make upper bound exclusive/inclusive of chosen day
+        if(e) e.setDate(e.getDate() + 1);
         return { start: s, end: e };
       }
       default:
-        return { start: null, end: null }; // all time
+        return { start: null, end: null };
     }
   }
   function inDateRange(date, range){
@@ -605,7 +747,6 @@
     }).join('');
   }
 
-  // ---- Shift Summary: pair each Clock In with the next Clock Out per employee ----
   function computeShifts(records){
     const byUid = {};
     records.forEach(r => {
@@ -646,11 +787,11 @@
       let open = null;
       list.forEach(r => {
         if(r.type === 'IN'){
-          if(open) shifts.push(makeShift(open, null)); // previous IN never got an OUT
+          if(open) shifts.push(makeShift(open, null));
           open = r;
         } else if(r.type === 'OUT'){
           if(open){ shifts.push(makeShift(open, r)); open = null; }
-          else shifts.push(makeShift(null, r)); // OUT with no matching IN
+          else shifts.push(makeShift(null, r));
         }
       });
       if(open) shifts.push(makeShift(open, null));
@@ -698,7 +839,6 @@
     `).join('');
   }
 
-  // ---- CSV export ----
   function csvEscape(val){
     const s = String(val ?? '');
     if(/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
@@ -743,7 +883,144 @@
   document.getElementById('searchInput').addEventListener('input', () => { renderTable(); renderShifts(); });
   document.getElementById('employeeFilter').addEventListener('change', () => { renderTable(); renderShifts(); });
   document.getElementById('typeFilter').addEventListener('change', renderTable);
-</script>
 
-</body>
-</html>
+  // ================= LOCATIONS =================
+
+  async function loadLocations(){
+    const snap = await getDocs(query(locationsRef, orderBy("name")));
+    allLocations = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderLocationsTable();
+  }
+
+  function renderLocationsTable(){
+    const body = document.getElementById('locationsBody');
+    const empty = document.getElementById('locationsEmptyState');
+    if(allLocations.length === 0){
+      body.innerHTML = '';
+      empty.classList.remove('hidden');
+      return;
+    }
+    empty.classList.add('hidden');
+    body.innerHTML = allLocations.map(loc => `
+      <tr data-id="${loc.id}">
+        <td><div class="emp-name">${loc.name}</div></td>
+        <td class="mono">${loc.latitude}</td>
+        <td class="mono">${loc.longitude}</td>
+        <td class="mono">${loc.radius}m</td>
+        <td><button class="delete-btn delete-location-btn" data-id="${loc.id}">Delete</button></td>
+      </tr>
+    `).join('');
+  }
+
+  document.getElementById('addLocationForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('locName').value.trim();
+    const latitude = parseFloat(document.getElementById('locLat').value);
+    const longitude = parseFloat(document.getElementById('locLng').value);
+    const radius = parseInt(document.getElementById('locRadius').value, 10);
+    const btn = document.getElementById('addLocationBtn');
+    btn.disabled = true;
+    const originalLabel = btn.textContent;
+    btn.textContent = 'Adding…';
+    try {
+      await addDoc(locationsRef, { name, latitude, longitude, radius, createdAt: serverTimestamp() });
+      e.target.reset();
+      document.getElementById('locRadius').value = 150;
+      await loadLocations();
+      refreshPeopleLocationDropdowns();
+    } catch (err) {
+      alert('Could not add location: ' + err.message);
+    }
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+  });
+
+  document.getElementById('locationsBody').addEventListener('click', async (e) => {
+    const delBtn = e.target.closest('.delete-location-btn');
+    if(!delBtn) return;
+    if(!confirm('Delete this location? Employees assigned to it will need to be reassigned.')) return;
+    delBtn.disabled = true;
+    try {
+      await deleteDoc(doc(db, "locations", delBtn.dataset.id));
+      await loadLocations();
+      refreshPeopleLocationDropdowns();
+    } catch (err) {
+      alert('Could not delete location: ' + err.message);
+      delBtn.disabled = false;
+    }
+  });
+
+  // ================= PEOPLE =================
+
+  const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+  async function loadPeople(){
+    const snap = await getDocs(profilesRef);
+    allProfiles = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+    renderPeopleTable();
+  }
+
+  function locationOptionsHtml(selectedId){
+    const opts = ['<option value="">— Unassigned —</option>']
+      .concat(allLocations.map(l => `<option value="${l.id}" ${l.id === selectedId ? 'selected' : ''}>${l.name}</option>`));
+    return opts.join('');
+  }
+
+  function renderPeopleTable(){
+    const body = document.getElementById('peopleBody');
+    const empty = document.getElementById('peopleEmptyState');
+    if(allProfiles.length === 0){
+      body.innerHTML = '';
+      empty.classList.remove('hidden');
+      return;
+    }
+    empty.classList.add('hidden');
+    body.innerHTML = allProfiles.map(p => `
+      <tr data-uid="${p.uid}">
+        <td>
+          <div class="emp-name">${p.name || 'Unknown'}</div>
+          <div class="emp-email">${p.email || ''}</div>
+        </td>
+        <td><select class="form-input loc-select">${locationOptionsHtml(p.locationId)}</select></td>
+        <td><input type="number" class="form-input salary-input" value="${p.basicSalary ?? ''}" placeholder="RM" style="width:90px;"></td>
+        <td><input type="number" step="0.5" class="form-input hours-input" value="${p.requiredDailyHours ?? ''}" placeholder="hrs" style="width:70px;"></td>
+        <td><input type="time" class="form-input start-input" value="${p.scheduledStartTime || ''}" style="width:115px;"></td>
+        <td>
+          <div class="day-toggles">
+            ${DAYS.map(d => `<button type="button" class="day-btn ${((p.offDays)||[]).includes(d) ? 'active' : ''}" data-day="${d}">${d[0]}</button>`).join('')}
+          </div>
+        </td>
+        <td><button class="export-btn save-profile-btn">Save</button></td>
+      </tr>
+    `).join('');
+  }
+
+  function refreshPeopleLocationDropdowns(){
+    document.querySelectorAll('#peopleBody .loc-select').forEach(sel => {
+      const current = sel.value;
+      sel.innerHTML = locationOptionsHtml(current);
+    });
+  }
+
+  document.getElementById('peopleBody').addEventListener('click', async (e) => {
+    const dayBtn = e.target.closest('.day-btn');
+    if(dayBtn){
+      dayBtn.classList.toggle('active');
+      return;
+    }
+
+    const saveBtn = e.target.closest('.save-profile-btn');
+    if(saveBtn){
+      const row = saveBtn.closest('tr');
+      const uid = row.dataset.uid;
+      const locationId = row.querySelector('.loc-select').value || null;
+      const basicSalaryVal = row.querySelector('.salary-input').value;
+      const hoursVal = row.querySelector('.hours-input').value;
+      const startVal = row.querySelector('.start-input').value;
+      const offDays = Array.from(row.querySelectorAll('.day-btn.active')).map(b => b.dataset.day);
+
+      saveBtn.disabled = true;
+      const originalLabel = saveBtn.textContent;
+      saveBtn.textContent = 'Saving…';
+      try {
+        await
