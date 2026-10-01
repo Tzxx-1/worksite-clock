@@ -253,12 +253,41 @@
   }
   .delete-btn:hover{ background:var(--red-dim); }
 
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(13,15,18,0.55);
+    display:flex; align-items:center; justify-content:center; padding:20px; z-index:50;
+  }
+  .modal-box{
+    background:var(--card); border-radius:16px; max-width:480px; width:100%;
+    max-height:85vh; overflow-y:auto; padding:22px;
+  }
+  .modal-box h3{ margin:0 0 4px; font-size:15px; font-weight:800; color:var(--text-onlight); }
+  .modal-sub{ font-size:12px; color:var(--text-onlight-mut); margin-bottom:16px; }
+  .schedule-row{ display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #EFF0F3; }
+  .schedule-row:last-child{ border-bottom:none; }
+  .schedule-day{ width:38px; font-size:12.5px; font-weight:700; color:var(--text-onlight); flex-shrink:0; }
+  .schedule-off-toggle{ display:flex; align-items:center; gap:5px; font-size:11px; color:var(--text-onlight-mut); flex-shrink:0; white-space:nowrap; }
+  .schedule-times{ display:flex; gap:6px; flex:1; align-items:center; }
+  .schedule-times input[type="time"]{ flex:1; min-width:0; }
+  .modal-actions{ display:flex; gap:10px; margin-top:18px; justify-content:flex-end; }
+  .modal-btn-cancel{
+    background:none; border:1px solid var(--line); color:var(--text-onlight-mut);
+    font-family:'Manrope',sans-serif; font-size:12.5px; font-weight:700;
+    padding:9px 16px; border-radius:8px; cursor:pointer;
+  }
+  .modal-btn-save{
+    background:var(--amber); border:none; color:#20160A;
+    font-family:'Manrope',sans-serif; font-size:12.5px; font-weight:800;
+    padding:9px 18px; border-radius:8px; cursor:pointer;
+  }
+  .modal-btn-save:disabled{ opacity:0.6; cursor:wait; }
+
   .hidden{ display:none !important; }
 
   @media (max-width: 640px){
     .table-card{ overflow-x:auto; }
     table{ min-width:640px; }
-    #peopleTable{ min-width:760px; }
+    #peopleTable{ min-width:620px; }
   }
 </style>
 </head>
@@ -468,7 +497,7 @@
     <!-- ===== PEOPLE TAB ===== -->
     <div id="peopleTab" class="hidden">
       <div class="section-head">
-        <h2>People <span class="hint">— assign location, salary, schedule, and off days per employee</span></h2>
+        <h2>People <span class="hint">— assign location, salary, and per-day schedule for each employee</span></h2>
       </div>
       <div class="table-card">
         <table id="peopleTable">
@@ -477,9 +506,7 @@
               <th>Employee</th>
               <th>Location</th>
               <th>Basic Salary</th>
-              <th>Daily Hours</th>
-              <th>Start Time</th>
-              <th>Off Days</th>
+              <th>Schedule</th>
               <th></th>
             </tr>
           </thead>
@@ -490,6 +517,19 @@
     </div>
   </div>
 
+</div>
+
+<!-- ===== SCHEDULE MODAL ===== -->
+<div id="scheduleModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <h3 id="scheduleModalName">Edit Schedule</h3>
+    <div class="modal-sub">Set working hours for each day. Toggle "Off" for rest days.</div>
+    <div id="scheduleRows"></div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="scheduleCancelBtn">Cancel</button>
+      <button class="modal-btn-save" id="scheduleSaveBtn">Save Schedule</button>
+    </div>
+  </div>
 </div>
 
 <script type="module">
@@ -966,6 +1006,23 @@
     return opts.join('');
   }
 
+  function computeHoursForRange(range){
+    if(!range || !range.start || !range.end) return 0;
+    const [sh, sm] = range.start.split(':').map(Number);
+    const [eh, em] = range.end.split(':').map(Number);
+    return ((eh * 60 + em) - (sh * 60 + sm)) / 60;
+  }
+
+  function scheduleSummary(schedule){
+    if(!schedule) return 'Not set';
+    const working = DAYS.filter(d => schedule[d]);
+    if(working.length === 0) return 'No working days set';
+    const hoursList = working.map(d => computeHoursForRange(schedule[d]));
+    const allSame = hoursList.every(h => h === hoursList[0]);
+    const daysLabel = `${working.length} day${working.length > 1 ? 's' : ''}/week`;
+    return allSame ? `${daysLabel} · ${hoursList[0].toFixed(1)}h each` : `${daysLabel} · varies`;
+  }
+
   function renderPeopleTable(){
     const body = document.getElementById('peopleBody');
     const empty = document.getElementById('peopleEmptyState');
@@ -983,12 +1040,9 @@
         </td>
         <td><select class="form-input loc-select">${locationOptionsHtml(p.locationId)}</select></td>
         <td><input type="number" class="form-input salary-input" value="${p.basicSalary ?? ''}" placeholder="RM" style="width:90px;"></td>
-        <td><input type="number" step="0.5" class="form-input hours-input" value="${p.requiredDailyHours ?? ''}" placeholder="hrs" style="width:70px;"></td>
-        <td><input type="time" class="form-input start-input" value="${p.scheduledStartTime || ''}" style="width:115px;"></td>
         <td>
-          <div class="day-toggles">
-            ${DAYS.map(d => `<button type="button" class="day-btn ${((p.offDays)||[]).includes(d) ? 'active' : ''}" data-day="${d}">${d[0]}</button>`).join('')}
-          </div>
+          <div style="font-size:12px; color:var(--text-onlight-mut); margin-bottom:6px;">${scheduleSummary(p.schedule)}</div>
+          <button class="delete-btn edit-schedule-btn" style="border-color:var(--line); color:var(--text-onlight);">Edit Schedule</button>
         </td>
         <td><button class="export-btn save-profile-btn">Save</button></td>
       </tr>
@@ -1003,9 +1057,10 @@
   }
 
   document.getElementById('peopleBody').addEventListener('click', async (e) => {
-    const dayBtn = e.target.closest('.day-btn');
-    if(dayBtn){
-      dayBtn.classList.toggle('active');
+    const editBtn = e.target.closest('.edit-schedule-btn');
+    if(editBtn){
+      const row = editBtn.closest('tr');
+      openScheduleModal(row.dataset.uid);
       return;
     }
 
@@ -1015,20 +1070,14 @@
       const uid = row.dataset.uid;
       const locationId = row.querySelector('.loc-select').value || null;
       const basicSalaryVal = row.querySelector('.salary-input').value;
-      const hoursVal = row.querySelector('.hours-input').value;
-      const startVal = row.querySelector('.start-input').value;
-      const offDays = Array.from(row.querySelectorAll('.day-btn.active')).map(b => b.dataset.day);
 
       saveBtn.disabled = true;
       const originalLabel = saveBtn.textContent;
       saveBtn.textContent = 'Saving…';
       try {
         await updateDoc(doc(db, "employee_profiles", uid), {
-            locationId,
-            basicSalary: basicSalaryVal === '' ? null : parseFloat(basicSalaryVal),
-            requiredDailyHours: hoursVal === '' ? null : parseFloat(hoursVal),
-            scheduledStartTime: startVal || null,
-            offDays,
+          locationId,
+          basicSalary: basicSalaryVal === '' ? null : parseFloat(basicSalaryVal),
         });
         saveBtn.textContent = 'Saved ✓';
         setTimeout(() => { saveBtn.textContent = originalLabel; saveBtn.disabled = false; }, 1500);
@@ -1038,6 +1087,76 @@
         saveBtn.disabled = false;
       }
     }
+  });
+
+  // ---- Schedule modal ----
+  let scheduleModalUid = null;
+
+  function openScheduleModal(uid){
+    const profile = allProfiles.find(p => p.uid === uid);
+    if(!profile) return;
+    scheduleModalUid = uid;
+    document.getElementById('scheduleModalName').textContent = `Edit Schedule — ${profile.name || 'Unknown'}`;
+    const schedule = profile.schedule || {};
+    document.getElementById('scheduleRows').innerHTML = DAYS.map(d => {
+      const range = schedule[d];
+      const isOff = !range;
+      return `
+        <div class="schedule-row" data-day="${d}">
+          <div class="schedule-day">${d}</div>
+          <label class="schedule-off-toggle">
+            <input type="checkbox" class="day-off-checkbox" ${isOff ? 'checked' : ''}> Off
+          </label>
+          <div class="schedule-times">
+            <input type="time" class="form-input day-start" value="${range?.start || '09:00'}" ${isOff ? 'disabled' : ''}>
+            <span style="color:var(--text-onlight-mut); font-size:12px;">to</span>
+            <input type="time" class="form-input day-end" value="${range?.end || '13:00'}" ${isOff ? 'disabled' : ''}>
+          </div>
+        </div>
+      `;
+    }).join('');
+    document.getElementById('scheduleModal').classList.remove('hidden');
+  }
+
+  document.getElementById('scheduleRows').addEventListener('change', (e) => {
+    if(e.target.classList.contains('day-off-checkbox')){
+      const row = e.target.closest('.schedule-row');
+      const off = e.target.checked;
+      row.querySelector('.day-start').disabled = off;
+      row.querySelector('.day-end').disabled = off;
+    }
+  });
+
+  document.getElementById('scheduleCancelBtn').addEventListener('click', () => {
+    document.getElementById('scheduleModal').classList.add('hidden');
+    scheduleModalUid = null;
+  });
+
+  document.getElementById('scheduleSaveBtn').addEventListener('click', async () => {
+    if(!scheduleModalUid) return;
+    const schedule = {};
+    document.querySelectorAll('#scheduleRows .schedule-row').forEach(row => {
+      const day = row.dataset.day;
+      const off = row.querySelector('.day-off-checkbox').checked;
+      schedule[day] = off ? null : {
+        start: row.querySelector('.day-start').value,
+        end: row.querySelector('.day-end').value,
+      };
+    });
+    const btn = document.getElementById('scheduleSaveBtn');
+    btn.disabled = true;
+    const originalLabel = btn.textContent;
+    btn.textContent = 'Saving…';
+    try {
+      await updateDoc(doc(db, "employee_profiles", scheduleModalUid), { schedule });
+      await loadPeople();
+      document.getElementById('scheduleModal').classList.add('hidden');
+      scheduleModalUid = null;
+    } catch (err) {
+      alert('Could not save schedule: ' + err.message);
+    }
+    btn.disabled = false;
+    btn.textContent = originalLabel;
   });
 </script>
 
