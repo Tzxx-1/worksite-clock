@@ -134,6 +134,7 @@
   /* ---- Tabs ---- */
   .tab-nav{
     display:flex; gap:4px; margin-bottom:20px; border-bottom:1px solid var(--line);
+    flex-wrap:wrap;
   }
   .tab-btn{
     background:none; border:none; padding:10px 16px; font-family:'Manrope',sans-serif;
@@ -364,6 +365,7 @@
       <button class="tab-btn active" data-tab="attendance">Attendance</button>
       <button class="tab-btn" data-tab="locations">Locations</button>
       <button class="tab-btn" data-tab="people">People</button>
+      <button class="tab-btn" data-tab="payroll">Payroll</button>
     </div>
 
     <!-- ===== ATTENDANCE TAB ===== -->
@@ -515,6 +517,33 @@
         <div class="empty-state hidden" id="peopleEmptyState">No employee profiles yet — they're created automatically when someone signs up.</div>
       </div>
     </div>
+
+    <!-- ===== PAYROLL TAB ===== -->
+    <div id="payrollTab" class="hidden">
+      <div class="section-head">
+        <h2>Payroll <span class="hint">— Daily Salary = Basic ÷ Working Days, Hourly Rate = Daily Salary ÷ Scheduled Hours</span></h2>
+        <button class="export-btn" id="exportPayrollBtn">Export CSV</button>
+      </div>
+      <div class="filter-bar">
+        <input type="month" id="payrollMonth" class="form-input" style="max-width:200px;">
+      </div>
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Basic Salary</th>
+              <th>Scheduled Days</th>
+              <th>Hours Worked</th>
+              <th>Late (min)</th>
+              <th>Total Pay</th>
+            </tr>
+          </thead>
+          <tbody id="payrollBody"></tbody>
+        </table>
+        <div class="empty-state hidden" id="payrollEmptyState">No profiles with salary and schedule set yet.</div>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -608,11 +637,13 @@
     attendance: document.getElementById('attendanceTab'),
     locations: document.getElementById('locationsTab'),
     people: document.getElementById('peopleTab'),
+    payroll: document.getElementById('payrollTab'),
   };
   tabButtons.forEach(btn => btn.addEventListener('click', () => {
     tabButtons.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     Object.entries(tabPanels).forEach(([key, el]) => el.classList.toggle('hidden', key !== btn.dataset.tab));
+    if(btn.dataset.tab === 'payroll') renderPayroll();
   }));
 
   let allRecords = [];
@@ -1130,6 +1161,123 @@
   document.getElementById('scheduleCancelBtn').addEventListener('click', () => {
     document.getElementById('scheduleModal').classList.add('hidden');
     scheduleModalUid = null;
+  });
+
+  // ================= PAYROLL =================
+
+  const payrollMonthInput = document.getElementById('payrollMonth');
+  payrollMonthInput.value = new Date().toISOString().slice(0, 7);
+  payrollMonthInput.addEventListener('change', renderPayroll);
+
+  function parseTimeToDate(dateBase, hhmm){
+    const [h, m] = hhmm.split(':').map(Number);
+    const d = new Date(dateBase);
+    d.setHours(h, m, 0, 0);
+    return d;
+  }
+
+  function computePayrollForMonth(yearMonth){
+    const [year, month] = yearMonth.split('-').map(Number); // month is 1-12
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const DAY_INDEX = { Sun:0, Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6 };
+
+    return allProfiles.map(p => {
+      const schedule = p.schedule || {};
+      const hasSchedule = DAYS.some(d => schedule[d]);
+      if(!hasSchedule || p.basicSalary == null){
+        return { uid: p.uid, name: p.name, incomplete: true };
+      }
+
+      const scheduledDates = [];
+      for(let day = 1; day <= daysInMonth; day++){
+        const date = new Date(year, month - 1, day);
+        const dayName = DAYS.find(d => DAY_INDEX[d] === date.getDay());
+        if(schedule[dayName]) scheduledDates.push({ date, dayName });
+      }
+      const totalScheduledDays = scheduledDates.length;
+      const dailySalary = totalScheduledDays > 0 ? p.basicSalary / totalScheduledDays : 0;
+
+      const myPunches = allRecords.filter(r => r.uid === p.uid && r.createdAt?.toDate);
+
+      let totalHoursWorked = 0, totalLateMinutes = 0, totalPay = 0;
+
+      scheduledDates.forEach(({ date, dayName }) => {
+        const range = schedule[dayName];
+        const scheduledHours = computeHoursForRange(range);
+        const hourlyRate = scheduledHours > 0 ? dailySalary / scheduledHours : 0;
+
+        const dayPunches = myPunches.filter(r => {
+          const d = r.createdAt.toDate();
+          return d.getFullYear() === date.getFullYear() &&
+                 d.getMonth() === date.getMonth() &&
+                 d.getDate() === date.getDate();
+        }).sort((a, b) => a.createdAt.toMillis() - b.createdAt.toMillis());
+
+        let dayHours = 0, firstIn = null, openIn = null;
+        dayPunches.forEach(r => {
+          const t = r.createdAt.toDate();
+          if(r.type === 'IN'){
+            if(!firstIn) firstIn = t;
+            openIn = t;
+          } else if(r.type === 'OUT' && openIn){
+            dayHours += (t - openIn) / 3600000;
+            openIn = null;
+          }
+        });
+
+        if(firstIn){
+          const scheduledStart = parseTimeToDate(date, range.start);
+          const lateMin = Math.max(0, Math.round((firstIn - scheduledStart) / 60000));
+          totalLateMinutes += lateMin;
+        }
+
+        totalHoursWorked += dayHours;
+        totalPay += dayHours * hourlyRate;
+      });
+
+      return {
+        uid: p.uid, name: p.name, email: p.email, incomplete: false,
+        basicSalary: p.basicSalary, totalScheduledDays,
+        totalHoursWorked, totalLateMinutes, totalPay,
+      };
+    });
+  }
+
+  function renderPayroll(){
+    const rows = computePayrollForMonth(payrollMonthInput.value);
+    const body = document.getElementById('payrollBody');
+    const empty = document.getElementById('payrollEmptyState');
+    const complete = rows.filter(r => !r.incomplete);
+
+    if(complete.length === 0){
+      body.innerHTML = '';
+      empty.classList.remove('hidden');
+      return;
+    }
+    empty.classList.add('hidden');
+
+    body.innerHTML = complete.map(r => `
+      <tr>
+        <td><div class="emp-name">${r.name || 'Unknown'}</div><div class="emp-email">${r.email || ''}</div></td>
+        <td class="mono">RM ${r.basicSalary.toFixed(2)}</td>
+        <td class="mono">${r.totalScheduledDays}</td>
+        <td class="mono">${r.totalHoursWorked.toFixed(2)}h</td>
+        <td class="mono">${r.totalLateMinutes}</td>
+        <td class="mono" style="font-weight:700;">RM ${r.totalPay.toFixed(2)}</td>
+      </tr>
+    `).join('');
+  }
+
+  document.getElementById('exportPayrollBtn').addEventListener('click', () => {
+    const rows = computePayrollForMonth(payrollMonthInput.value).filter(r => !r.incomplete);
+    const csvRows = [
+      ['Employee', 'Email', 'Basic Salary', 'Scheduled Days', 'Hours Worked', 'Late (min)', 'Total Pay'],
+      ...rows.map(r => [
+        r.name || 'Unknown', r.email || '', r.basicSalary.toFixed(2),
+        r.totalScheduledDays, r.totalHoursWorked.toFixed(2), r.totalLateMinutes, r.totalPay.toFixed(2)
+      ])
+    ];
+    downloadCSV(`payroll-${payrollMonthInput.value}.csv`, csvRows);
   });
 
   document.getElementById('scheduleSaveBtn').addEventListener('click', async () => {
