@@ -1023,4 +1023,23 @@
       const originalLabel = saveBtn.textContent;
       saveBtn.textContent = 'Saving…';
       try {
-        await
+        await updateDoc(doc(db, "employee_profiles", uid), {
+            locationId,
+            basicSalary: basicSalaryVal === '' ? null : parseFloat(basicSalaryVal),
+            requiredDailyHours: hoursVal === '' ? null : parseFloat(hoursVal),
+            scheduledStartTime: startVal || null,
+            offDays,
+        });
+        saveBtn.textContent = 'Saved ✓';
+        setTimeout(() => { saveBtn.textContent = originalLabel; saveBtn.disabled = false; }, 1500);
+      } catch (err) {
+        alert('Could not save: ' + err.message);
+        saveBtn.textContent = originalLabel;
+        saveBtn.disabled = false;
+      }
+    }
+  });
+</script>
+
+</body>
+</html>
