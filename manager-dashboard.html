@@ -36,7 +36,7 @@
     color:var(--text-onlight);
     padding:32px 20px 64px;
   }
-  .wrap{ max-width:980px; margin:0 auto; }
+  .wrap{ max-width:1020px; margin:0 auto; }
 
   .topbar{
     display:flex;
@@ -373,6 +373,8 @@
       <button class="tab-btn" data-tab="locations">Locations</button>
       <button class="tab-btn" data-tab="people">People</button>
       <button class="tab-btn" data-tab="holidays">Holidays</button>
+      <button class="tab-btn" data-tab="leave">Leave</button>
+      <button class="tab-btn" data-tab="ptsessions">PT Sessions</button>
       <button class="tab-btn" data-tab="payroll">Payroll</button>
     </div>
 
@@ -559,10 +561,59 @@
       </div>
     </div>
 
+    <!-- ===== LEAVE TAB ===== -->
+    <div id="leaveTab" class="hidden">
+      <div class="section-head">
+        <h2>Leave Requests <span class="hint">— review MC, annual, and emergency leave submissions</span></h2>
+      </div>
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Type</th>
+              <th>Dates</th>
+              <th>Reason</th>
+              <th>Document</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="leaveBody"></tbody>
+        </table>
+        <div class="empty-state hidden" id="leaveEmptyState">No leave requests yet.</div>
+      </div>
+    </div>
+
+    <!-- ===== PT SESSIONS TAB ===== -->
+    <div id="ptsessionsTab" class="hidden">
+      <div class="section-head">
+        <h2>PT Sessions <span class="hint">— review personal training sessions before commission is paid (RM50/class)</span></h2>
+        <button class="export-btn" id="exportPtBtn">Export CSV</button>
+      </div>
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Coach</th>
+              <th>Student</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Location</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="ptBody"></tbody>
+        </table>
+        <div class="empty-state hidden" id="ptEmptyState">No PT sessions logged yet.</div>
+      </div>
+    </div>
+
     <!-- ===== PAYROLL TAB ===== -->
     <div id="payrollTab" class="hidden">
       <div class="section-head">
-        <h2>Payroll <span class="hint">— Daily Salary = Basic ÷ Working Days (holidays excluded), Hourly Rate = Daily Salary ÷ Scheduled Hours</span></h2>
+        <h2>Payroll <span class="hint">— Daily Salary = Basic ÷ Working Days (holidays excluded), Hourly Rate = Daily Salary ÷ Scheduled Hours, plus PT commission</span></h2>
         <button class="export-btn" id="exportPayrollBtn">Export CSV</button>
       </div>
       <div class="filter-bar">
@@ -577,6 +628,8 @@
               <th>Scheduled Days</th>
               <th>Hours Worked</th>
               <th>Late (min)</th>
+              <th>PT Classes</th>
+              <th>PT Commission</th>
               <th>Total Pay</th>
             </tr>
           </thead>
@@ -629,6 +682,8 @@
   const locationsRef = collection(db, "locations");
   const profilesRef = collection(db, "employee_profiles");
   const holidaysRef = collection(db, "holidays");
+  const leaveRef = collection(db, "leave_requests");
+  const ptSessionsRef = collection(db, "pt_sessions");
 
   const authGate = document.getElementById('authGate');
   const notAdminGate = document.getElementById('notAdminGate');
@@ -680,6 +735,8 @@
     locations: document.getElementById('locationsTab'),
     people: document.getElementById('peopleTab'),
     holidays: document.getElementById('holidaysTab'),
+    leave: document.getElementById('leaveTab'),
+    ptsessions: document.getElementById('ptsessionsTab'),
     payroll: document.getElementById('payrollTab'),
   };
   tabButtons.forEach(btn => btn.addEventListener('click', () => {
@@ -687,6 +744,8 @@
     btn.classList.add('active');
     Object.entries(tabPanels).forEach(([key, el]) => el.classList.toggle('hidden', key !== btn.dataset.tab));
     if(btn.dataset.tab === 'payroll') renderPayroll();
+    if(btn.dataset.tab === 'leave') loadLeaveRequests();
+    if(btn.dataset.tab === 'ptsessions') loadPtSessions();
   }));
 
   let allRecords = [];
@@ -713,6 +772,8 @@
       await loadLocations();
       await loadPeople();
       await loadHolidays();
+      await loadLeaveRequests();
+      await loadPtSessions();
       await loadRecords();
     } catch (err) {
       document.getElementById('notAdminEmail').textContent =
@@ -1237,7 +1298,7 @@
   document.getElementById('addHolidayForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = document.getElementById('holidayName').value.trim();
-    const date = document.getElementById('holidayDate').value; // 'YYYY-MM-DD'
+    const date = document.getElementById('holidayDate').value;
     const btn = document.getElementById('addHolidayBtn');
     btn.disabled = true;
     const originalLabel = btn.textContent;
@@ -1267,6 +1328,138 @@
     }
   });
 
+  // ================= LEAVE =================
+
+  let allLeaveRequests = [];
+
+  async function loadLeaveRequests(){
+    const snap = await getDocs(query(leaveRef, orderBy("createdAt", "desc")));
+    allLeaveRequests = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderLeaveTable();
+  }
+
+  function renderLeaveTable(){
+    const body = document.getElementById('leaveBody');
+    const empty = document.getElementById('leaveEmptyState');
+    if(allLeaveRequests.length === 0){
+      body.innerHTML = '';
+      empty.classList.remove('hidden');
+      return;
+    }
+    empty.classList.add('hidden');
+    body.innerHTML = allLeaveRequests.map(r => `
+      <tr data-id="${r.id}">
+        <td><div class="emp-name">${r.name || 'Unknown'}</div><div class="emp-email">${r.email || ''}</div></td>
+        <td class="mono">${r.type}</td>
+        <td class="mono">${r.startDate} → ${r.endDate}</td>
+        <td style="max-width:200px;">${r.reason || '-'}</td>
+        <td>${r.documentUrl ? `<a href="${r.documentUrl}" target="_blank" rel="noopener" style="color:var(--amber); font-weight:700; font-size:12px;">View file</a>` : '<span class="loc-cell">None</span>'}</td>
+        <td><span class="status-pill2 ${r.status === 'approved' ? 'complete' : r.status === 'rejected' ? 'orphan' : 'ongoing'}">${r.status}</span></td>
+        <td>
+          ${r.status === 'pending' ? `
+            <button class="delete-btn approve-leave-btn" style="border-color:var(--green-dim); color:var(--green-text);">Approve</button>
+            <button class="delete-btn reject-leave-btn" style="margin-top:4px;">Reject</button>
+          ` : ''}
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  document.getElementById('leaveBody').addEventListener('click', async (e) => {
+    const approveBtn = e.target.closest('.approve-leave-btn');
+    const rejectBtn = e.target.closest('.reject-leave-btn');
+    if(!approveBtn && !rejectBtn) return;
+
+    const row = (approveBtn || rejectBtn).closest('tr');
+    const id = row.dataset.id;
+    const newStatus = approveBtn ? 'approved' : 'rejected';
+
+    try {
+      await updateDoc(doc(db, "leave_requests", id), {
+        status: newStatus,
+        reviewedAt: serverTimestamp(),
+      });
+      await loadLeaveRequests();
+    } catch (err) {
+      alert('Could not update request: ' + err.message);
+    }
+  });
+
+  // ================= PT SESSIONS =================
+
+  const PT_RATE = 50; // RM per completed class
+  let allPtSessions = [];
+
+  async function loadPtSessions(){
+    const snap = await getDocs(query(ptSessionsRef, orderBy("createdAt", "desc")));
+    allPtSessions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderPtTable();
+  }
+
+  function renderPtTable(){
+    const body = document.getElementById('ptBody');
+    const empty = document.getElementById('ptEmptyState');
+    if(allPtSessions.length === 0){
+      body.innerHTML = '';
+      empty.classList.remove('hidden');
+      return;
+    }
+    empty.classList.add('hidden');
+    body.innerHTML = allPtSessions.map(s => `
+      <tr data-id="${s.id}">
+        <td><div class="emp-name">${s.coachName || 'Unknown'}</div></td>
+        <td>${s.studentName || '-'}</td>
+        <td class="mono">${s.date}</td>
+        <td class="mono">${s.startTime}–${s.endTime}</td>
+        <td>${s.locationName || '-'}</td>
+        <td><span class="status-pill2 ${s.status === 'approved' ? 'complete' : s.status === 'rejected' ? 'orphan' : 'ongoing'}">${s.status}</span></td>
+        <td>
+          ${s.status === 'pending' ? `
+            <button class="delete-btn approve-pt-btn" style="border-color:var(--green-dim); color:var(--green-text);">Approve</button>
+            <button class="delete-btn reject-pt-btn" style="margin-top:4px;">Reject</button>
+          ` : ''}
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  document.getElementById('ptBody').addEventListener('click', async (e) => {
+    const approveBtn = e.target.closest('.approve-pt-btn');
+    const rejectBtn = e.target.closest('.reject-pt-btn');
+    if(!approveBtn && !rejectBtn) return;
+
+    const row = (approveBtn || rejectBtn).closest('tr');
+    const id = row.dataset.id;
+    const newStatus = approveBtn ? 'approved' : 'rejected';
+
+    try {
+      await updateDoc(doc(db, "pt_sessions", id), {
+        status: newStatus,
+        reviewedAt: serverTimestamp(),
+      });
+      await loadPtSessions();
+    } catch (err) {
+      alert('Could not update session: ' + err.message);
+    }
+  });
+
+  document.getElementById('exportPtBtn').addEventListener('click', () => {
+    const rows = [
+      ['Coach', 'Student', 'Date', 'Start', 'End', 'Location', 'Status', 'Rate (RM)'],
+      ...allPtSessions.map(s => [
+        s.coachName || 'Unknown', s.studentName || '', s.date, s.startTime, s.endTime,
+        s.locationName || '', s.status, PT_RATE
+      ])
+    ];
+    downloadCSV(`pt-sessions-${new Date().toISOString().slice(0,10)}.csv`, rows);
+  });
+
+  function approvedPtCountForMonth(uid, yearMonth){
+    return allPtSessions.filter(s =>
+      s.coachUid === uid && s.status === 'approved' && s.date?.startsWith(yearMonth)
+    ).length;
+  }
+
   // ================= PAYROLL =================
 
   const payrollMonthInput = document.getElementById('payrollMonth');
@@ -1288,7 +1481,7 @@
   }
 
   function computePayrollForMonth(yearMonth){
-    const [year, month] = yearMonth.split('-').map(Number); // month is 1-12
+    const [year, month] = yearMonth.split('-').map(Number);
     const daysInMonth = new Date(year, month, 0).getDate();
     const DAY_INDEX = { Sun:0, Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6 };
     const holidaySet = new Set(allHolidays.map(h => h.date));
@@ -1300,11 +1493,10 @@
         return { uid: p.uid, name: p.name, incomplete: true };
       }
 
-      // Count scheduled working days in this month, excluding holidays
       const scheduledDates = [];
       for(let day = 1; day <= daysInMonth; day++){
         const date = new Date(year, month - 1, day);
-        if(holidaySet.has(dateToYMD(date))) continue; // holiday — not a working day
+        if(holidaySet.has(dateToYMD(date))) continue;
         const dayName = DAYS.find(d => DAY_INDEX[d] === date.getDay());
         if(schedule[dayName]) scheduledDates.push({ date, dayName });
       }
@@ -1349,10 +1541,15 @@
         totalPay += dayHours * hourlyRate;
       });
 
+      const ptClasses = approvedPtCountForMonth(p.uid, yearMonth);
+      const ptCommission = ptClasses * PT_RATE;
+
       return {
         uid: p.uid, name: p.name, email: p.email, incomplete: false,
         basicSalary: p.basicSalary, totalScheduledDays,
-        totalHoursWorked, totalLateMinutes, totalPay,
+        totalHoursWorked, totalLateMinutes,
+        ptClasses, ptCommission,
+        totalPay: totalPay + ptCommission,
       };
     });
   }
@@ -1377,6 +1574,8 @@
         <td class="mono">${r.totalScheduledDays}</td>
         <td class="mono">${r.totalHoursWorked.toFixed(2)}h</td>
         <td class="mono">${r.totalLateMinutes}</td>
+        <td class="mono">${r.ptClasses}</td>
+        <td class="mono">RM ${r.ptCommission.toFixed(2)}</td>
         <td class="mono" style="font-weight:700;">RM ${r.totalPay.toFixed(2)}</td>
       </tr>
     `).join('');
@@ -1385,10 +1584,11 @@
   document.getElementById('exportPayrollBtn').addEventListener('click', () => {
     const rows = computePayrollForMonth(payrollMonthInput.value).filter(r => !r.incomplete);
     const csvRows = [
-      ['Employee', 'Email', 'Basic Salary', 'Scheduled Days', 'Hours Worked', 'Late (min)', 'Total Pay'],
+      ['Employee', 'Email', 'Basic Salary', 'Scheduled Days', 'Hours Worked', 'Late (min)', 'PT Classes', 'PT Commission', 'Total Pay'],
       ...rows.map(r => [
         r.name || 'Unknown', r.email || '', r.basicSalary.toFixed(2),
-        r.totalScheduledDays, r.totalHoursWorked.toFixed(2), r.totalLateMinutes, r.totalPay.toFixed(2)
+        r.totalScheduledDays, r.totalHoursWorked.toFixed(2), r.totalLateMinutes,
+        r.ptClasses, r.ptCommission.toFixed(2), r.totalPay.toFixed(2)
       ])
     ];
     downloadCSV(`payroll-${payrollMonthInput.value}.csv`, csvRows);
