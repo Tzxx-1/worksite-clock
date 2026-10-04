@@ -283,6 +283,13 @@
   }
   .modal-btn-save:disabled{ opacity:0.6; cursor:wait; }
 
+  .add-holiday-form{
+    display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:16px; margin-bottom:20px;
+  }
+  .add-holiday-form > div{ flex:1; min-width:150px; }
+
   .hidden{ display:none !important; }
 
   @media (max-width: 640px){
@@ -365,6 +372,7 @@
       <button class="tab-btn active" data-tab="attendance">Attendance</button>
       <button class="tab-btn" data-tab="locations">Locations</button>
       <button class="tab-btn" data-tab="people">People</button>
+      <button class="tab-btn" data-tab="holidays">Holidays</button>
       <button class="tab-btn" data-tab="payroll">Payroll</button>
     </div>
 
@@ -518,10 +526,43 @@
       </div>
     </div>
 
+    <!-- ===== HOLIDAYS TAB ===== -->
+    <div id="holidaysTab" class="hidden">
+      <div class="section-head">
+        <h2>Holidays <span class="hint">— public and company holidays, excluded from working-day payroll calculations</span></h2>
+      </div>
+
+      <form id="addHolidayForm" class="add-holiday-form">
+        <div>
+          <label class="form-label">Holiday name</label>
+          <input type="text" id="holidayName" class="form-input" placeholder="e.g. Merdeka Day" required>
+        </div>
+        <div style="flex:0 0 180px; min-width:150px;">
+          <label class="form-label">Date</label>
+          <input type="date" id="holidayDate" class="form-input" required>
+        </div>
+        <button type="submit" class="primary-btn" id="addHolidayBtn" style="width:auto; padding:10px 18px;">Add Holiday</button>
+      </form>
+
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Date</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="holidaysBody"></tbody>
+        </table>
+        <div class="empty-state hidden" id="holidaysEmptyState">No holidays added yet.</div>
+      </div>
+    </div>
+
     <!-- ===== PAYROLL TAB ===== -->
     <div id="payrollTab" class="hidden">
       <div class="section-head">
-        <h2>Payroll <span class="hint">— Daily Salary = Basic ÷ Working Days, Hourly Rate = Daily Salary ÷ Scheduled Hours</span></h2>
+        <h2>Payroll <span class="hint">— Daily Salary = Basic ÷ Working Days (holidays excluded), Hourly Rate = Daily Salary ÷ Scheduled Hours</span></h2>
         <button class="export-btn" id="exportPayrollBtn">Export CSV</button>
       </div>
       <div class="filter-bar">
@@ -587,6 +628,7 @@
   const punchesRef = collection(db, "punches");
   const locationsRef = collection(db, "locations");
   const profilesRef = collection(db, "employee_profiles");
+  const holidaysRef = collection(db, "holidays");
 
   const authGate = document.getElementById('authGate');
   const notAdminGate = document.getElementById('notAdminGate');
@@ -637,6 +679,7 @@
     attendance: document.getElementById('attendanceTab'),
     locations: document.getElementById('locationsTab'),
     people: document.getElementById('peopleTab'),
+    holidays: document.getElementById('holidaysTab'),
     payroll: document.getElementById('payrollTab'),
   };
   tabButtons.forEach(btn => btn.addEventListener('click', () => {
@@ -649,6 +692,7 @@
   let allRecords = [];
   let allLocations = [];
   let allProfiles = [];
+  let allHolidays = [];
 
   onAuthStateChanged(auth, async (user) => {
     if(!user){
@@ -668,6 +712,7 @@
       showGate('dashboard');
       await loadLocations();
       await loadPeople();
+      await loadHolidays();
       await loadRecords();
     } catch (err) {
       document.getElementById('notAdminEmail').textContent =
@@ -1163,6 +1208,65 @@
     scheduleModalUid = null;
   });
 
+  // ================= HOLIDAYS =================
+
+  async function loadHolidays(){
+    const snap = await getDocs(query(holidaysRef, orderBy("date")));
+    allHolidays = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderHolidaysTable();
+  }
+
+  function renderHolidaysTable(){
+    const body = document.getElementById('holidaysBody');
+    const empty = document.getElementById('holidaysEmptyState');
+    if(allHolidays.length === 0){
+      body.innerHTML = '';
+      empty.classList.remove('hidden');
+      return;
+    }
+    empty.classList.add('hidden');
+    body.innerHTML = allHolidays.map(h => `
+      <tr data-id="${h.id}">
+        <td><div class="emp-name">${h.name}</div></td>
+        <td class="mono">${h.date}</td>
+        <td><button class="delete-btn delete-holiday-btn" data-id="${h.id}">Delete</button></td>
+      </tr>
+    `).join('');
+  }
+
+  document.getElementById('addHolidayForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('holidayName').value.trim();
+    const date = document.getElementById('holidayDate').value; // 'YYYY-MM-DD'
+    const btn = document.getElementById('addHolidayBtn');
+    btn.disabled = true;
+    const originalLabel = btn.textContent;
+    btn.textContent = 'Adding…';
+    try {
+      await addDoc(holidaysRef, { name, date, createdAt: serverTimestamp() });
+      e.target.reset();
+      await loadHolidays();
+    } catch (err) {
+      alert('Could not add holiday: ' + err.message);
+    }
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+  });
+
+  document.getElementById('holidaysBody').addEventListener('click', async (e) => {
+    const delBtn = e.target.closest('.delete-holiday-btn');
+    if(!delBtn) return;
+    if(!confirm('Delete this holiday?')) return;
+    delBtn.disabled = true;
+    try {
+      await deleteDoc(doc(db, "holidays", delBtn.dataset.id));
+      await loadHolidays();
+    } catch (err) {
+      alert('Could not delete holiday: ' + err.message);
+      delBtn.disabled = false;
+    }
+  });
+
   // ================= PAYROLL =================
 
   const payrollMonthInput = document.getElementById('payrollMonth');
@@ -1176,10 +1280,18 @@
     return d;
   }
 
+  function dateToYMD(date){
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
   function computePayrollForMonth(yearMonth){
     const [year, month] = yearMonth.split('-').map(Number); // month is 1-12
     const daysInMonth = new Date(year, month, 0).getDate();
     const DAY_INDEX = { Sun:0, Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6 };
+    const holidaySet = new Set(allHolidays.map(h => h.date));
 
     return allProfiles.map(p => {
       const schedule = p.schedule || {};
@@ -1188,9 +1300,11 @@
         return { uid: p.uid, name: p.name, incomplete: true };
       }
 
+      // Count scheduled working days in this month, excluding holidays
       const scheduledDates = [];
       for(let day = 1; day <= daysInMonth; day++){
         const date = new Date(year, month - 1, day);
+        if(holidaySet.has(dateToYMD(date))) continue; // holiday — not a working day
         const dayName = DAYS.find(d => DAY_INDEX[d] === date.getDay());
         if(schedule[dayName]) scheduledDates.push({ date, dayName });
       }
