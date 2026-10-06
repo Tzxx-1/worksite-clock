@@ -1631,12 +1631,25 @@
         return { uid: p.uid, name: p.name, incomplete: true };
       }
 
+      const myOverrides = {};
+      allOverrides.filter(o => o.uid === p.uid).forEach(o => { myOverrides[o.date] = o; });
+
       const scheduledDates = [];
       for(let day = 1; day <= daysInMonth; day++){
         const date = new Date(year, month - 1, day);
-        if(holidaySet.has(dateToYMD(date))) continue;
+        const ymd = dateToYMD(date);
+        const override = myOverrides[ymd];
+
+        if(override){
+          // A one-off change always wins — over both the weekly schedule and holidays.
+          if(!override.off){
+            scheduledDates.push({ date, range: { start: override.start, end: override.end } });
+          }
+          continue;
+        }
+        if(holidaySet.has(ymd)) continue;
         const dayName = DAYS.find(d => DAY_INDEX[d] === date.getDay());
-        if(schedule[dayName]) scheduledDates.push({ date, dayName });
+        if(schedule[dayName]) scheduledDates.push({ date, range: schedule[dayName] });
       }
       const totalScheduledDays = scheduledDates.length;
       const dailySalary = totalScheduledDays > 0 ? p.basicSalary / totalScheduledDays : 0;
