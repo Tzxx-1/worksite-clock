@@ -613,7 +613,7 @@
     <!-- ===== PAYROLL TAB ===== -->
     <div id="payrollTab" class="hidden">
       <div class="section-head">
-        <h2>Payroll <span class="hint">— Daily Salary = Basic ÷ Working Days (holidays excluded), Hourly Rate = Daily Salary ÷ Scheduled Hours, plus PT commission</span></h2>
+        <h2>Payroll <span class="hint">— Daily Salary = Basic ÷ scheduled working days (holidays/one-off off-days excluded), Hourly Rate = Daily Salary ÷ that day's scheduled hours, plus PT commission</span></h2>
         <button class="export-btn" id="exportPayrollBtn">Export CSV</button>
       </div>
       <div class="filter-bar">
@@ -628,6 +628,7 @@
               <th>Scheduled Days</th>
               <th>Hours Worked</th>
               <th>Late (min)</th>
+              <th>Late Deduction</th>
               <th>PT Classes</th>
               <th>PT Commission</th>
               <th>Total Pay</th>
@@ -689,7 +690,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
   import {
-    getFirestore, collection, query, orderBy, limit, getDocs, doc, getDoc,
+    getFirestore, collection, query, orderBy, getDocs, doc, getDoc,
     addDoc, updateDoc, deleteDoc, serverTimestamp, setDoc
   } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
   import {
@@ -818,7 +819,7 @@
   // ================= ATTENDANCE =================
 
   async function loadRecords(){
-    const q = query(punchesRef, orderBy("createdAt", "desc"), limit(500));
+    const q = query(punchesRef, orderBy("createdAt", "desc"));
     const snap = await getDocs(q);
     allRecords = snap.docs.map(d => d.data());
     populateEmployeeFilter();
@@ -914,7 +915,7 @@
         if(!inDateRange(r.createdAt?.toDate?.(), range)) return false;
       }
       if(search){
-        const hay = `${r.name || ''}`.toLowerCase();
+        const hay = `${r.name || ''} ${r.email || ''}`.toLowerCase();
         if(!hay.includes(search)) return false;
       }
       return true;
@@ -1554,7 +1555,17 @@
     if(!overrideModalUid) return;
     const date = document.getElementById('overrideDate').value;
     const off = document.getElementById('overrideOff').checked;
-    if(!date) return;
+    const start = document.getElementById('overrideStart').value;
+    const end = document.getElementById('overrideEnd').value;
+
+    if(!date){
+      alert('Please select a date.');
+      return;
+    }
+    if(!off && (!start || !end || start >= end)){
+      alert('Please enter a valid start and end time. End time must be later than start time.');
+      return;
+    }
 
     const btn = document.getElementById('addOverrideBtn');
     btn.disabled = true;
@@ -1563,12 +1574,13 @@
         uid: overrideModalUid,
         date,
         off,
-        start: off ? null : document.getElementById('overrideStart').value,
-        end: off ? null : document.getElementById('overrideEnd').value,
+        start: off ? null : start,
+        end: off ? null : end,
         createdAt: serverTimestamp(),
       });
       await loadOverrides();
       renderOverrideRows();
+      if(!document.getElementById('payrollTab').classList.contains('hidden')) renderPayroll();
       e.target.reset();
       document.getElementById('overrideStart').value = '09:00';
       document.getElementById('overrideEnd').value = '13:00';
@@ -1588,6 +1600,7 @@
       await deleteDoc(doc(db, "schedule_overrides", `${overrideModalUid}_${delBtn.dataset.date}`));
       await loadOverrides();
       renderOverrideRows();
+      if(!document.getElementById('payrollTab').classList.contains('hidden')) renderPayroll();
     } catch (err) {
       alert('Could not delete: ' + err.message);
     }
@@ -1656,7 +1669,7 @@
 
       const myPunches = allRecords.filter(r => r.uid === p.uid && r.createdAt?.toDate);
 
-      let totalHoursWorked = 0, totalLateMinutes = 0, totalPay = 0;
+      let totalHoursWorked = 0, totalLateMinutes = 0, totalPay = 0, totalLateDeduction = 0;
 
       scheduledDates.forEach(({ date, range }) => {
         const scheduledHours = computeHoursForRange(range);
@@ -1685,6 +1698,7 @@
           const scheduledStart = parseTimeToDate(date, range.start);
           const lateMin = Math.max(0, Math.round((firstIn - scheduledStart) / 60000));
           totalLateMinutes += lateMin;
+          totalLateDeduction += (lateMin / 60) * hourlyRate;
         }
 
         totalHoursWorked += dayHours;
@@ -1697,7 +1711,7 @@
       return {
         uid: p.uid, name: p.name, email: p.email, incomplete: false,
         basicSalary: p.basicSalary, totalScheduledDays,
-        totalHoursWorked, totalLateMinutes,
+        totalHoursWorked, totalLateMinutes, totalLateDeduction,
         ptClasses, ptCommission,
         totalPay: totalPay + ptCommission,
       };
@@ -1724,6 +1738,7 @@
         <td class="mono">${r.totalScheduledDays}</td>
         <td class="mono">${r.totalHoursWorked.toFixed(2)}h</td>
         <td class="mono">${r.totalLateMinutes}</td>
+        <td class="mono">RM ${r.totalLateDeduction.toFixed(2)}</td>
         <td class="mono">${r.ptClasses}</td>
         <td class="mono">RM ${r.ptCommission.toFixed(2)}</td>
         <td class="mono" style="font-weight:700;">RM ${r.totalPay.toFixed(2)}</td>
@@ -1734,11 +1749,11 @@
   document.getElementById('exportPayrollBtn').addEventListener('click', () => {
     const rows = computePayrollForMonth(payrollMonthInput.value).filter(r => !r.incomplete);
     const csvRows = [
-      ['Employee', 'Email', 'Basic Salary', 'Scheduled Days', 'Hours Worked', 'Late (min)', 'PT Classes', 'PT Commission', 'Total Pay'],
+      ['Employee', 'Email', 'Basic Salary', 'Scheduled Days', 'Hours Worked', 'Late (min)', 'Late Deduction', 'PT Classes', 'PT Commission', 'Total Pay'],
       ...rows.map(r => [
         r.name || 'Unknown', r.email || '', r.basicSalary.toFixed(2),
         r.totalScheduledDays, r.totalHoursWorked.toFixed(2), r.totalLateMinutes,
-        r.ptClasses, r.ptCommission.toFixed(2), r.totalPay.toFixed(2)
+        r.totalLateDeduction.toFixed(2), r.ptClasses, r.ptCommission.toFixed(2), r.totalPay.toFixed(2)
       ])
     ];
     downloadCSV(`payroll-${payrollMonthInput.value}.csv`, csvRows);
