@@ -655,11 +655,42 @@
   </div>
 </div>
 
+<div id="overrideModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <h3 id="overrideModalName">One-off Schedule Changes</h3>
+    <div class="modal-sub">Override the regular schedule for a single date — e.g. working a usual off-day, or taking an extra day off. Takes priority over both the weekly schedule and holidays.</div>
+
+    <form id="addOverrideForm" style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end; margin-bottom:16px;">
+      <div style="flex:0 0 150px;">
+        <label class="form-label">Date</label>
+        <input type="date" id="overrideDate" class="form-input" required>
+      </div>
+      <label style="display:flex; align-items:center; gap:5px; font-size:11px; color:var(--text-onlight-mut); flex-shrink:0;">
+        <input type="checkbox" id="overrideOff"> Day off
+      </label>
+      <div style="flex:1; min-width:90px;" id="overrideStartWrap">
+        <label class="form-label">Start</label>
+        <input type="time" id="overrideStart" class="form-input" value="09:00">
+      </div>
+      <div style="flex:1; min-width:90px;" id="overrideEndWrap">
+        <label class="form-label">End</label>
+        <input type="time" id="overrideEnd" class="form-input" value="13:00">
+      </div>
+      <button type="submit" class="modal-btn-save" id="addOverrideBtn">Add</button>
+    </form>
+
+    <div id="overrideRows"></div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="overrideCloseBtn">Close</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
   import {
     getFirestore, collection, query, orderBy, limit, getDocs, doc, getDoc,
-    addDoc, updateDoc, deleteDoc, serverTimestamp
+    addDoc, updateDoc, deleteDoc, serverTimestamp, setDoc
   } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
   import {
     getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut
@@ -684,6 +715,7 @@
   const holidaysRef = collection(db, "holidays");
   const leaveRef = collection(db, "leave_requests");
   const ptSessionsRef = collection(db, "pt_sessions");
+  const overridesRef = collection(db, "schedule_overrides");
 
   const authGate = document.getElementById('authGate');
   const notAdminGate = document.getElementById('notAdminGate');
@@ -774,6 +806,7 @@
       await loadHolidays();
       await loadLeaveRequests();
       await loadPtSessions();
+      await loadOverrides();
       await loadRecords();
     } catch (err) {
       document.getElementById('notAdminEmail').textContent =
@@ -1180,6 +1213,7 @@
         <td>
           <div style="font-size:12px; color:var(--text-onlight-mut); margin-bottom:6px;">${scheduleSummary(p.schedule)}</div>
           <button class="delete-btn edit-schedule-btn" style="border-color:var(--line); color:var(--text-onlight);">Edit Schedule</button>
+          <button class="delete-btn edit-override-btn" style="border-color:var(--line); color:var(--text-onlight); margin-top:4px;">One-off Changes</button>
         </td>
         <td><button class="export-btn save-profile-btn">Save</button></td>
       </tr>
@@ -1198,6 +1232,13 @@
     if(editBtn){
       const row = editBtn.closest('tr');
       openScheduleModal(row.dataset.uid);
+      return;
+    }
+
+    const overrideBtn = e.target.closest('.edit-override-btn');
+    if(overrideBtn){
+      const row = overrideBtn.closest('tr');
+      openOverrideModal(row.dataset.uid);
       return;
     }
 
@@ -1460,6 +1501,103 @@
     ).length;
   }
 
+
+  // ================= SCHEDULE OVERRIDES =================
+
+  let allOverrides = [];
+  let overrideModalUid = null;
+
+  async function loadOverrides(){
+    const snap = await getDocs(overridesRef);
+    allOverrides = snap.docs.map(d => d.data());
+  }
+
+  document.getElementById('overrideOff').addEventListener('change', (e) => {
+    const off = e.target.checked;
+    document.getElementById('overrideStart').disabled = off;
+    document.getElementById('overrideEnd').disabled = off;
+  });
+
+  function openOverrideModal(uid){
+    const profile = allProfiles.find(p => p.uid === uid);
+    if(!profile) return;
+    overrideModalUid = uid;
+    document.getElementById('overrideModalName').textContent = `One-off Changes — ${profile.name || 'Unknown'}`;
+    document.getElementById('addOverrideForm').reset();
+    document.getElementById('overrideStart').value = '09:00';
+    document.getElementById('overrideEnd').value = '13:00';
+    document.getElementById('overrideStart').disabled = false;
+    document.getElementById('overrideEnd').disabled = false;
+    renderOverrideRows();
+    document.getElementById('overrideModal').classList.remove('hidden');
+  }
+
+  function renderOverrideRows(){
+    const mine = allOverrides.filter(o => o.uid === overrideModalUid).sort((a, b) => a.date.localeCompare(b.date));
+    const container = document.getElementById('overrideRows');
+    if(mine.length === 0){
+      container.innerHTML = '<div class="modal-sub" style="margin:0;">No one-off changes set.</div>';
+      return;
+    }
+    container.innerHTML = mine.map(o => `
+      <div class="schedule-row" data-date="${o.date}">
+        <div style="flex:1; font-size:12.5px; color:var(--text-onlight);">
+          <b>${o.date}</b> — ${o.off ? 'Day off' : `${o.start}–${o.end}`}
+        </div>
+        <button type="button" class="delete-btn delete-override-btn" data-date="${o.date}">Delete</button>
+      </div>
+    `).join('');
+  }
+
+  document.getElementById('addOverrideForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if(!overrideModalUid) return;
+    const date = document.getElementById('overrideDate').value;
+    const off = document.getElementById('overrideOff').checked;
+    if(!date) return;
+
+    const btn = document.getElementById('addOverrideBtn');
+    btn.disabled = true;
+    try {
+      await setDoc(doc(db, "schedule_overrides", `${overrideModalUid}_${date}`), {
+        uid: overrideModalUid,
+        date,
+        off,
+        start: off ? null : document.getElementById('overrideStart').value,
+        end: off ? null : document.getElementById('overrideEnd').value,
+        createdAt: serverTimestamp(),
+      });
+      await loadOverrides();
+      renderOverrideRows();
+      e.target.reset();
+      document.getElementById('overrideStart').value = '09:00';
+      document.getElementById('overrideEnd').value = '13:00';
+      document.getElementById('overrideStart').disabled = false;
+      document.getElementById('overrideEnd').disabled = false;
+    } catch (err) {
+      alert('Could not save change: ' + err.message);
+    }
+    btn.disabled = false;
+  });
+
+  document.getElementById('overrideRows').addEventListener('click', async (e) => {
+    const delBtn = e.target.closest('.delete-override-btn');
+    if(!delBtn) return;
+    if(!confirm('Remove this one-off change?')) return;
+    try {
+      await deleteDoc(doc(db, "schedule_overrides", `${overrideModalUid}_${delBtn.dataset.date}`));
+      await loadOverrides();
+      renderOverrideRows();
+    } catch (err) {
+      alert('Could not delete: ' + err.message);
+    }
+  });
+
+  document.getElementById('overrideCloseBtn').addEventListener('click', () => {
+    document.getElementById('overrideModal').classList.add('hidden');
+    overrideModalUid = null;
+  });
+  
   // ================= PAYROLL =================
 
   const payrollMonthInput = document.getElementById('payrollMonth');
@@ -1507,8 +1645,7 @@
 
       let totalHoursWorked = 0, totalLateMinutes = 0, totalPay = 0;
 
-      scheduledDates.forEach(({ date, dayName }) => {
-        const range = schedule[dayName];
+      scheduledDates.forEach(({ date, range }) => {
         const scheduledHours = computeHoursForRange(range);
         const hourlyRate = scheduledHours > 0 ? dailySalary / scheduledHours : 0;
 
