@@ -4,8 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Manager Dashboard — Worksite Clock</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
 <style>
   :root{
     --bg: #E7E9ED;
@@ -27,16 +29,26 @@
     --line: #C7CBD3;
     --card: #ffffff;
   }
+
   *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
+
+  html,body{
+    margin:0;
+    padding:0;
+  }
+
   body{
-    background: radial-gradient(circle at 50% 0%, var(--bg-2), var(--bg) 60%);
+    background:radial-gradient(circle at 50% 0%, var(--bg-2), var(--bg) 60%);
     min-height:100vh;
     font-family:'Manrope',sans-serif;
     color:var(--text-onlight);
     padding:32px 20px 64px;
   }
-  .wrap{ max-width:1020px; margin:0 auto; }
+
+  .wrap{
+    max-width:1020px;
+    margin:0 auto;
+  }
 
   .topbar{
     display:flex;
@@ -46,6 +58,7 @@
     gap:12px;
     flex-wrap:wrap;
   }
+
   .eyebrow{
     display:flex;
     align-items:center;
@@ -56,10 +69,28 @@
     text-transform:uppercase;
     color:var(--text-onlight-mut);
   }
-  .eyebrow .sq{ width:8px;height:8px; background:var(--amber); border-radius:1px; flex-shrink:0; }
 
-  .topbar-right{ display:flex; align-items:center; gap:10px; font-size:12.5px; color:var(--text-onlight-mut); }
-  .topbar-right b{ color:var(--text-onlight); font-weight:700; }
+  .eyebrow .sq{
+    width:8px;
+    height:8px;
+    background:var(--amber);
+    border-radius:1px;
+    flex-shrink:0;
+  }
+
+  .topbar-right{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:12.5px;
+    color:var(--text-onlight-mut);
+  }
+
+  .topbar-right b{
+    color:var(--text-onlight);
+    font-weight:700;
+  }
+
   .signout-btn{
     background:none;
     border:1px solid var(--line);
@@ -73,10 +104,20 @@
     border-radius:7px;
     cursor:pointer;
   }
-  .signout-btn:hover{ color:var(--text-onlight); border-color:#9AA1AC; }
 
-  /* ---- Auth card (reused for sign-in gate) ---- */
-  .auth-wrap{ display:flex; justify-content:center; padding-top:40px; }
+  .signout-btn:hover{
+    color:var(--text-onlight);
+    border-color:#9AA1AC;
+  }
+
+  /* ---- Auth card ---- */
+
+  .auth-wrap{
+    display:flex;
+    justify-content:center;
+    padding-top:40px;
+  }
+
   .device{
     background:var(--bezel);
     border-radius:22px;
@@ -85,228 +126,662 @@
     max-width:400px;
     box-shadow:0 24px 48px -18px rgba(20,22,26,0.45);
   }
+
   .screen{
     background:linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
     border-radius:16px;
     padding:28px 22px 22px;
   }
-  .auth-head{ text-align:center; padding:8px 4px 22px; }
+
+  .auth-head{
+    text-align:center;
+    padding:8px 4px 22px;
+  }
+
   .auth-head .badge{
-    width:44px;height:44px; margin:0 auto 14px; border-radius:11px;
-    background:rgba(255,176,32,0.12); border:1px solid rgba(255,176,32,0.25);
-    display:flex; align-items:center; justify-content:center;
+    width:44px;
+    height:44px;
+    margin:0 auto 14px;
+    border-radius:11px;
+    background:rgba(255,176,32,0.12);
+    border:1px solid rgba(255,176,32,0.25);
+    display:flex;
+    align-items:center;
+    justify-content:center;
   }
-  .auth-head h1{ font-size:17px; font-weight:800; color:var(--text-ondark); margin:0 0 5px; }
-  .auth-head p{ font-size:12.5px; color:var(--text-ondark-mut); margin:0; line-height:1.5; }
-  .field{ margin-bottom:14px; }
+
+  .auth-head h1{
+    font-size:17px;
+    font-weight:800;
+    color:var(--text-ondark);
+    margin:0 0 5px;
+  }
+
+  .auth-head p{
+    font-size:12.5px;
+    color:var(--text-ondark-mut);
+    margin:0;
+    line-height:1.5;
+  }
+
+  .field{
+    margin-bottom:14px;
+  }
+
   .field label{
-    display:block; font-size:10.5px; font-weight:700; letter-spacing:0.1em;
-    text-transform:uppercase; color:var(--text-ondark-mut); margin-bottom:6px;
+    display:block;
+    font-size:10.5px;
+    font-weight:700;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--text-ondark-mut);
+    margin-bottom:6px;
   }
+
   .field input{
-    width:100%; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1);
-    border-radius:9px; padding:11px 12px; font-family:'Manrope',sans-serif; font-size:14px;
-    font-weight:600; color:var(--text-ondark); outline:none; transition:border-color .2s ease;
+    width:100%;
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:9px;
+    padding:11px 12px;
+    font-family:'Manrope',sans-serif;
+    font-size:14px;
+    font-weight:600;
+    color:var(--text-ondark);
+    outline:none;
+    transition:border-color .2s ease;
   }
-  .field input:focus{ border-color:var(--amber); }
+
+  .field input:focus{
+    border-color:var(--amber);
+  }
+
   .auth-error{
-    display:none; font-size:12px; line-height:1.5; color:#E58A82;
-    background:rgba(226,87,76,0.1); border:1px solid rgba(226,87,76,0.25);
-    border-radius:9px; padding:10px 12px; margin-bottom:14px;
+    display:none;
+    font-size:12px;
+    line-height:1.5;
+    color:#E58A82;
+    background:rgba(226,87,76,0.1);
+    border:1px solid rgba(226,87,76,0.25);
+    border-radius:9px;
+    padding:10px 12px;
+    margin-bottom:14px;
   }
-  .auth-error.show{ display:block; }
+
+  .auth-error.show{
+    display:block;
+  }
+
   .primary-btn{
-    width:100%; border:none; border-radius:12px; padding:15px 16px;
-    font-family:'Manrope',sans-serif; font-size:14px; font-weight:800; letter-spacing:0.03em;
-    text-transform:uppercase; cursor:pointer; background:var(--amber); color:#20160A;
+    width:100%;
+    border:none;
+    border-radius:12px;
+    padding:15px 16px;
+    font-family:'Manrope',sans-serif;
+    font-size:14px;
+    font-weight:800;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
+    cursor:pointer;
+    background:var(--amber);
+    color:#20160A;
     box-shadow:0 10px 22px -8px rgba(255,176,32,0.55);
   }
-  .primary-btn:disabled{ opacity:0.6; cursor:wait; }
-  .spin{
-    width:14px;height:14px; border-radius:50%; display:inline-block;
-    border:2px solid rgba(0,0,0,0.25); border-top-color:#20160A; animation:spin .7s linear infinite;
+
+  .primary-btn:disabled{
+    opacity:0.6;
+    cursor:wait;
   }
-  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .spin{
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    display:inline-block;
+    border:2px solid rgba(0,0,0,0.25);
+    border-top-color:#20160A;
+    animation:spin .7s linear infinite;
+  }
+
+  @keyframes spin{
+    to{
+      transform:rotate(360deg);
+    }
+  }
+
   .not-admin-note{
-    font-size:12px; color:var(--text-ondark-mut); text-align:center; margin-top:14px; line-height:1.6;
+    font-size:12px;
+    color:var(--text-ondark-mut);
+    text-align:center;
+    margin-top:14px;
+    line-height:1.6;
   }
 
   /* ---- Tabs ---- */
+
   .tab-nav{
-    display:flex; gap:4px; margin-bottom:20px; border-bottom:1px solid var(--line);
+    display:flex;
+    gap:4px;
+    margin-bottom:20px;
+    border-bottom:1px solid var(--line);
     flex-wrap:wrap;
   }
+
   .tab-btn{
-    background:none; border:none; padding:10px 16px; font-family:'Manrope',sans-serif;
-    font-size:13px; font-weight:700; color:var(--text-onlight-mut); cursor:pointer;
-    border-bottom:2px solid transparent; margin-bottom:-1px;
+    background:none;
+    border:none;
+    padding:10px 16px;
+    font-family:'Manrope',sans-serif;
+    font-size:13px;
+    font-weight:700;
+    color:var(--text-onlight-mut);
+    cursor:pointer;
+    border-bottom:2px solid transparent;
+    margin-bottom:-1px;
   }
-  .tab-btn.active{ color:var(--text-onlight); border-bottom-color:var(--amber); }
-  .tab-btn:hover{ color:var(--text-onlight); }
+
+  .tab-btn.active{
+    color:var(--text-onlight);
+    border-bottom-color:var(--amber);
+  }
+
+  .tab-btn:hover{
+    color:var(--text-onlight);
+  }
 
   /* ---- Dashboard ---- */
-  .stats-row{ display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
-  .stat-card{
-    flex:1; min-width:130px; background:var(--card); border:1px solid var(--line);
-    border-radius:12px; padding:14px 16px;
+
+  .stats-row{
+    display:flex;
+    gap:12px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
   }
-  .stat-card .num{ font-family:'JetBrains Mono', monospace; font-size:22px; font-weight:700; color:var(--text-onlight); }
-  .stat-card .lbl{ font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-onlight-mut); margin-top:2px; }
+
+  .stat-card{
+    flex:1;
+    min-width:130px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:14px 16px;
+  }
+
+  .stat-card .num{
+    font-family:'JetBrains Mono',monospace;
+    font-size:22px;
+    font-weight:700;
+    color:var(--text-onlight);
+  }
+
+  .stat-card .lbl{
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--text-onlight-mut);
+    margin-top:2px;
+  }
 
   .filter-bar{
-    display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;
+    display:flex;
+    gap:10px;
+    margin-bottom:16px;
+    flex-wrap:wrap;
   }
-  .filter-bar input, .filter-bar select{
-    font-family:'Manrope',sans-serif; font-size:13px; font-weight:600;
-    padding:10px 12px; border-radius:9px; border:1px solid var(--line);
-    background:var(--card); color:var(--text-onlight); outline:none;
+
+  .filter-bar input,
+  .filter-bar select{
+    font-family:'Manrope',sans-serif;
+    font-size:13px;
+    font-weight:600;
+    padding:10px 12px;
+    border-radius:9px;
+    border:1px solid var(--line);
+    background:var(--card);
+    color:var(--text-onlight);
+    outline:none;
   }
-  .filter-bar input{ flex:1; min-width:180px; }
-  .filter-bar input:focus, .filter-bar select:focus{ border-color:var(--amber); }
-  .filter-bar input[type="date"]{ flex:0 1 160px; min-width:140px; }
-  .filter-bar select{ flex:0 1 200px; }
-  .date-sep{ font-size:12.5px; color:var(--text-onlight-mut); font-weight:600; align-self:center; }
+
+  .filter-bar input{
+    flex:1;
+    min-width:180px;
+  }
+
+  .filter-bar input:focus,
+  .filter-bar select:focus{
+    border-color:var(--amber);
+  }
+
+  .filter-bar input[type="date"]{
+    flex:0 1 160px;
+    min-width:140px;
+  }
+
+  .filter-bar select{
+    flex:0 1 200px;
+  }
+
+  .date-sep{
+    font-size:12.5px;
+    color:var(--text-onlight-mut);
+    font-weight:600;
+    align-self:center;
+  }
 
   .table-card{
-    background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    overflow:hidden;
   }
-  table{ width:100%; border-collapse:collapse; }
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+  }
+
   thead th{
-    text-align:left; font-size:10.5px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase;
-    color:var(--text-onlight-mut); padding:12px 14px; border-bottom:1px solid var(--line);
+    text-align:left;
+    font-size:10.5px;
+    font-weight:800;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--text-onlight-mut);
+    padding:12px 14px;
+    border-bottom:1px solid var(--line);
     background:#FAFAFB;
   }
+
   tbody td{
-    padding:12px 14px; font-size:13px; border-bottom:1px solid #EFF0F3; vertical-align:middle;
+    padding:12px 14px;
+    font-size:13px;
+    border-bottom:1px solid #EFF0F3;
+    vertical-align:middle;
   }
-  tbody tr:last-child td{ border-bottom:none; }
-  tbody tr:hover{ background:#FAFAFB; }
-  .emp-name{ font-weight:700; color:var(--text-onlight); }
-  .emp-email{ font-size:11.5px; color:var(--text-onlight-mut); }
+
+  tbody tr:last-child td{
+    border-bottom:none;
+  }
+
+  tbody tr:hover{
+    background:#FAFAFB;
+  }
+
+  .emp-name{
+    font-weight:700;
+    color:var(--text-onlight);
+  }
+
+  .emp-email{
+    font-size:11.5px;
+    color:var(--text-onlight-mut);
+  }
+
   .type-pill{
-    display:inline-block; font-family:'JetBrains Mono', monospace; font-size:10.5px; font-weight:700;
-    padding:3px 8px; border-radius:6px; letter-spacing:0.03em;
+    display:inline-block;
+    font-family:'JetBrains Mono',monospace;
+    font-size:10.5px;
+    font-weight:700;
+    padding:3px 8px;
+    border-radius:6px;
+    letter-spacing:0.03em;
   }
-  .type-pill.in{ background:var(--green-dim); color:var(--green-text); }
-  .type-pill.out{ background:var(--red-dim); color:var(--red-text); }
-  .mono{ font-family:'JetBrains Mono', monospace; font-size:12.5px; }
-  .loc-cell{ font-size:12px; color:var(--text-onlight-mut); }
-  .loc-cell.bad{ color:#B3382F; }
+
+  .type-pill.in{
+    background:var(--green-dim);
+    color:var(--green-text);
+  }
+
+  .type-pill.out{
+    background:var(--red-dim);
+    color:var(--red-text);
+  }
+
+  .mono{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12.5px;
+  }
+
+  .loc-cell{
+    font-size:12px;
+    color:var(--text-onlight-mut);
+  }
+
+  .loc-cell.bad{
+    color:#B3382F;
+  }
 
   .empty-state{
-    padding:40px 20px; text-align:center; color:var(--text-onlight-mut); font-size:13px;
+    padding:40px 20px;
+    text-align:center;
+    color:var(--text-onlight-mut);
+    font-size:13px;
   }
 
   .section-head{
-    display:flex; align-items:baseline; justify-content:space-between;
-    gap:12px; margin:0 0 10px; flex-wrap:wrap;
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:12px;
+    margin:0 0 10px;
+    flex-wrap:wrap;
   }
+
   .section-head h2{
-    font-size:13px; font-weight:800; color:var(--text-onlight); margin:0;
+    font-size:13px;
+    font-weight:800;
+    color:var(--text-onlight);
+    margin:0;
   }
+
   .section-head .hint{
-    font-size:11.5px; font-weight:500; color:var(--text-onlight-mut);
+    font-size:11.5px;
+    font-weight:500;
+    color:var(--text-onlight-mut);
   }
+
   .export-btn{
-    display:flex; align-items:center; gap:6px;
-    background:var(--card); border:1px solid var(--line); color:var(--text-onlight);
-    font-family:'Manrope',sans-serif; font-size:12px; font-weight:700;
-    padding:8px 12px; border-radius:8px; cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:var(--card);
+    border:1px solid var(--line);
+    color:var(--text-onlight);
+    font-family:'Manrope',sans-serif;
+    font-size:12px;
+    font-weight:700;
+    padding:8px 12px;
+    border-radius:8px;
+    cursor:pointer;
   }
-  .export-btn:hover{ border-color:#9AA1AC; }
-  .export-btn:disabled{ opacity:0.6; cursor:wait; }
+
+  .export-btn:hover{
+    border-color:#9AA1AC;
+  }
+
+  .export-btn:disabled{
+    opacity:0.6;
+    cursor:wait;
+  }
 
   .status-pill2{
-    display:inline-block; font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px;
+    display:inline-block;
+    font-size:11px;
+    font-weight:700;
+    padding:3px 8px;
+    border-radius:6px;
   }
-  .status-pill2.complete{ background:var(--green-dim); color:var(--green-text); }
-  .status-pill2.ongoing{ background:#FFF4E0; color:#8A5A1F; }
-  .status-pill2.orphan{ background:var(--red-dim); color:var(--red-text); }
+
+  .status-pill2.complete{
+    background:var(--green-dim);
+    color:var(--green-text);
+  }
+
+  .status-pill2.ongoing{
+    background:#FFF4E0;
+    color:#8A5A1F;
+  }
+
+  .status-pill2.orphan{
+    background:var(--red-dim);
+    color:var(--red-text);
+  }
 
   /* ---- Locations & People forms ---- */
+
   .form-label{
-    display:block; font-size:10px; font-weight:700; letter-spacing:0.06em;
-    text-transform:uppercase; color:var(--text-onlight-mut); margin-bottom:4px;
+    display:block;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--text-onlight-mut);
+    margin-bottom:4px;
   }
+
   .form-input{
-    font-family:'Manrope',sans-serif; font-size:13px; font-weight:600;
-    padding:9px 11px; border-radius:9px; border:1px solid var(--line);
-    background:var(--card); color:var(--text-onlight); outline:none; width:100%;
+    font-family:'Manrope',sans-serif;
+    font-size:13px;
+    font-weight:600;
+    padding:9px 11px;
+    border-radius:9px;
+    border:1px solid var(--line);
+    background:var(--card);
+    color:var(--text-onlight);
+    outline:none;
+    width:100%;
   }
-  .form-input:focus{ border-color:var(--amber); }
+
+  .form-input:focus{
+    border-color:var(--amber);
+  }
+
   .add-location-form{
-    display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;
-    background:var(--card); border:1px solid var(--line); border-radius:14px;
-    padding:16px; margin-bottom:20px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:flex-end;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px;
+    margin-bottom:20px;
   }
-  .add-location-form > div{ flex:1; min-width:130px; }
-  .add-location-form .radius-field{ flex:0 0 110px; min-width:90px; }
-  .day-toggles{ display:flex; gap:3px; }
+
+  .add-location-form > div{
+    flex:1;
+    min-width:130px;
+  }
+
+  .add-location-form .radius-field{
+    flex:0 0 110px;
+    min-width:90px;
+  }
+
+  .day-toggles{
+    display:flex;
+    gap:3px;
+  }
+
   .day-btn{
-    width:22px; height:22px; border-radius:5px; border:1px solid var(--line); background:var(--card);
-    font-size:10px; font-weight:700; color:var(--text-onlight-mut); cursor:pointer; padding:0;
+    width:22px;
+    height:22px;
+    border-radius:5px;
+    border:1px solid var(--line);
+    background:var(--card);
+    font-size:10px;
+    font-weight:700;
+    color:var(--text-onlight-mut);
+    cursor:pointer;
+    padding:0;
   }
-  .day-btn.active{ background:var(--amber); border-color:var(--amber); color:#20160A; }
+
+  .day-btn.active{
+    background:var(--amber);
+    border-color:var(--amber);
+    color:#20160A;
+  }
+
   .delete-btn{
-    background:none; border:1px solid var(--red-dim); color:var(--red-text);
-    font-family:'Manrope',sans-serif; font-size:11.5px; font-weight:700;
-    padding:6px 10px; border-radius:7px; cursor:pointer;
+    background:none;
+    border:1px solid var(--red-dim);
+    color:var(--red-text);
+    font-family:'Manrope',sans-serif;
+    font-size:11.5px;
+    font-weight:700;
+    padding:6px 10px;
+    border-radius:7px;
+    cursor:pointer;
   }
-  .delete-btn:hover{ background:var(--red-dim); }
+
+  .delete-btn:hover{
+    background:var(--red-dim);
+  }
 
   .modal-overlay{
-    position:fixed; inset:0; background:rgba(13,15,18,0.55);
-    display:flex; align-items:center; justify-content:center; padding:20px; z-index:50;
+    position:fixed;
+    inset:0;
+    background:rgba(13,15,18,0.55);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:50;
   }
+
   .modal-box{
-    background:var(--card); border-radius:16px; max-width:480px; width:100%;
-    max-height:85vh; overflow-y:auto; padding:22px;
+    background:var(--card);
+    border-radius:16px;
+    max-width:480px;
+    width:100%;
+    max-height:85vh;
+    overflow-y:auto;
+    padding:22px;
   }
-  .modal-box h3{ margin:0 0 4px; font-size:15px; font-weight:800; color:var(--text-onlight); }
-  .modal-sub{ font-size:12px; color:var(--text-onlight-mut); margin-bottom:16px; }
-  .schedule-row{ display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #EFF0F3; }
-  .schedule-row:last-child{ border-bottom:none; }
-  .schedule-day{ width:38px; font-size:12.5px; font-weight:700; color:var(--text-onlight); flex-shrink:0; }
-  .schedule-off-toggle{ display:flex; align-items:center; gap:5px; font-size:11px; color:var(--text-onlight-mut); flex-shrink:0; white-space:nowrap; }
-  .schedule-times{ display:flex; gap:6px; flex:1; align-items:center; }
-  .schedule-times input[type="time"]{ flex:1; min-width:0; }
-  .modal-actions{ display:flex; gap:10px; margin-top:18px; justify-content:flex-end; }
+
+  .modal-box h3{
+    margin:0 0 4px;
+    font-size:15px;
+    font-weight:800;
+    color:var(--text-onlight);
+  }
+
+  .modal-sub{
+    font-size:12px;
+    color:var(--text-onlight-mut);
+    margin-bottom:16px;
+  }
+
+  .schedule-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 0;
+    border-bottom:1px solid #EFF0F3;
+  }
+
+  .schedule-row:last-child{
+    border-bottom:none;
+  }
+
+  .schedule-day{
+    width:38px;
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--text-onlight);
+    flex-shrink:0;
+  }
+
+  .schedule-off-toggle{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    font-size:11px;
+    color:var(--text-onlight-mut);
+    flex-shrink:0;
+    white-space:nowrap;
+  }
+
+  .schedule-times{
+    display:flex;
+    gap:6px;
+    flex:1;
+    align-items:center;
+  }
+
+  .schedule-times input[type="time"]{
+    flex:1;
+    min-width:0;
+  }
+
+  .modal-actions{
+    display:flex;
+    gap:10px;
+    margin-top:18px;
+    justify-content:flex-end;
+  }
+
   .modal-btn-cancel{
-    background:none; border:1px solid var(--line); color:var(--text-onlight-mut);
-    font-family:'Manrope',sans-serif; font-size:12.5px; font-weight:700;
-    padding:9px 16px; border-radius:8px; cursor:pointer;
+    background:none;
+    border:1px solid var(--line);
+    color:var(--text-onlight-mut);
+    font-family:'Manrope',sans-serif;
+    font-size:12.5px;
+    font-weight:700;
+    padding:9px 16px;
+    border-radius:8px;
+    cursor:pointer;
   }
+
   .modal-btn-save{
-    background:var(--amber); border:none; color:#20160A;
-    font-family:'Manrope',sans-serif; font-size:12.5px; font-weight:800;
-    padding:9px 18px; border-radius:8px; cursor:pointer;
+    background:var(--amber);
+    border:none;
+    color:#20160A;
+    font-family:'Manrope',sans-serif;
+    font-size:12.5px;
+    font-weight:800;
+    padding:9px 18px;
+    border-radius:8px;
+    cursor:pointer;
   }
-  .modal-btn-save:disabled{ opacity:0.6; cursor:wait; }
+
+  .modal-btn-save:disabled{
+    opacity:0.6;
+    cursor:wait;
+  }
 
   .add-holiday-form{
-    display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;
-    background:var(--card); border:1px solid var(--line); border-radius:14px;
-    padding:16px; margin-bottom:20px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:flex-end;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px;
+    margin-bottom:20px;
   }
-  .add-holiday-form > div{ flex:1; min-width:150px; }
 
-  .hidden{ display:none !important; }
+  .add-holiday-form > div{
+    flex:1;
+    min-width:150px;
+  }
 
-  @media (max-width: 640px){
-    .table-card{ overflow-x:auto; }
-    table{ min-width:640px; }
-    #peopleTable{ min-width:620px; }
+  .hidden{
+    display:none !important;
+  }
+
+  @media (max-width:640px){
+    .table-card{
+      overflow-x:auto;
+    }
+
+    table{
+      min-width:640px;
+    }
+
+    #peopleTable{
+      min-width:620px;
+    }
+
+    #payrollTable{
+      min-width:1100px;
+    }
   }
 </style>
 </head>
+
 <body>
 
 <div class="wrap">
 
   <!-- ===== SIGN IN GATE ===== -->
+
   <div id="authGate" class="auth-wrap">
     <div class="device">
       <div class="screen">
+
         <div class="auth-head">
           <div class="badge">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFB020" stroke-width="1.8">
@@ -314,120 +789,267 @@
               <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
           </div>
+
           <h1>Manager Sign In</h1>
-          <p>Sign in with your company email to view team records.</p>
+
+          <p>
+            Sign in with your company email to view team records.
+          </p>
         </div>
 
         <div class="auth-error" id="authError"></div>
 
         <form id="signInForm">
+
           <div class="field">
             <label for="email">Company email</label>
-            <input id="email" type="email" placeholder="you@company.com" autocomplete="username" required>
+            <input
+              id="email"
+              type="email"
+              placeholder="you@company.com"
+              autocomplete="username"
+              required
+            >
           </div>
+
           <div class="field">
             <label for="password">Password</label>
-            <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" required>
+            <input
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              required
+            >
           </div>
+
           <button type="submit" class="primary-btn" id="signInBtn">
             <span id="signInLabel">Sign In</span>
           </button>
+
         </form>
 
-        <div class="not-admin-note">Use the same account you sign up with in the employee app.<br>Your account needs manager access enabled — see setup notes.</div>
+        <div class="not-admin-note">
+          Use the same account you sign up with in the employee app.<br>
+          Your account needs manager access enabled — see setup notes.
+        </div>
+
       </div>
     </div>
   </div>
 
+
   <!-- ===== NOT AUTHORIZED ===== -->
+
   <div id="notAdminGate" class="auth-wrap hidden">
+
     <div class="device">
       <div class="screen">
+
         <div class="auth-head">
+
           <div class="badge">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E2574C" stroke-width="1.8">
               <circle cx="12" cy="12" r="9"/>
               <path d="M12 8v5M12 16h.01"/>
             </svg>
           </div>
+
           <h1>Not authorized</h1>
+
           <p id="notAdminEmail" style="margin-bottom:16px;"></p>
+
         </div>
-        <button class="primary-btn" id="signOutFromDenied">Sign Out</button>
+
+        <button class="primary-btn" id="signOutFromDenied">
+          Sign Out
+        </button>
+
       </div>
     </div>
+
   </div>
 
+
   <!-- ===== DASHBOARD ===== -->
+
   <div id="dashboard" class="hidden">
+
     <div class="topbar">
-      <div class="eyebrow"><span class="sq"></span>Manager Dashboard</div>
-      <div class="topbar-right">
-        Signed in as <b id="adminEmail">-</b>
-        <button class="signout-btn" id="signOutBtn">Sign Out</button>
+
+      <div class="eyebrow">
+        <span class="sq"></span>
+        Manager Dashboard
       </div>
+
+      <div class="topbar-right">
+        Signed in as
+        <b id="adminEmail">-</b>
+
+        <button class="signout-btn" id="signOutBtn">
+          Sign Out
+        </button>
+      </div>
+
     </div>
+
+
+    <!-- ===== TABS ===== -->
 
     <div class="tab-nav">
-      <button class="tab-btn active" data-tab="attendance">Attendance</button>
-      <button class="tab-btn" data-tab="locations">Locations</button>
-      <button class="tab-btn" data-tab="people">People</button>
-      <button class="tab-btn" data-tab="holidays">Holidays</button>
-      <button class="tab-btn" data-tab="leave">Leave</button>
-      <button class="tab-btn" data-tab="ptsessions">PT Sessions</button>
-      <button class="tab-btn" data-tab="payroll">Payroll</button>
+
+      <button class="tab-btn active" data-tab="attendance">
+        Attendance
+      </button>
+
+      <button class="tab-btn" data-tab="locations">
+        Locations
+      </button>
+
+      <button class="tab-btn" data-tab="people">
+        People
+      </button>
+
+      <button class="tab-btn" data-tab="holidays">
+        Holidays
+      </button>
+
+      <button class="tab-btn" data-tab="leave">
+        Leave
+      </button>
+
+      <button class="tab-btn" data-tab="ptsessions">
+        PT Sessions
+      </button>
+
+      <button class="tab-btn" data-tab="payroll">
+        Payroll
+      </button>
+
     </div>
 
-    <!-- ===== ATTENDANCE TAB ===== -->
+
+    <!-- ============================================================
+         ATTENDANCE TAB
+         ============================================================ -->
+
     <div id="attendanceTab">
+
       <div class="stats-row">
+
         <div class="stat-card">
           <div class="num" id="statTotal">0</div>
           <div class="lbl">Total records</div>
         </div>
+
         <div class="stat-card">
           <div class="num" id="statEmployees">0</div>
           <div class="lbl">Employees</div>
         </div>
+
         <div class="stat-card">
           <div class="num" id="statToday">0</div>
           <div class="lbl">Punches today</div>
         </div>
+
       </div>
 
+
       <div class="filter-bar">
-        <input type="text" id="searchInput" placeholder="Search by employee name or email…">
+
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Search by employee name or email…"
+        >
+
         <select id="employeeFilter">
           <option value="">All employees</option>
         </select>
+
         <select id="typeFilter">
           <option value="">All types</option>
           <option value="IN">Clock in only</option>
           <option value="OUT">Clock out only</option>
         </select>
+
       </div>
+
 
       <div class="filter-bar">
+
         <select id="dateRangePreset">
-          <option value="all">All time</option>
-          <option value="today">Today</option>
-          <option value="7days">Last 7 days</option>
-          <option value="thisweek">This week (Mon–today)</option>
-          <option value="thismonth">This month</option>
-          <option value="custom">Custom range…</option>
+
+          <option value="all">
+            All time
+          </option>
+
+          <option value="today">
+            Today
+          </option>
+
+          <option value="7days">
+            Last 7 days
+          </option>
+
+          <option value="thisweek">
+            This week (Mon–today)
+          </option>
+
+          <option value="thismonth">
+            This month
+          </option>
+
+          <option value="custom">
+            Custom range…
+          </option>
+
         </select>
-        <input type="date" id="dateFrom" class="hidden">
-        <span class="date-sep hidden" id="dateSep">to</span>
-        <input type="date" id="dateTo" class="hidden">
+
+        <input
+          type="date"
+          id="dateFrom"
+          class="hidden"
+        >
+
+        <span
+          class="date-sep hidden"
+          id="dateSep"
+        >
+          to
+        </span>
+
+        <input
+          type="date"
+          id="dateTo"
+          class="hidden"
+        >
+
       </div>
 
+
       <div class="section-head">
-        <h2>Shift Summary <span class="hint">— clock in paired with clock out, hours calculated</span></h2>
-        <button class="export-btn" id="exportShiftsBtn">Export CSV</button>
+
+        <h2>
+          Shift Summary
+          <span class="hint">
+            — clock in paired with clock out, hours calculated
+          </span>
+        </h2>
+
+        <button class="export-btn" id="exportShiftsBtn">
+          Export CSV
+        </button>
+
       </div>
+
+
       <div class="table-card" style="margin-bottom:28px;">
+
         <table id="shiftsTable">
+
           <thead>
+
             <tr>
               <th>Employee</th>
               <th>Date</th>
@@ -436,19 +1058,45 @@
               <th>Hours</th>
               <th>Status</th>
             </tr>
+
           </thead>
+
           <tbody id="shiftsBody"></tbody>
+
         </table>
-        <div class="empty-state hidden" id="shiftsEmptyState">No shifts match your filters.</div>
+
+        <div
+          class="empty-state hidden"
+          id="shiftsEmptyState"
+        >
+          No shifts match your filters.
+        </div>
+
       </div>
 
+
       <div class="section-head">
-        <h2>Raw Punches <span class="hint">— every individual clock in/out event</span></h2>
-        <button class="export-btn" id="exportRawBtn">Export CSV</button>
+
+        <h2>
+          Raw Punches
+          <span class="hint">
+            — every individual clock in/out event
+          </span>
+        </h2>
+
+        <button class="export-btn" id="exportRawBtn">
+          Export CSV
+        </button>
+
       </div>
+
+
       <div class="table-card">
+
         <table id="recordsTable">
+
           <thead>
+
             <tr>
               <th>Employee</th>
               <th>Type</th>
@@ -456,42 +1104,136 @@
               <th>Time</th>
               <th>Location</th>
             </tr>
+
           </thead>
+
           <tbody id="recordsBody"></tbody>
+
         </table>
-        <div class="empty-state hidden" id="emptyState">No records match your filters.</div>
+
+        <div
+          class="empty-state hidden"
+          id="emptyState"
+        >
+          No records match your filters.
+        </div>
+
       </div>
+
     </div>
 
-    <!-- ===== LOCATIONS TAB ===== -->
+
+    <!-- ============================================================
+         LOCATIONS TAB
+         ============================================================ -->
+
     <div id="locationsTab" class="hidden">
+
       <div class="section-head">
-        <h2>Locations <span class="hint">— gym branches used for geofencing</span></h2>
+
+        <h2>
+          Locations
+          <span class="hint">
+            — gym branches used for geofencing
+          </span>
+        </h2>
+
       </div>
 
-      <form id="addLocationForm" class="add-location-form">
+
+      <form
+        id="addLocationForm"
+        class="add-location-form"
+      >
+
         <div>
-          <label class="form-label">Name</label>
-          <input type="text" id="locName" class="form-input" placeholder="e.g. Bukit Jalil" required>
+
+          <label class="form-label">
+            Name
+          </label>
+
+          <input
+            type="text"
+            id="locName"
+            class="form-input"
+            placeholder="e.g. Bukit Jalil"
+            required
+          >
+
         </div>
+
+
         <div>
-          <label class="form-label">Latitude</label>
-          <input type="number" step="any" id="locLat" class="form-input" placeholder="3.1390" required>
+
+          <label class="form-label">
+            Latitude
+          </label>
+
+          <input
+            type="number"
+            step="any"
+            id="locLat"
+            class="form-input"
+            placeholder="3.1390"
+            required
+          >
+
         </div>
+
+
         <div>
-          <label class="form-label">Longitude</label>
-          <input type="number" step="any" id="locLng" class="form-input" placeholder="101.6869" required>
+
+          <label class="form-label">
+            Longitude
+          </label>
+
+          <input
+            type="number"
+            step="any"
+            id="locLng"
+            class="form-input"
+            placeholder="101.6869"
+            required
+          >
+
         </div>
+
+
         <div class="radius-field">
-          <label class="form-label">Radius (m)</label>
-          <input type="number" id="locRadius" class="form-input" value="150" required>
+
+          <label class="form-label">
+            Radius (m)
+          </label>
+
+          <input
+            type="number"
+            id="locRadius"
+            class="form-input"
+            value="150"
+            required
+          >
+
         </div>
-        <button type="submit" class="primary-btn" id="addLocationBtn" style="width:auto; padding:10px 18px;">Add Location</button>
+
+
+        <button
+          type="submit"
+          class="primary-btn"
+          id="addLocationBtn"
+          style="width:auto; padding:10px 18px;"
+        >
+          Add Location
+        </button>
+
       </form>
 
+
       <div class="table-card">
+
         <table>
+
           <thead>
+
             <tr>
               <th>Name</th>
               <th>Latitude</th>
@@ -499,21 +1241,49 @@
               <th>Radius</th>
               <th></th>
             </tr>
+
           </thead>
+
           <tbody id="locationsBody"></tbody>
+
         </table>
-        <div class="empty-state hidden" id="locationsEmptyState">No locations added yet.</div>
+
+        <div
+          class="empty-state hidden"
+          id="locationsEmptyState"
+        >
+          No locations added yet.
+        </div>
+
       </div>
+
     </div>
 
-    <!-- ===== PEOPLE TAB ===== -->
+
+    <!-- ============================================================
+         PEOPLE TAB
+         ============================================================ -->
+
     <div id="peopleTab" class="hidden">
+
       <div class="section-head">
-        <h2>People <span class="hint">— assign location, salary, and per-day schedule for each employee</span></h2>
+
+        <h2>
+          People
+          <span class="hint">
+            — assign location, salary, and per-day schedule for each employee
+          </span>
+        </h2>
+
       </div>
+
+
       <div class="table-card">
+
         <table id="peopleTable">
+
           <thead>
+
             <tr>
               <th>Employee</th>
               <th>Location</th>
@@ -521,54 +1291,147 @@
               <th>Schedule</th>
               <th></th>
             </tr>
+
           </thead>
+
           <tbody id="peopleBody"></tbody>
+
         </table>
-        <div class="empty-state hidden" id="peopleEmptyState">No employee profiles yet — they're created automatically when someone signs up.</div>
+
+        <div
+          class="empty-state hidden"
+          id="peopleEmptyState"
+        >
+          No employee profiles yet — they're created automatically when someone signs up.
+        </div>
+
       </div>
+
     </div>
 
-    <!-- ===== HOLIDAYS TAB ===== -->
+
+    <!-- ============================================================
+         HOLIDAYS TAB
+         ============================================================ -->
+
     <div id="holidaysTab" class="hidden">
+
       <div class="section-head">
-        <h2>Holidays <span class="hint">— public and company holidays, excluded from working-day payroll calculations</span></h2>
+
+        <h2>
+          Holidays
+          <span class="hint">
+            — public and company holidays, excluded from working-day payroll calculations
+          </span>
+        </h2>
+
       </div>
 
-      <form id="addHolidayForm" class="add-holiday-form">
+
+      <form
+        id="addHolidayForm"
+        class="add-holiday-form"
+      >
+
         <div>
-          <label class="form-label">Holiday name</label>
-          <input type="text" id="holidayName" class="form-input" placeholder="e.g. Merdeka Day" required>
+
+          <label class="form-label">
+            Holiday name
+          </label>
+
+          <input
+            type="text"
+            id="holidayName"
+            class="form-input"
+            placeholder="e.g. Merdeka Day"
+            required
+          >
+
         </div>
+
+
         <div style="flex:0 0 180px; min-width:150px;">
-          <label class="form-label">Date</label>
-          <input type="date" id="holidayDate" class="form-input" required>
+
+          <label class="form-label">
+            Date
+          </label>
+
+          <input
+            type="date"
+            id="holidayDate"
+            class="form-input"
+            required
+          >
+
         </div>
-        <button type="submit" class="primary-btn" id="addHolidayBtn" style="width:auto; padding:10px 18px;">Add Holiday</button>
+
+
+        <button
+          type="submit"
+          class="primary-btn"
+          id="addHolidayBtn"
+          style="width:auto; padding:10px 18px;"
+        >
+          Add Holiday
+        </button>
+
       </form>
 
+
       <div class="table-card">
+
         <table>
+
           <thead>
+
             <tr>
               <th>Name</th>
               <th>Date</th>
               <th></th>
             </tr>
+
           </thead>
+
           <tbody id="holidaysBody"></tbody>
+
         </table>
-        <div class="empty-state hidden" id="holidaysEmptyState">No holidays added yet.</div>
+
+        <div
+          class="empty-state hidden"
+          id="holidaysEmptyState"
+        >
+          No holidays added yet.
+        </div>
+
       </div>
+
     </div>
 
-    <!-- ===== LEAVE TAB ===== -->
+
+    <!-- ============================================================
+         LEAVE TAB
+         ============================================================ -->
+
     <div id="leaveTab" class="hidden">
+
       <div class="section-head">
-        <h2>Leave Requests <span class="hint">— review MC, annual, and emergency leave submissions</span></h2>
+
+        <h2>
+          Leave Requests
+          <span class="hint">
+            — review MC, annual, emergency, and unpaid leave submissions
+          </span>
+        </h2>
+
       </div>
+
+
       <div class="table-card">
+
         <table>
+
           <thead>
+
             <tr>
               <th>Employee</th>
               <th>Type</th>
@@ -578,22 +1441,56 @@
               <th>Status</th>
               <th></th>
             </tr>
+
           </thead>
+
           <tbody id="leaveBody"></tbody>
+
         </table>
-        <div class="empty-state hidden" id="leaveEmptyState">No leave requests yet.</div>
+
+        <div
+          class="empty-state hidden"
+          id="leaveEmptyState"
+        >
+          No leave requests yet.
+        </div>
+
       </div>
+
     </div>
 
-    <!-- ===== PT SESSIONS TAB ===== -->
+
+    <!-- ============================================================
+         PT SESSIONS TAB
+         ============================================================ -->
+
     <div id="ptsessionsTab" class="hidden">
+
       <div class="section-head">
-        <h2>PT Sessions <span class="hint">— review personal training sessions before commission is paid (RM50/class)</span></h2>
-        <button class="export-btn" id="exportPtBtn">Export CSV</button>
+
+        <h2>
+          PT Sessions
+          <span class="hint">
+            — review personal training sessions before commission is paid (RM50/class)
+          </span>
+        </h2>
+
+        <button
+          class="export-btn"
+          id="exportPtBtn"
+        >
+          Export CSV
+        </button>
+
       </div>
+
+
       <div class="table-card">
+
         <table>
+
           <thead>
+
             <tr>
               <th>Coach</th>
               <th>Student</th>
@@ -603,99 +1500,301 @@
               <th>Status</th>
               <th></th>
             </tr>
+
           </thead>
+
           <tbody id="ptBody"></tbody>
+
         </table>
-        <div class="empty-state hidden" id="ptEmptyState">No PT sessions logged yet.</div>
+
+        <div
+          class="empty-state hidden"
+          id="ptEmptyState"
+        >
+          No PT sessions logged yet.
+        </div>
+
       </div>
+
     </div>
 
-    <!-- ===== PAYROLL TAB ===== -->
+
+    <!-- ============================================================
+         PAYROLL TAB
+         ============================================================ -->
+
     <div id="payrollTab" class="hidden">
+
       <div class="section-head">
-        <h2>Payroll <span class="hint">— Daily Salary = Basic ÷ scheduled working days (holidays/one-off off-days excluded), Hourly Rate = Daily Salary ÷ that day's scheduled hours, plus PT commission</span></h2>
-        <button class="export-btn" id="exportPayrollBtn">Export CSV</button>
+
+        <h2>
+          Payroll
+          <span class="hint">
+            — Daily Salary = Basic ÷ scheduled working days; Hourly Rate = Daily Salary ÷ that day's scheduled hours; approved paid leave is paid as scheduled hours; plus PT commission
+          </span>
+        </h2>
+
+        <button
+          class="export-btn"
+          id="exportPayrollBtn"
+        >
+          Export CSV
+        </button>
+
       </div>
+
+
       <div class="filter-bar">
-        <input type="month" id="payrollMonth" class="form-input" style="max-width:200px;">
+
+        <input
+          type="month"
+          id="payrollMonth"
+          class="form-input"
+          style="max-width:200px;"
+        >
+
       </div>
+
+
       <div class="table-card">
-        <table>
+
+        <table id="payrollTable">
+
           <thead>
+
             <tr>
               <th>Employee</th>
               <th>Basic Salary</th>
               <th>Scheduled Days</th>
               <th>Hours Worked</th>
+              <th>Paid Leave Days</th>
+              <th>Unpaid/Absent Days</th>
               <th>Late (min)</th>
               <th>Late Deduction</th>
               <th>PT Classes</th>
               <th>PT Commission</th>
               <th>Total Pay</th>
             </tr>
+
           </thead>
+
           <tbody id="payrollBody"></tbody>
+
         </table>
-        <div class="empty-state hidden" id="payrollEmptyState">No profiles with salary and schedule set yet.</div>
+
+        <div
+          class="empty-state hidden"
+          id="payrollEmptyState"
+        >
+          No profiles with salary and schedule set yet.
+        </div>
+
       </div>
+
     </div>
+
   </div>
 
 </div>
 
-<!-- ===== SCHEDULE MODAL ===== -->
-<div id="scheduleModal" class="modal-overlay hidden">
+
+<!-- ============================================================
+     SCHEDULE MODAL
+     ============================================================ -->
+
+<div
+  id="scheduleModal"
+  class="modal-overlay hidden"
+>
+
   <div class="modal-box">
-    <h3 id="scheduleModalName">Edit Schedule</h3>
-    <div class="modal-sub">Set working hours for each day. Toggle "Off" for rest days.</div>
+
+    <h3 id="scheduleModalName">
+      Edit Schedule
+    </h3>
+
+    <div class="modal-sub">
+      Set working hours for each day. Toggle "Off" for rest days.
+    </div>
+
     <div id="scheduleRows"></div>
+
     <div class="modal-actions">
-      <button class="modal-btn-cancel" id="scheduleCancelBtn">Cancel</button>
-      <button class="modal-btn-save" id="scheduleSaveBtn">Save Schedule</button>
+
+      <button
+        class="modal-btn-cancel"
+        id="scheduleCancelBtn"
+      >
+        Cancel
+      </button>
+
+      <button
+        class="modal-btn-save"
+        id="scheduleSaveBtn"
+      >
+        Save Schedule
+      </button>
+
     </div>
+
   </div>
+
 </div>
 
-<div id="overrideModal" class="modal-overlay hidden">
-  <div class="modal-box">
-    <h3 id="overrideModalName">One-off Schedule Changes</h3>
-    <div class="modal-sub">Override the regular schedule for a single date — e.g. working a usual off-day, or taking an extra day off. Takes priority over both the weekly schedule and holidays.</div>
 
-    <form id="addOverrideForm" style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end; margin-bottom:16px;">
+<!-- ============================================================
+     OVERRIDE MODAL
+     ============================================================ -->
+
+<div
+  id="overrideModal"
+  class="modal-overlay hidden"
+>
+
+  <div class="modal-box">
+
+    <h3 id="overrideModalName">
+      One-off Schedule Changes
+    </h3>
+
+    <div class="modal-sub">
+      Override the regular schedule for a single date — e.g. working a usual off-day, or taking an extra day off. Takes priority over both the weekly schedule and holidays.
+    </div>
+
+
+    <form
+      id="addOverrideForm"
+      style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end; margin-bottom:16px;"
+    >
+
       <div style="flex:0 0 150px;">
-        <label class="form-label">Date</label>
-        <input type="date" id="overrideDate" class="form-input" required>
+
+        <label class="form-label">
+          Date
+        </label>
+
+        <input
+          type="date"
+          id="overrideDate"
+          class="form-input"
+          required
+        >
+
       </div>
-      <label style="display:flex; align-items:center; gap:5px; font-size:11px; color:var(--text-onlight-mut); flex-shrink:0;">
-        <input type="checkbox" id="overrideOff"> Day off
+
+
+      <label
+        style="display:flex; align-items:center; gap:5px; font-size:11px; color:var(--text-onlight-mut); flex-shrink:0;"
+      >
+
+        <input
+          type="checkbox"
+          id="overrideOff"
+        >
+
+        Day off
+
       </label>
-      <div style="flex:1; min-width:90px;" id="overrideStartWrap">
-        <label class="form-label">Start</label>
-        <input type="time" id="overrideStart" class="form-input" value="09:00">
+
+
+      <div
+        style="flex:1; min-width:90px;"
+        id="overrideStartWrap"
+      >
+
+        <label class="form-label">
+          Start
+        </label>
+
+        <input
+          type="time"
+          id="overrideStart"
+          class="form-input"
+          value="09:00"
+        >
+
       </div>
-      <div style="flex:1; min-width:90px;" id="overrideEndWrap">
-        <label class="form-label">End</label>
-        <input type="time" id="overrideEnd" class="form-input" value="13:00">
+
+
+      <div
+        style="flex:1; min-width:90px;"
+        id="overrideEndWrap"
+      >
+
+        <label class="form-label">
+          End
+        </label>
+
+        <input
+          type="time"
+          id="overrideEnd"
+          class="form-input"
+          value="13:00"
+        >
+
       </div>
-      <button type="submit" class="modal-btn-save" id="addOverrideBtn">Add</button>
+
+
+      <button
+        type="submit"
+        class="modal-btn-save"
+        id="addOverrideBtn"
+      >
+        Add
+      </button>
+
     </form>
 
+
     <div id="overrideRows"></div>
+
+
     <div class="modal-actions">
-      <button class="modal-btn-cancel" id="overrideCloseBtn">Close</button>
+
+      <button
+        class="modal-btn-cancel"
+        id="overrideCloseBtn"
+      >
+        Close
+      </button>
+
     </div>
+
   </div>
+
 </div>
 
+
 <script type="module">
+
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
+
   import {
-    getFirestore, collection, query, orderBy, getDocs, doc, getDoc,
-    addDoc, updateDoc, deleteDoc, serverTimestamp, setDoc
+    getFirestore,
+    collection,
+    query,
+    orderBy,
+    getDocs,
+    doc,
+    getDoc,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    serverTimestamp,
+    setDoc
   } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
+
   import {
-    getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut
+    getAuth,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    signOut
   } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js";
+
+
+  /* ============================================================
+     FIREBASE
+     ============================================================ */
 
   const firebaseConfig = {
     apiKey: "AIzaSyA0xw-kjBcOyNqcSafVwz4qPuCIkvea_Ds",
@@ -707,9 +1806,12 @@
     measurementId: "G-HWQJNJB1E6"
   };
 
+
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const auth = getAuth(app);
+
+
   const punchesRef = collection(db, "punches");
   const locationsRef = collection(db, "locations");
   const profilesRef = collection(db, "employee_profiles");
@@ -718,90 +1820,247 @@
   const ptSessionsRef = collection(db, "pt_sessions");
   const overridesRef = collection(db, "schedule_overrides");
 
+
+  /* ============================================================
+     AUTH ELEMENTS
+     ============================================================ */
+
   const authGate = document.getElementById('authGate');
   const notAdminGate = document.getElementById('notAdminGate');
   const dashboard = document.getElementById('dashboard');
+
   const authError = document.getElementById('authError');
   const signInForm = document.getElementById('signInForm');
   const signInBtn = document.getElementById('signInBtn');
 
+
   function showGate(which){
-    authGate.classList.toggle('hidden', which !== 'auth');
-    notAdminGate.classList.toggle('hidden', which !== 'denied');
-    dashboard.classList.toggle('hidden', which !== 'dashboard');
+
+    authGate.classList.toggle(
+      'hidden',
+      which !== 'auth'
+    );
+
+    notAdminGate.classList.toggle(
+      'hidden',
+      which !== 'denied'
+    );
+
+    dashboard.classList.toggle(
+      'hidden',
+      which !== 'dashboard'
+    );
+
   }
+
 
   function friendlyAuthError(err){
+
     const map = {
-      'auth/invalid-email': 'That email address looks invalid.',
-      'auth/user-not-found': 'No account found with that email.',
-      'auth/wrong-password': 'Incorrect password.',
-      'auth/invalid-credential': 'Incorrect email or password.',
+
+      'auth/invalid-email':
+        'That email address looks invalid.',
+
+      'auth/user-not-found':
+        'No account found with that email.',
+
+      'auth/wrong-password':
+        'Incorrect password.',
+
+      'auth/invalid-credential':
+        'Incorrect email or password.',
+
     };
+
     return map[err.code] || err.message;
+
   }
 
+
   signInForm.addEventListener('submit', async (e) => {
+
     e.preventDefault();
+
     authError.classList.remove('show');
+
     signInBtn.disabled = true;
-    document.getElementById('signInLabel').innerHTML = '<span class="spin"></span>';
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-    } catch (err) {
-      authError.textContent = friendlyAuthError(err);
+
+    document.getElementById('signInLabel').innerHTML =
+      '<span class="spin"></span>';
+
+    const email =
+      document.getElementById('email').value.trim();
+
+    const password =
+      document.getElementById('password').value;
+
+    try{
+
+      await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+    }catch(err){
+
+      authError.textContent =
+        friendlyAuthError(err);
+
       authError.classList.add('show');
+
     }
+
     signInBtn.disabled = false;
-    document.getElementById('signInLabel').textContent = 'Sign In';
+
+    document.getElementById('signInLabel').textContent =
+      'Sign In';
+
   });
 
-  document.getElementById('signOutBtn').addEventListener('click', () => signOut(auth));
-  document.getElementById('signOutFromDenied').addEventListener('click', () => signOut(auth));
 
-  // ---- Tab switching ----
-  const tabButtons = document.querySelectorAll('.tab-btn');
+  document
+    .getElementById('signOutBtn')
+    .addEventListener('click', () => signOut(auth));
+
+
+  document
+    .getElementById('signOutFromDenied')
+    .addEventListener('click', () => signOut(auth));
+
+
+  /* ============================================================
+     TAB SWITCHING
+     ============================================================ */
+
+  const tabButtons =
+    document.querySelectorAll('.tab-btn');
+
+
   const tabPanels = {
-    attendance: document.getElementById('attendanceTab'),
-    locations: document.getElementById('locationsTab'),
-    people: document.getElementById('peopleTab'),
-    holidays: document.getElementById('holidaysTab'),
-    leave: document.getElementById('leaveTab'),
-    ptsessions: document.getElementById('ptsessionsTab'),
-    payroll: document.getElementById('payrollTab'),
+
+    attendance:
+      document.getElementById('attendanceTab'),
+
+    locations:
+      document.getElementById('locationsTab'),
+
+    people:
+      document.getElementById('peopleTab'),
+
+    holidays:
+      document.getElementById('holidaysTab'),
+
+    leave:
+      document.getElementById('leaveTab'),
+
+    ptsessions:
+      document.getElementById('ptsessionsTab'),
+
+    payroll:
+      document.getElementById('payrollTab'),
+
   };
-  tabButtons.forEach(btn => btn.addEventListener('click', () => {
-    tabButtons.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    Object.entries(tabPanels).forEach(([key, el]) => el.classList.toggle('hidden', key !== btn.dataset.tab));
-    if(btn.dataset.tab === 'payroll') renderPayroll();
-    if(btn.dataset.tab === 'leave') loadLeaveRequests();
-    if(btn.dataset.tab === 'ptsessions') loadPtSessions();
-  }));
+
+
+  tabButtons.forEach(btn => {
+
+    btn.addEventListener('click', () => {
+
+      tabButtons.forEach(b =>
+        b.classList.remove('active')
+      );
+
+      btn.classList.add('active');
+
+
+      Object.entries(tabPanels).forEach(
+        ([key, el]) => {
+
+          el.classList.toggle(
+            'hidden',
+            key !== btn.dataset.tab
+          );
+
+        }
+      );
+
+
+      if(btn.dataset.tab === 'payroll'){
+        renderPayroll();
+      }
+
+      if(btn.dataset.tab === 'leave'){
+        loadLeaveRequests();
+      }
+
+      if(btn.dataset.tab === 'ptsessions'){
+        loadPtSessions();
+      }
+
+    });
+
+  });
+
+
+  /* ============================================================
+     GLOBAL DATA
+     ============================================================ */
 
   let allRecords = [];
   let allLocations = [];
   let allProfiles = [];
   let allHolidays = [];
+  let allLeaveRequests = [];
+  let allPtSessions = [];
+  let allOverrides = [];
+
+
+  /* ============================================================
+     AUTH STATE
+     ============================================================ */
 
   onAuthStateChanged(auth, async (user) => {
+
     if(!user){
+
       showGate('auth');
+
       signInForm.reset();
+
       return;
     }
-    try {
-      const adminDoc = await getDoc(doc(db, "admins", user.uid));
+
+
+    try{
+
+      const adminDoc =
+        await getDoc(
+          doc(db, "admins", user.uid)
+        );
+
+
       if(!adminDoc.exists()){
-        document.getElementById('notAdminEmail').textContent =
+
+        document.getElementById(
+          'notAdminEmail'
+        ).textContent =
           `${user.email} is signed in but doesn't have manager access yet.`;
+
         showGate('denied');
+
         return;
       }
-      document.getElementById('adminEmail').textContent = user.email;
+
+
+      document.getElementById(
+        'adminEmail'
+      ).textContent = user.email;
+
+
       showGate('dashboard');
+
+
       await loadLocations();
       await loadPeople();
       await loadHolidays();
@@ -809,982 +2068,4608 @@
       await loadPtSessions();
       await loadOverrides();
       await loadRecords();
-    } catch (err) {
-      document.getElementById('notAdminEmail').textContent =
+
+
+    }catch(err){
+
+      document.getElementById(
+        'notAdminEmail'
+      ).textContent =
         `Couldn't check manager access for ${user.email}. (${err.message})`;
+
       showGate('denied');
+
     }
+
   });
 
-  // ================= ATTENDANCE =================
+
+  /* ============================================================
+     ATTENDANCE
+     ============================================================ */
 
   async function loadRecords(){
-    const q = query(punchesRef, orderBy("createdAt", "desc"));
-    const snap = await getDocs(q);
-    allRecords = snap.docs.map(d => d.data());
+
+    const q =
+      query(
+        punchesRef,
+        orderBy("createdAt", "desc")
+      );
+
+    const snap =
+      await getDocs(q);
+
+
+    allRecords =
+      snap.docs.map(d => d.data());
+
+
     populateEmployeeFilter();
+
     renderStats();
+
     renderTable();
+
     renderShifts();
+
   }
+
 
   function populateEmployeeFilter(){
-    const select = document.getElementById('employeeFilter');
-    const names = [...new Set(allRecords.map(r => r.name).filter(Boolean))].sort();
-    select.innerHTML = '<option value="">All employees</option>' +
-      names.map(n => `<option value="${n}">${n}</option>`).join('');
+
+    const select =
+      document.getElementById(
+        'employeeFilter'
+      );
+
+
+    const names =
+      [
+        ...new Set(
+          allRecords
+            .map(r => r.name)
+            .filter(Boolean)
+        )
+      ].sort();
+
+
+    select.innerHTML =
+      '<option value="">All employees</option>' +
+      names
+        .map(
+          n => `<option value="${n}">${n}</option>`
+        )
+        .join('');
+
   }
+
 
   function renderStats(){
-    document.getElementById('statTotal').textContent = allRecords.length;
-    document.getElementById('statEmployees').textContent =
-      new Set(allRecords.map(r => r.uid)).size;
-    const todayStr = new Date().toDateString();
-    const todayCount = allRecords.filter(r => {
-      const d = r.createdAt?.toDate?.();
-      return d && d.toDateString() === todayStr;
-    }).length;
-    document.getElementById('statToday').textContent = todayCount;
+
+    document.getElementById(
+      'statTotal'
+    ).textContent =
+      allRecords.length;
+
+
+    document.getElementById(
+      'statEmployees'
+    ).textContent =
+      new Set(
+        allRecords.map(r => r.uid)
+      ).size;
+
+
+    const todayStr =
+      new Date().toDateString();
+
+
+    const todayCount =
+      allRecords.filter(r => {
+
+        const d =
+          r.createdAt?.toDate?.();
+
+        return d &&
+          d.toDateString() === todayStr;
+
+      }).length;
+
+
+    document.getElementById(
+      'statToday'
+    ).textContent =
+      todayCount;
+
   }
 
-  // ---- Date range filter ----
+
+  /* ============================================================
+     DATE RANGE FILTER
+     ============================================================ */
+
   function computeDateRange(preset){
+
     const now = new Date();
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const endExclusive = new Date(startOfToday);
-    endExclusive.setDate(endExclusive.getDate() + 1);
+
+    const startOfToday =
+      new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+      );
+
+
+    const endExclusive =
+      new Date(startOfToday);
+
+
+    endExclusive.setDate(
+      endExclusive.getDate() + 1
+    );
+
 
     switch(preset){
+
       case 'today':
-        return { start: startOfToday, end: endExclusive };
-      case '7days': {
-        const s = new Date(startOfToday);
-        s.setDate(s.getDate() - 6);
-        return { start: s, end: endExclusive };
+
+        return {
+          start:startOfToday,
+          end:endExclusive
+        };
+
+
+      case '7days':{
+
+        const s =
+          new Date(startOfToday);
+
+        s.setDate(
+          s.getDate() - 6
+        );
+
+        return {
+          start:s,
+          end:endExclusive
+        };
+
       }
-      case 'thisweek': {
-        const day = startOfToday.getDay();
-        const diff = (day === 0) ? 6 : day - 1;
-        const s = new Date(startOfToday);
-        s.setDate(s.getDate() - diff);
-        return { start: s, end: endExclusive };
+
+
+      case 'thisweek':{
+
+        const day =
+          startOfToday.getDay();
+
+        const diff =
+          (day === 0)
+            ? 6
+            : day - 1;
+
+
+        const s =
+          new Date(startOfToday);
+
+
+        s.setDate(
+          s.getDate() - diff
+        );
+
+
+        return {
+          start:s,
+          end:endExclusive
+        };
+
       }
+
+
       case 'thismonth':
-        return { start: new Date(now.getFullYear(), now.getMonth(), 1), end: endExclusive };
-      case 'custom': {
-        const fromVal = document.getElementById('dateFrom').value;
-        const toVal = document.getElementById('dateTo').value;
-        const s = fromVal ? new Date(fromVal + 'T00:00:00') : null;
-        let e = toVal ? new Date(toVal + 'T00:00:00') : null;
-        if(e) e.setDate(e.getDate() + 1);
-        return { start: s, end: e };
+
+        return {
+          start:
+            new Date(
+              now.getFullYear(),
+              now.getMonth(),
+              1
+            ),
+
+          end:endExclusive
+        };
+
+
+      case 'custom':{
+
+        const fromVal =
+          document.getElementById(
+            'dateFrom'
+          ).value;
+
+
+        const toVal =
+          document.getElementById(
+            'dateTo'
+          ).value;
+
+
+        const s =
+          fromVal
+            ? new Date(
+                fromVal + 'T00:00:00'
+              )
+            : null;
+
+
+        let e =
+          toVal
+            ? new Date(
+                toVal + 'T00:00:00'
+              )
+            : null;
+
+
+        if(e){
+          e.setDate(
+            e.getDate() + 1
+          );
+        }
+
+
+        return {
+          start:s,
+          end:e
+        };
+
       }
+
+
       default:
-        return { start: null, end: null };
+
+        return {
+          start:null,
+          end:null
+        };
+
     }
-  }
-  function inDateRange(date, range){
-    if(!date) return false;
-    if(range.start && date < range.start) return false;
-    if(range.end && date >= range.end) return false;
-    return true;
-  }
-  function currentRange(){
-    return computeDateRange(document.getElementById('dateRangePreset').value);
+
   }
 
-  document.getElementById('dateRangePreset').addEventListener('change', (e) => {
-    const isCustom = e.target.value === 'custom';
-    document.getElementById('dateFrom').classList.toggle('hidden', !isCustom);
-    document.getElementById('dateSep').classList.toggle('hidden', !isCustom);
-    document.getElementById('dateTo').classList.toggle('hidden', !isCustom);
-    renderTable(); renderShifts();
-  });
-  document.getElementById('dateFrom').addEventListener('change', () => { renderTable(); renderShifts(); });
-  document.getElementById('dateTo').addEventListener('change', () => { renderTable(); renderShifts(); });
+
+  function inDateRange(date, range){
+
+    if(!date) return false;
+
+    if(
+      range.start &&
+      date < range.start
+    ){
+      return false;
+    }
+
+
+    if(
+      range.end &&
+      date >= range.end
+    ){
+      return false;
+    }
+
+
+    return true;
+
+  }
+
+
+  function currentRange(){
+
+    return computeDateRange(
+      document.getElementById(
+        'dateRangePreset'
+      ).value
+    );
+
+  }
+
+
+  document
+    .getElementById('dateRangePreset')
+    .addEventListener('change', (e) => {
+
+      const isCustom =
+        e.target.value === 'custom';
+
+
+      document
+        .getElementById('dateFrom')
+        .classList
+        .toggle(
+          'hidden',
+          !isCustom
+        );
+
+
+      document
+        .getElementById('dateSep')
+        .classList
+        .toggle(
+          'hidden',
+          !isCustom
+        );
+
+
+      document
+        .getElementById('dateTo')
+        .classList
+        .toggle(
+          'hidden',
+          !isCustom
+        );
+
+
+      renderTable();
+      renderShifts();
+
+    });
+
+
+  document
+    .getElementById('dateFrom')
+    .addEventListener(
+      'change',
+      () => {
+        renderTable();
+        renderShifts();
+      }
+    );
+
+
+  document
+    .getElementById('dateTo')
+    .addEventListener(
+      'change',
+      () => {
+        renderTable();
+        renderShifts();
+      }
+    );
+
 
   function getFiltered(){
-    const search = document.getElementById('searchInput').value.trim().toLowerCase();
-    const empFilter = document.getElementById('employeeFilter').value;
-    const typeFilter = document.getElementById('typeFilter').value;
-    const range = currentRange();
+
+    const search =
+      document
+        .getElementById('searchInput')
+        .value
+        .trim()
+        .toLowerCase();
+
+
+    const empFilter =
+      document.getElementById(
+        'employeeFilter'
+      ).value;
+
+
+    const typeFilter =
+      document.getElementById(
+        'typeFilter'
+      ).value;
+
+
+    const range =
+      currentRange();
+
+
     return allRecords.filter(r => {
-      if(empFilter && r.name !== empFilter) return false;
-      if(typeFilter && r.type !== typeFilter) return false;
+
+      if(
+        empFilter &&
+        r.name !== empFilter
+      ){
+        return false;
+      }
+
+
+      if(
+        typeFilter &&
+        r.type !== typeFilter
+      ){
+        return false;
+      }
+
+
       if(range.start || range.end){
-        if(!inDateRange(r.createdAt?.toDate?.(), range)) return false;
+
+        if(
+          !inDateRange(
+            r.createdAt?.toDate?.(),
+            range
+          )
+        ){
+          return false;
+        }
+
       }
+
+
       if(search){
-        const hay = `${r.name || ''} ${r.email || ''}`.toLowerCase();
-        if(!hay.includes(search)) return false;
+
+        const hay =
+          `${r.name || ''} ${r.email || ''}`
+            .toLowerCase();
+
+
+        if(
+          !hay.includes(search)
+        ){
+          return false;
+        }
+
       }
+
+
       return true;
+
     });
+
   }
+
 
   function renderTable(){
-    const rows = getFiltered();
-    const body = document.getElementById('recordsBody');
-    const empty = document.getElementById('emptyState');
+
+    const rows =
+      getFiltered();
+
+
+    const body =
+      document.getElementById(
+        'recordsBody'
+      );
+
+
+    const empty =
+      document.getElementById(
+        'emptyState'
+      );
+
 
     if(rows.length === 0){
+
       body.innerHTML = '';
-      empty.classList.remove('hidden');
+
+      empty.classList.remove(
+        'hidden'
+      );
+
       return;
     }
-    empty.classList.add('hidden');
 
-    body.innerHTML = rows.map(r => {
-      const d = r.createdAt?.toDate?.();
-      const dateStr = d ? d.toLocaleDateString([], {month:'short', day:'numeric', year:'numeric'}) : '-';
-      const typeClass = r.type === 'IN' ? 'in' : 'out';
-      let locHtml;
-      if(r.loc && r.loc.ok){
-        locHtml = `<span class="loc-cell">${r.loc.lat.toFixed(5)}, ${r.loc.lng.toFixed(5)} <span class="mono">(±${r.loc.accuracy}m)</span></span>`;
-      } else {
-        locHtml = `<span class="loc-cell bad">${r.loc?.message || 'No location'}</span>`;
-      }
-      return `
-        <tr>
-          <td>
-            <div class="emp-name">${r.name || 'Unknown'}</div>
-          </td>
-          <td><span class="type-pill ${typeClass}">${r.type}</span></td>
-          <td class="mono">${dateStr}</td>
-          <td class="mono">${r.time || '-'}</td>
-          <td>${locHtml}</td>
-        </tr>
-      `;
-    }).join('');
+
+    empty.classList.add(
+      'hidden'
+    );
+
+
+    body.innerHTML =
+      rows.map(r => {
+
+        const d =
+          r.createdAt?.toDate?.();
+
+
+        const dateStr =
+          d
+            ? d.toLocaleDateString(
+                [],
+                {
+                  month:'short',
+                  day:'numeric',
+                  year:'numeric'
+                }
+              )
+            : '-';
+
+
+        const typeClass =
+          r.type === 'IN'
+            ? 'in'
+            : 'out';
+
+
+        let locHtml;
+
+
+        if(
+          r.loc &&
+          r.loc.ok
+        ){
+
+          locHtml =
+            `<span class="loc-cell">
+              ${r.loc.lat.toFixed(5)},
+              ${r.loc.lng.toFixed(5)}
+              <span class="mono">
+                (±${r.loc.accuracy}m)
+              </span>
+            </span>`;
+
+        }else{
+
+          locHtml =
+            `<span class="loc-cell bad">
+              ${r.loc?.message || 'No location'}
+            </span>`;
+
+        }
+
+
+        return `
+
+          <tr>
+
+            <td>
+              <div class="emp-name">
+                ${r.name || 'Unknown'}
+              </div>
+            </td>
+
+            <td>
+              <span class="type-pill ${typeClass}">
+                ${r.type}
+              </span>
+            </td>
+
+            <td class="mono">
+              ${dateStr}
+            </td>
+
+            <td class="mono">
+              ${r.time || '-'}
+            </td>
+
+            <td>
+              ${locHtml}
+            </td>
+
+          </tr>
+
+        `;
+
+      }).join('');
+
   }
+
+
+  /* ============================================================
+     SHIFT CALCULATION
+     ============================================================ */
 
   function computeShifts(records){
+
     const byUid = {};
+
+
     records.forEach(r => {
+
       if(!r.uid) return;
-      (byUid[r.uid] = byUid[r.uid] || []).push(r);
+
+
+      (
+        byUid[r.uid] =
+        byUid[r.uid] || []
+      ).push(r);
+
     });
 
-    function makeShift(inRec, outRec){
-      const inDate = inRec?.createdAt?.toDate?.();
-      const outDate = outRec?.createdAt?.toDate?.();
-      let duration = '-', status = 'orphan', statusLabel = 'Missing clock-in';
-      if(inDate && outDate){
-        const ms = outDate - inDate;
-        const hrs = Math.floor(ms / 3600000);
-        const mins = Math.round((ms % 3600000) / 60000);
-        duration = `${hrs}h ${mins}m`;
-        status = 'complete'; statusLabel = 'Complete';
-      } else if(inDate && !outDate){
-        status = 'ongoing'; statusLabel = 'Still clocked in';
-      } else if(!inDate && outDate){
-        status = 'orphan'; statusLabel = 'Missing clock-in';
+
+    function makeShift(
+      inRec,
+      outRec
+    ){
+
+      const inDate =
+        inRec?.createdAt?.toDate?.();
+
+
+      const outDate =
+        outRec?.createdAt?.toDate?.();
+
+
+      let duration = '-';
+      let status = 'orphan';
+      let statusLabel = 'Missing clock-in';
+
+
+      if(
+        inDate &&
+        outDate
+      ){
+
+        const ms =
+          outDate - inDate;
+
+
+        const hrs =
+          Math.floor(
+            ms / 3600000
+          );
+
+
+        const mins =
+          Math.round(
+            (ms % 3600000) / 60000
+          );
+
+
+        duration =
+          `${hrs}h ${mins}m`;
+
+
+        status = 'complete';
+        statusLabel = 'Complete';
+
+      }else if(
+        inDate &&
+        !outDate
+      ){
+
+        status = 'ongoing';
+        statusLabel = 'Still clocked in';
+
+      }else if(
+        !inDate &&
+        outDate
+      ){
+
+        status = 'orphan';
+        statusLabel = 'Missing clock-in';
+
       }
-      const base = inDate || outDate;
+
+
+      const base =
+        inDate || outDate;
+
+
       return {
-        name: (inRec || outRec)?.name || 'Unknown',
-        dateObj: base || null,
-        dateStr: base ? base.toLocaleDateString([], {month:'short', day:'numeric', year:'numeric'}) : '-',
-        inTime: inRec?.time || '-',
-        outTime: outRec?.time || '-',
-        duration, status, statusLabel,
-        sortKey: (outDate || inDate)?.getTime() || 0
+
+        name:
+          (inRec || outRec)?.name ||
+          'Unknown',
+
+        dateObj:
+          base || null,
+
+        dateStr:
+          base
+            ? base.toLocaleDateString(
+                [],
+                {
+                  month:'short',
+                  day:'numeric',
+                  year:'numeric'
+                }
+              )
+            : '-',
+
+        inTime:
+          inRec?.time || '-',
+
+        outTime:
+          outRec?.time || '-',
+
+        duration,
+        status,
+        statusLabel,
+
+        sortKey:
+          (outDate || inDate)?.getTime() ||
+          0
+
       };
+
     }
+
 
     const shifts = [];
-    Object.values(byUid).forEach(list => {
-      list.sort((a, b) => (a.createdAt?.toMillis?.() || 0) - (b.createdAt?.toMillis?.() || 0));
-      let open = null;
-      list.forEach(r => {
-        if(r.type === 'IN'){
-          if(open) shifts.push(makeShift(open, null));
-          open = r;
-        } else if(r.type === 'OUT'){
-          if(open){ shifts.push(makeShift(open, r)); open = null; }
-          else shifts.push(makeShift(null, r));
-        }
-      });
-      if(open) shifts.push(makeShift(open, null));
-    });
 
-    shifts.sort((a, b) => b.sortKey - a.sortKey);
+
+    Object.values(byUid)
+      .forEach(list => {
+
+        list.sort(
+          (a,b) =>
+            (
+              a.createdAt?.toMillis?.() ||
+              0
+            ) -
+            (
+              b.createdAt?.toMillis?.() ||
+              0
+            )
+        );
+
+
+        let open = null;
+
+
+        list.forEach(r => {
+
+          if(r.type === 'IN'){
+
+            if(open){
+
+              shifts.push(
+                makeShift(
+                  open,
+                  null
+                )
+              );
+
+            }
+
+            open = r;
+
+          }else if(
+            r.type === 'OUT'
+          ){
+
+            if(open){
+
+              shifts.push(
+                makeShift(
+                  open,
+                  r
+                )
+              );
+
+              open = null;
+
+            }else{
+
+              shifts.push(
+                makeShift(
+                  null,
+                  r
+                )
+              );
+
+            }
+
+          }
+
+        });
+
+
+        if(open){
+
+          shifts.push(
+            makeShift(
+              open,
+              null
+            )
+          );
+
+        }
+
+      });
+
+
+    shifts.sort(
+      (a,b) =>
+        b.sortKey - a.sortKey
+    );
+
+
     return shifts;
+
   }
+
 
   function getFilteredShifts(){
-    const search = document.getElementById('searchInput').value.trim().toLowerCase();
-    const empFilter = document.getElementById('employeeFilter').value;
-    const range = currentRange();
-    return computeShifts(allRecords).filter(s => {
-      if(empFilter && s.name !== empFilter) return false;
-      if(search && !s.name.toLowerCase().includes(search)) return false;
-      if(range.start || range.end){
-        if(!inDateRange(s.dateObj, range)) return false;
+
+    const search =
+      document
+        .getElementById('searchInput')
+        .value
+        .trim()
+        .toLowerCase();
+
+
+    const empFilter =
+      document.getElementById(
+        'employeeFilter'
+      ).value;
+
+
+    const range =
+      currentRange();
+
+
+    return computeShifts(
+      allRecords
+    ).filter(s => {
+
+      if(
+        empFilter &&
+        s.name !== empFilter
+      ){
+        return false;
       }
+
+
+      if(
+        search &&
+        !s.name
+          .toLowerCase()
+          .includes(search)
+      ){
+        return false;
+      }
+
+
+      if(
+        range.start ||
+        range.end
+      ){
+
+        if(
+          !inDateRange(
+            s.dateObj,
+            range
+          )
+        ){
+          return false;
+        }
+
+      }
+
+
       return true;
+
     });
+
   }
+
 
   function renderShifts(){
-    const shifts = getFilteredShifts();
-    const body = document.getElementById('shiftsBody');
-    const empty = document.getElementById('shiftsEmptyState');
+
+    const shifts =
+      getFilteredShifts();
+
+
+    const body =
+      document.getElementById(
+        'shiftsBody'
+      );
+
+
+    const empty =
+      document.getElementById(
+        'shiftsEmptyState'
+      );
+
 
     if(shifts.length === 0){
+
       body.innerHTML = '';
-      empty.classList.remove('hidden');
+
+      empty.classList.remove(
+        'hidden'
+      );
+
       return;
     }
-    empty.classList.add('hidden');
 
-    body.innerHTML = shifts.map(s => `
-      <tr>
-        <td><div class="emp-name">${s.name}</div></td>
-        <td class="mono">${s.dateStr}</td>
-        <td class="mono">${s.inTime}</td>
-        <td class="mono">${s.outTime}</td>
-        <td class="mono">${s.duration}</td>
-        <td><span class="status-pill2 ${s.status}">${s.statusLabel}</span></td>
-      </tr>
-    `).join('');
+
+    empty.classList.add(
+      'hidden'
+    );
+
+
+    body.innerHTML =
+      shifts.map(s => `
+
+        <tr>
+
+          <td>
+            <div class="emp-name">
+              ${s.name}
+            </div>
+          </td>
+
+          <td class="mono">
+            ${s.dateStr}
+          </td>
+
+          <td class="mono">
+            ${s.inTime}
+          </td>
+
+          <td class="mono">
+            ${s.outTime}
+          </td>
+
+          <td class="mono">
+            ${s.duration}
+          </td>
+
+          <td>
+            <span class="status-pill2 ${s.status}">
+              ${s.statusLabel}
+            </span>
+          </td>
+
+        </tr>
+
+      `).join('');
+
   }
+
+
+  /* ============================================================
+     CSV
+     ============================================================ */
 
   function csvEscape(val){
-    const s = String(val ?? '');
-    if(/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+
+    const s =
+      String(val ?? '');
+
+
+    if(/[",\n]/.test(s)){
+
+      return '"' +
+        s.replace(
+          /"/g,
+          '""'
+        ) +
+        '"';
+
+    }
+
+
     return s;
+
   }
-  function downloadCSV(filename, rows){
-    const csv = rows.map(row => row.map(csvEscape).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = filename;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+
+
+  function downloadCSV(
+    filename,
+    rows
+  ){
+
+    const csv =
+      rows
+        .map(
+          row =>
+            row
+              .map(csvEscape)
+              .join(',')
+        )
+        .join('\n');
+
+
+    const blob =
+      new Blob(
+        [csv],
+        {
+          type:'text/csv;charset=utf-8;'
+        }
+      );
+
+
+    const url =
+      URL.createObjectURL(
+        blob
+      );
+
+
+    const a =
+      document.createElement('a');
+
+
+    a.href = url;
+    a.download = filename;
+
+
+    document.body.appendChild(a);
+
+    a.click();
+
+    document.body.removeChild(a);
+
     URL.revokeObjectURL(url);
+
   }
 
-  document.getElementById('exportShiftsBtn').addEventListener('click', () => {
-    const shifts = getFilteredShifts();
-    const rows = [
-      ['Employee', 'Date', 'Clock In', 'Clock Out', 'Hours', 'Status'],
-      ...shifts.map(s => [s.name, s.dateStr, s.inTime, s.outTime, s.duration, s.statusLabel])
-    ];
-    downloadCSV(`shift-summary-${new Date().toISOString().slice(0,10)}.csv`, rows);
-  });
 
-  document.getElementById('exportRawBtn').addEventListener('click', () => {
-    const rows = getFiltered();
-    const csvRows = [
-      ['Employee', 'Type', 'Date', 'Time', 'Latitude', 'Longitude', 'Accuracy (m)'],
-      ...rows.map(r => {
-        const d = r.createdAt?.toDate?.();
-        const dateStr = d ? d.toLocaleDateString([], {month:'short', day:'numeric', year:'numeric'}) : '-';
-        return [
-          r.name || 'Unknown', r.type, dateStr, r.time || '-',
-          r.loc?.ok ? r.loc.lat.toFixed(6) : '', r.loc?.ok ? r.loc.lng.toFixed(6) : '',
-          r.loc?.ok ? r.loc.accuracy : ''
+  document
+    .getElementById('exportShiftsBtn')
+    .addEventListener(
+      'click',
+      () => {
+
+        const shifts =
+          getFilteredShifts();
+
+
+        const rows = [
+
+          [
+            'Employee',
+            'Date',
+            'Clock In',
+            'Clock Out',
+            'Hours',
+            'Status'
+          ],
+
+          ...shifts.map(s => [
+
+            s.name,
+            s.dateStr,
+            s.inTime,
+            s.outTime,
+            s.duration,
+            s.statusLabel
+
+          ])
+
         ];
-      })
-    ];
-    downloadCSV(`raw-punches-${new Date().toISOString().slice(0,10)}.csv`, csvRows);
-  });
 
-  document.getElementById('searchInput').addEventListener('input', () => { renderTable(); renderShifts(); });
-  document.getElementById('employeeFilter').addEventListener('change', () => { renderTable(); renderShifts(); });
-  document.getElementById('typeFilter').addEventListener('change', renderTable);
 
-  // ================= LOCATIONS =================
+        downloadCSV(
+          `shift-summary-${new Date().toISOString().slice(0,10)}.csv`,
+          rows
+        );
+
+      }
+    );
+
+
+  document
+    .getElementById('exportRawBtn')
+    .addEventListener(
+      'click',
+      () => {
+
+        const rows =
+          getFiltered();
+
+
+        const csvRows = [
+
+          [
+            'Employee',
+            'Type',
+            'Date',
+            'Time',
+            'Latitude',
+            'Longitude',
+            'Accuracy (m)'
+          ],
+
+          ...rows.map(r => {
+
+            const d =
+              r.createdAt?.toDate?.();
+
+
+            const dateStr =
+              d
+                ? d.toLocaleDateString(
+                    [],
+                    {
+                      month:'short',
+                      day:'numeric',
+                      year:'numeric'
+                    }
+                  )
+                : '-';
+
+
+            return [
+
+              r.name || 'Unknown',
+              r.type,
+              dateStr,
+              r.time || '-',
+
+              r.loc?.ok
+                ? r.loc.lat.toFixed(6)
+                : '',
+
+              r.loc?.ok
+                ? r.loc.lng.toFixed(6)
+                : '',
+
+              r.loc?.ok
+                ? r.loc.accuracy
+                : ''
+
+            ];
+
+          })
+
+        ];
+
+
+        downloadCSV(
+          `raw-punches-${new Date().toISOString().slice(0,10)}.csv`,
+          csvRows
+        );
+
+      }
+    );
+
+
+  document
+    .getElementById('searchInput')
+    .addEventListener(
+      'input',
+      () => {
+
+        renderTable();
+        renderShifts();
+
+      }
+    );
+
+
+  document
+    .getElementById('employeeFilter')
+    .addEventListener(
+      'change',
+      () => {
+
+        renderTable();
+        renderShifts();
+
+      }
+    );
+
+
+  document
+    .getElementById('typeFilter')
+    .addEventListener(
+      'change',
+      renderTable
+    );
+
+
+  /* ============================================================
+     LOCATIONS
+     ============================================================ */
 
   async function loadLocations(){
-    const snap = await getDocs(query(locationsRef, orderBy("name")));
-    allLocations = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    const snap =
+      await getDocs(
+        query(
+          locationsRef,
+          orderBy("name")
+        )
+      );
+
+
+    allLocations =
+      snap.docs.map(
+        d => ({
+          id:d.id,
+          ...d.data()
+        })
+      );
+
+
     renderLocationsTable();
+
   }
+
 
   function renderLocationsTable(){
-    const body = document.getElementById('locationsBody');
-    const empty = document.getElementById('locationsEmptyState');
+
+    const body =
+      document.getElementById(
+        'locationsBody'
+      );
+
+
+    const empty =
+      document.getElementById(
+        'locationsEmptyState'
+      );
+
+
     if(allLocations.length === 0){
+
       body.innerHTML = '';
-      empty.classList.remove('hidden');
+
+      empty.classList.remove(
+        'hidden'
+      );
+
       return;
+
     }
-    empty.classList.add('hidden');
-    body.innerHTML = allLocations.map(loc => `
-      <tr data-id="${loc.id}">
-        <td><div class="emp-name">${loc.name}</div></td>
-        <td class="mono">${loc.latitude}</td>
-        <td class="mono">${loc.longitude}</td>
-        <td class="mono">${loc.radius}m</td>
-        <td><button class="delete-btn delete-location-btn" data-id="${loc.id}">Delete</button></td>
-      </tr>
-    `).join('');
+
+
+    empty.classList.add(
+      'hidden'
+    );
+
+
+    body.innerHTML =
+      allLocations.map(loc => `
+
+        <tr data-id="${loc.id}">
+
+          <td>
+            <div class="emp-name">
+              ${loc.name}
+            </div>
+          </td>
+
+          <td class="mono">
+            ${loc.latitude}
+          </td>
+
+          <td class="mono">
+            ${loc.longitude}
+          </td>
+
+          <td class="mono">
+            ${loc.radius}m
+          </td>
+
+          <td>
+            <button
+              class="delete-btn delete-location-btn"
+              data-id="${loc.id}"
+            >
+              Delete
+            </button>
+          </td>
+
+        </tr>
+
+      `).join('');
+
   }
 
-  document.getElementById('addLocationForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const name = document.getElementById('locName').value.trim();
-    const latitude = parseFloat(document.getElementById('locLat').value);
-    const longitude = parseFloat(document.getElementById('locLng').value);
-    const radius = parseInt(document.getElementById('locRadius').value, 10);
-    const btn = document.getElementById('addLocationBtn');
-    btn.disabled = true;
-    const originalLabel = btn.textContent;
-    btn.textContent = 'Adding…';
-    try {
-      await addDoc(locationsRef, { name, latitude, longitude, radius, createdAt: serverTimestamp() });
-      e.target.reset();
-      document.getElementById('locRadius').value = 150;
-      await loadLocations();
-      refreshPeopleLocationDropdowns();
-    } catch (err) {
-      alert('Could not add location: ' + err.message);
-    }
-    btn.disabled = false;
-    btn.textContent = originalLabel;
-  });
 
-  document.getElementById('locationsBody').addEventListener('click', async (e) => {
-    const delBtn = e.target.closest('.delete-location-btn');
-    if(!delBtn) return;
-    if(!confirm('Delete this location? Employees assigned to it will need to be reassigned.')) return;
-    delBtn.disabled = true;
-    try {
-      await deleteDoc(doc(db, "locations", delBtn.dataset.id));
-      await loadLocations();
-      refreshPeopleLocationDropdowns();
-    } catch (err) {
-      alert('Could not delete location: ' + err.message);
-      delBtn.disabled = false;
-    }
-  });
+  document
+    .getElementById('addLocationForm')
+    .addEventListener(
+      'submit',
+      async (e) => {
 
-  // ================= PEOPLE =================
+        e.preventDefault();
 
-  const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+        const name =
+          document
+            .getElementById('locName')
+            .value
+            .trim();
+
+
+        const latitude =
+          parseFloat(
+            document.getElementById(
+              'locLat'
+            ).value
+          );
+
+
+        const longitude =
+          parseFloat(
+            document.getElementById(
+              'locLng'
+            ).value
+          );
+
+
+        const radius =
+          parseInt(
+            document.getElementById(
+              'locRadius'
+            ).value,
+            10
+          );
+
+
+        const btn =
+          document.getElementById(
+            'addLocationBtn'
+          );
+
+
+        btn.disabled = true;
+
+
+        const originalLabel =
+          btn.textContent;
+
+
+        btn.textContent =
+          'Adding…';
+
+
+        try{
+
+          await addDoc(
+            locationsRef,
+            {
+              name,
+              latitude,
+              longitude,
+              radius,
+              createdAt:
+                serverTimestamp()
+            }
+          );
+
+
+          e.target.reset();
+
+
+          document.getElementById(
+            'locRadius'
+          ).value = 150;
+
+
+          await loadLocations();
+
+          refreshPeopleLocationDropdowns();
+
+
+        }catch(err){
+
+          alert(
+            'Could not add location: ' +
+            err.message
+          );
+
+        }
+
+
+        btn.disabled = false;
+
+        btn.textContent =
+          originalLabel;
+
+      }
+    );
+
+
+  document
+    .getElementById('locationsBody')
+    .addEventListener(
+      'click',
+      async (e) => {
+
+        const delBtn =
+          e.target.closest(
+            '.delete-location-btn'
+          );
+
+
+        if(!delBtn) return;
+
+
+        if(
+          !confirm(
+            'Delete this location? Employees assigned to it will need to be reassigned.'
+          )
+        ){
+          return;
+        }
+
+
+        delBtn.disabled = true;
+
+
+        try{
+
+          await deleteDoc(
+            doc(
+              db,
+              "locations",
+              delBtn.dataset.id
+            )
+          );
+
+
+          await loadLocations();
+
+          refreshPeopleLocationDropdowns();
+
+
+        }catch(err){
+
+          alert(
+            'Could not delete location: ' +
+            err.message
+          );
+
+
+          delBtn.disabled = false;
+
+        }
+
+      }
+    );
+
+
+  /* ============================================================
+     PEOPLE
+     ============================================================ */
+
+  const DAYS = [
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat',
+    'Sun'
+  ];
+
 
   async function loadPeople(){
-    const snap = await getDocs(profilesRef);
-    allProfiles = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+
+    const snap =
+      await getDocs(
+        profilesRef
+      );
+
+
+    allProfiles =
+      snap.docs.map(
+        d => ({
+          uid:d.id,
+          ...d.data()
+        })
+      );
+
+
     renderPeopleTable();
+
   }
 
-  function locationOptionsHtml(selectedId){
-    const opts = ['<option value="">— Unassigned —</option>']
-      .concat(allLocations.map(l => `<option value="${l.id}" ${l.id === selectedId ? 'selected' : ''}>${l.name}</option>`));
+
+  function locationOptionsHtml(
+    selectedId
+  ){
+
+    const opts = [
+
+      '<option value="">— Unassigned —</option>'
+
+    ].concat(
+
+      allLocations.map(
+        l =>
+          `<option value="${l.id}" ${
+            l.id === selectedId
+              ? 'selected'
+              : ''
+          }>${l.name}</option>`
+      )
+
+    );
+
+
     return opts.join('');
+
   }
 
-  function computeHoursForRange(range){
-    if(!range || !range.start || !range.end) return 0;
-    const [sh, sm] = range.start.split(':').map(Number);
-    const [eh, em] = range.end.split(':').map(Number);
-    return ((eh * 60 + em) - (sh * 60 + sm)) / 60;
+
+  function computeHoursForRange(
+    range
+  ){
+
+    if(
+      !range ||
+      !range.start ||
+      !range.end
+    ){
+      return 0;
+    }
+
+
+    const [sh, sm] =
+      range.start
+        .split(':')
+        .map(Number);
+
+
+    const [eh, em] =
+      range.end
+        .split(':')
+        .map(Number);
+
+
+    return (
+      (
+        (eh * 60 + em) -
+        (sh * 60 + sm)
+      ) / 60
+    );
+
   }
 
-  function scheduleSummary(schedule){
-    if(!schedule) return 'Not set';
-    const working = DAYS.filter(d => schedule[d]);
-    if(working.length === 0) return 'No working days set';
-    const hoursList = working.map(d => computeHoursForRange(schedule[d]));
-    const allSame = hoursList.every(h => h === hoursList[0]);
-    const daysLabel = `${working.length} day${working.length > 1 ? 's' : ''}/week`;
-    return allSame ? `${daysLabel} · ${hoursList[0].toFixed(1)}h each` : `${daysLabel} · varies`;
+
+  function scheduleSummary(
+    schedule
+  ){
+
+    if(!schedule){
+      return 'Not set';
+    }
+
+
+    const working =
+      DAYS.filter(
+        d => schedule[d]
+      );
+
+
+    if(
+      working.length === 0
+    ){
+      return 'No working days set';
+    }
+
+
+    const hoursList =
+      working.map(
+        d =>
+          computeHoursForRange(
+            schedule[d]
+          )
+      );
+
+
+    const allSame =
+      hoursList.every(
+        h => h === hoursList[0]
+      );
+
+
+    const daysLabel =
+      `${working.length} day${
+        working.length > 1
+          ? 's'
+          : ''
+      }/week`;
+
+
+    return allSame
+      ? `${daysLabel} · ${hoursList[0].toFixed(1)}h each`
+      : `${daysLabel} · varies`;
+
   }
+
 
   function renderPeopleTable(){
-    const body = document.getElementById('peopleBody');
-    const empty = document.getElementById('peopleEmptyState');
-    if(allProfiles.length === 0){
+
+    const body =
+      document.getElementById(
+        'peopleBody'
+      );
+
+
+    const empty =
+      document.getElementById(
+        'peopleEmptyState'
+      );
+
+
+    if(
+      allProfiles.length === 0
+    ){
+
       body.innerHTML = '';
-      empty.classList.remove('hidden');
+
+      empty.classList.remove(
+        'hidden'
+      );
+
       return;
+
     }
-    empty.classList.add('hidden');
-    body.innerHTML = allProfiles.map(p => `
-      <tr data-uid="${p.uid}">
-        <td>
-          <div class="emp-name">${p.name || 'Unknown'}</div>
-          <div class="emp-email">${p.email || ''}</div>
-        </td>
-        <td><select class="form-input loc-select">${locationOptionsHtml(p.locationId)}</select></td>
-        <td><input type="number" class="form-input salary-input" value="${p.basicSalary ?? ''}" placeholder="RM" style="width:90px;"></td>
-        <td>
-          <div style="font-size:12px; color:var(--text-onlight-mut); margin-bottom:6px;">${scheduleSummary(p.schedule)}</div>
-          <button class="delete-btn edit-schedule-btn" style="border-color:var(--line); color:var(--text-onlight);">Edit Schedule</button>
-          <button class="delete-btn edit-override-btn" style="border-color:var(--line); color:var(--text-onlight); margin-top:4px;">One-off Changes</button>
-        </td>
-        <td><button class="export-btn save-profile-btn">Save</button></td>
-      </tr>
-    `).join('');
+
+
+    empty.classList.add(
+      'hidden'
+    );
+
+
+    body.innerHTML =
+      allProfiles.map(p => `
+
+        <tr data-uid="${p.uid}">
+
+          <td>
+
+            <div class="emp-name">
+              ${p.name || 'Unknown'}
+            </div>
+
+            <div class="emp-email">
+              ${p.email || ''}
+            </div>
+
+          </td>
+
+
+          <td>
+
+            <select
+              class="form-input loc-select"
+            >
+              ${locationOptionsHtml(
+                p.locationId
+              )}
+            </select>
+
+          </td>
+
+
+          <td>
+
+            <input
+              type="number"
+              class="form-input salary-input"
+              value="${p.basicSalary ?? ''}"
+              placeholder="RM"
+              style="width:90px;"
+            >
+
+          </td>
+
+
+          <td>
+
+            <div
+              style="font-size:12px; color:var(--text-onlight-mut); margin-bottom:6px;"
+            >
+              ${scheduleSummary(
+                p.schedule
+              )}
+            </div>
+
+
+            <button
+              class="delete-btn edit-schedule-btn"
+              style="border-color:var(--line); color:var(--text-onlight);"
+            >
+              Edit Schedule
+            </button>
+
+
+            <button
+              class="delete-btn edit-override-btn"
+              style="border-color:var(--line); color:var(--text-onlight); margin-top:4px;"
+            >
+              One-off Changes
+            </button>
+
+          </td>
+
+
+          <td>
+
+            <button
+              class="export-btn save-profile-btn"
+            >
+              Save
+            </button>
+
+          </td>
+
+        </tr>
+
+      `).join('');
+
   }
+
 
   function refreshPeopleLocationDropdowns(){
-    document.querySelectorAll('#peopleBody .loc-select').forEach(sel => {
-      const current = sel.value;
-      sel.innerHTML = locationOptionsHtml(current);
-    });
+
+    document
+      .querySelectorAll(
+        '#peopleBody .loc-select'
+      )
+      .forEach(sel => {
+
+        const current =
+          sel.value;
+
+
+        sel.innerHTML =
+          locationOptionsHtml(
+            current
+          );
+
+      });
+
   }
 
-  document.getElementById('peopleBody').addEventListener('click', async (e) => {
-    const editBtn = e.target.closest('.edit-schedule-btn');
-    if(editBtn){
-      const row = editBtn.closest('tr');
-      openScheduleModal(row.dataset.uid);
-      return;
-    }
 
-    const overrideBtn = e.target.closest('.edit-override-btn');
-    if(overrideBtn){
-      const row = overrideBtn.closest('tr');
-      openOverrideModal(row.dataset.uid);
-      return;
-    }
+  document
+    .getElementById('peopleBody')
+    .addEventListener(
+      'click',
+      async (e) => {
 
-    const saveBtn = e.target.closest('.save-profile-btn');
-    if(saveBtn){
-      const row = saveBtn.closest('tr');
-      const uid = row.dataset.uid;
-      const locationId = row.querySelector('.loc-select').value || null;
-      const basicSalaryVal = row.querySelector('.salary-input').value;
+        const editBtn =
+          e.target.closest(
+            '.edit-schedule-btn'
+          );
 
-      saveBtn.disabled = true;
-      const originalLabel = saveBtn.textContent;
-      saveBtn.textContent = 'Saving…';
-      try {
-        await updateDoc(doc(db, "employee_profiles", uid), {
-          locationId,
-          basicSalary: basicSalaryVal === '' ? null : parseFloat(basicSalaryVal),
-        });
-        saveBtn.textContent = 'Saved ✓';
-        setTimeout(() => { saveBtn.textContent = originalLabel; saveBtn.disabled = false; }, 1500);
-      } catch (err) {
-        alert('Could not save: ' + err.message);
-        saveBtn.textContent = originalLabel;
-        saveBtn.disabled = false;
+
+        if(editBtn){
+
+          const row =
+            editBtn.closest('tr');
+
+
+          openScheduleModal(
+            row.dataset.uid
+          );
+
+
+          return;
+
+        }
+
+
+        const overrideBtn =
+          e.target.closest(
+            '.edit-override-btn'
+          );
+
+
+        if(overrideBtn){
+
+          const row =
+            overrideBtn.closest('tr');
+
+
+          openOverrideModal(
+            row.dataset.uid
+          );
+
+
+          return;
+
+        }
+
+
+        const saveBtn =
+          e.target.closest(
+            '.save-profile-btn'
+          );
+
+
+        if(saveBtn){
+
+          const row =
+            saveBtn.closest('tr');
+
+
+          const uid =
+            row.dataset.uid;
+
+
+          const locationId =
+            row
+              .querySelector(
+                '.loc-select'
+              )
+              .value ||
+            null;
+
+
+          const basicSalaryVal =
+            row
+              .querySelector(
+                '.salary-input'
+              )
+              .value;
+
+
+          saveBtn.disabled = true;
+
+
+          const originalLabel =
+            saveBtn.textContent;
+
+
+          saveBtn.textContent =
+            'Saving…';
+
+
+          try{
+
+            await updateDoc(
+              doc(
+                db,
+                "employee_profiles",
+                uid
+              ),
+              {
+                locationId,
+
+                basicSalary:
+                  basicSalaryVal === ''
+                    ? null
+                    : parseFloat(
+                        basicSalaryVal
+                      )
+
+              }
+            );
+
+
+            saveBtn.textContent =
+              'Saved ✓';
+
+
+            setTimeout(
+              () => {
+
+                saveBtn.textContent =
+                  originalLabel;
+
+                saveBtn.disabled =
+                  false;
+
+              },
+              1500
+            );
+
+
+          }catch(err){
+
+            alert(
+              'Could not save: ' +
+              err.message
+            );
+
+
+            saveBtn.textContent =
+              originalLabel;
+
+            saveBtn.disabled =
+              false;
+
+          }
+
+        }
+
       }
-    }
-  });
+    );
 
-  // ---- Schedule modal ----
+
+  /* ============================================================
+     SCHEDULE MODAL
+     ============================================================ */
+
   let scheduleModalUid = null;
 
-  function openScheduleModal(uid){
-    const profile = allProfiles.find(p => p.uid === uid);
+
+  function openScheduleModal(
+    uid
+  ){
+
+    const profile =
+      allProfiles.find(
+        p => p.uid === uid
+      );
+
+
     if(!profile) return;
-    scheduleModalUid = uid;
-    document.getElementById('scheduleModalName').textContent = `Edit Schedule — ${profile.name || 'Unknown'}`;
-    const schedule = profile.schedule || {};
-    document.getElementById('scheduleRows').innerHTML = DAYS.map(d => {
-      const range = schedule[d];
-      const isOff = !range;
-      return `
-        <div class="schedule-row" data-day="${d}">
-          <div class="schedule-day">${d}</div>
-          <label class="schedule-off-toggle">
-            <input type="checkbox" class="day-off-checkbox" ${isOff ? 'checked' : ''}> Off
-          </label>
-          <div class="schedule-times">
-            <input type="time" class="form-input day-start" value="${range?.start || '09:00'}" ${isOff ? 'disabled' : ''}>
-            <span style="color:var(--text-onlight-mut); font-size:12px;">to</span>
-            <input type="time" class="form-input day-end" value="${range?.end || '13:00'}" ${isOff ? 'disabled' : ''}>
+
+
+    scheduleModalUid =
+      uid;
+
+
+    document.getElementById(
+      'scheduleModalName'
+    ).textContent =
+      `Edit Schedule — ${
+        profile.name || 'Unknown'
+      }`;
+
+
+    const schedule =
+      profile.schedule || {};
+
+
+    document.getElementById(
+      'scheduleRows'
+    ).innerHTML =
+
+      DAYS.map(d => {
+
+        const range =
+          schedule[d];
+
+
+        const isOff =
+          !range;
+
+
+        return `
+
+          <div
+            class="schedule-row"
+            data-day="${d}"
+          >
+
+            <div class="schedule-day">
+              ${d}
+            </div>
+
+
+            <label class="schedule-off-toggle">
+
+              <input
+                type="checkbox"
+                class="day-off-checkbox"
+                ${isOff ? 'checked' : ''}
+              >
+
+              Off
+
+            </label>
+
+
+            <div class="schedule-times">
+
+              <input
+                type="time"
+                class="form-input day-start"
+                value="${range?.start || '09:00'}"
+                ${isOff ? 'disabled' : ''}
+              >
+
+
+              <span
+                style="color:var(--text-onlight-mut); font-size:12px;"
+              >
+                to
+              </span>
+
+
+              <input
+                type="time"
+                class="form-input day-end"
+                value="${range?.end || '13:00'}"
+                ${isOff ? 'disabled' : ''}
+              >
+
+            </div>
+
           </div>
-        </div>
-      `;
-    }).join('');
-    document.getElementById('scheduleModal').classList.remove('hidden');
+
+        `;
+
+      }).join('');
+
+
+    document
+      .getElementById(
+        'scheduleModal'
+      )
+      .classList
+      .remove('hidden');
+
   }
 
-  document.getElementById('scheduleRows').addEventListener('change', (e) => {
-    if(e.target.classList.contains('day-off-checkbox')){
-      const row = e.target.closest('.schedule-row');
-      const off = e.target.checked;
-      row.querySelector('.day-start').disabled = off;
-      row.querySelector('.day-end').disabled = off;
-    }
-  });
 
-  document.getElementById('scheduleCancelBtn').addEventListener('click', () => {
-    document.getElementById('scheduleModal').classList.add('hidden');
-    scheduleModalUid = null;
-  });
+  document
+    .getElementById('scheduleRows')
+    .addEventListener(
+      'change',
+      (e) => {
 
-  // ================= HOLIDAYS =================
+        if(
+          e.target.classList.contains(
+            'day-off-checkbox'
+          )
+        ){
+
+          const row =
+            e.target.closest(
+              '.schedule-row'
+            );
+
+
+          const off =
+            e.target.checked;
+
+
+          row.querySelector(
+            '.day-start'
+          ).disabled = off;
+
+
+          row.querySelector(
+            '.day-end'
+          ).disabled = off;
+
+        }
+
+      }
+    );
+
+
+  document
+    .getElementById('scheduleCancelBtn')
+    .addEventListener(
+      'click',
+      () => {
+
+        document
+          .getElementById(
+            'scheduleModal'
+          )
+          .classList
+          .add('hidden');
+
+
+        scheduleModalUid = null;
+
+      }
+    );
+
+
+  /* ============================================================
+     HOLIDAYS
+     ============================================================ */
 
   async function loadHolidays(){
-    const snap = await getDocs(query(holidaysRef, orderBy("date")));
-    allHolidays = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    const snap =
+      await getDocs(
+        query(
+          holidaysRef,
+          orderBy("date")
+        )
+      );
+
+
+    allHolidays =
+      snap.docs.map(
+        d => ({
+          id:d.id,
+          ...d.data()
+        })
+      );
+
+
     renderHolidaysTable();
+
   }
+
 
   function renderHolidaysTable(){
-    const body = document.getElementById('holidaysBody');
-    const empty = document.getElementById('holidaysEmptyState');
-    if(allHolidays.length === 0){
+
+    const body =
+      document.getElementById(
+        'holidaysBody'
+      );
+
+
+    const empty =
+      document.getElementById(
+        'holidaysEmptyState'
+      );
+
+
+    if(
+      allHolidays.length === 0
+    ){
+
       body.innerHTML = '';
-      empty.classList.remove('hidden');
+
+      empty.classList.remove(
+        'hidden'
+      );
+
       return;
+
     }
-    empty.classList.add('hidden');
-    body.innerHTML = allHolidays.map(h => `
-      <tr data-id="${h.id}">
-        <td><div class="emp-name">${h.name}</div></td>
-        <td class="mono">${h.date}</td>
-        <td><button class="delete-btn delete-holiday-btn" data-id="${h.id}">Delete</button></td>
-      </tr>
-    `).join('');
+
+
+    empty.classList.add(
+      'hidden'
+    );
+
+
+    body.innerHTML =
+      allHolidays.map(h => `
+
+        <tr data-id="${h.id}">
+
+          <td>
+            <div class="emp-name">
+              ${h.name}
+            </div>
+          </td>
+
+          <td class="mono">
+            ${h.date}
+          </td>
+
+          <td>
+
+            <button
+              class="delete-btn delete-holiday-btn"
+              data-id="${h.id}"
+            >
+              Delete
+            </button>
+
+          </td>
+
+        </tr>
+
+      `).join('');
+
   }
 
-  document.getElementById('addHolidayForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const name = document.getElementById('holidayName').value.trim();
-    const date = document.getElementById('holidayDate').value;
-    const btn = document.getElementById('addHolidayBtn');
-    btn.disabled = true;
-    const originalLabel = btn.textContent;
-    btn.textContent = 'Adding…';
-    try {
-      await addDoc(holidaysRef, { name, date, createdAt: serverTimestamp() });
-      e.target.reset();
-      await loadHolidays();
-    } catch (err) {
-      alert('Could not add holiday: ' + err.message);
-    }
-    btn.disabled = false;
-    btn.textContent = originalLabel;
-  });
 
-  document.getElementById('holidaysBody').addEventListener('click', async (e) => {
-    const delBtn = e.target.closest('.delete-holiday-btn');
-    if(!delBtn) return;
-    if(!confirm('Delete this holiday?')) return;
-    delBtn.disabled = true;
-    try {
-      await deleteDoc(doc(db, "holidays", delBtn.dataset.id));
-      await loadHolidays();
-    } catch (err) {
-      alert('Could not delete holiday: ' + err.message);
-      delBtn.disabled = false;
-    }
-  });
+  document
+    .getElementById('addHolidayForm')
+    .addEventListener(
+      'submit',
+      async (e) => {
 
-  // ================= LEAVE =================
+        e.preventDefault();
 
-  let allLeaveRequests = [];
+
+        const name =
+          document
+            .getElementById(
+              'holidayName'
+            )
+            .value
+            .trim();
+
+
+        const date =
+          document.getElementById(
+            'holidayDate'
+          ).value;
+
+
+        const btn =
+          document.getElementById(
+            'addHolidayBtn'
+          );
+
+
+        btn.disabled = true;
+
+
+        const originalLabel =
+          btn.textContent;
+
+
+        btn.textContent =
+          'Adding…';
+
+
+        try{
+
+          await addDoc(
+            holidaysRef,
+            {
+              name,
+              date,
+              createdAt:
+                serverTimestamp()
+            }
+          );
+
+
+          e.target.reset();
+
+
+          await loadHolidays();
+
+
+        }catch(err){
+
+          alert(
+            'Could not add holiday: ' +
+            err.message
+          );
+
+        }
+
+
+        btn.disabled = false;
+
+        btn.textContent =
+          originalLabel;
+
+      }
+    );
+
+
+  document
+    .getElementById('holidaysBody')
+    .addEventListener(
+      'click',
+      async (e) => {
+
+        const delBtn =
+          e.target.closest(
+            '.delete-holiday-btn'
+          );
+
+
+        if(!delBtn) return;
+
+
+        if(
+          !confirm(
+            'Delete this holiday?'
+          )
+        ){
+          return;
+        }
+
+
+        delBtn.disabled = true;
+
+
+        try{
+
+          await deleteDoc(
+            doc(
+              db,
+              "holidays",
+              delBtn.dataset.id
+            )
+          );
+
+
+          await loadHolidays();
+
+
+        }catch(err){
+
+          alert(
+            'Could not delete holiday: ' +
+            err.message
+          );
+
+
+          delBtn.disabled = false;
+
+        }
+
+      }
+    );
+
+
+  /* ============================================================
+     LEAVE
+     ============================================================ */
 
   async function loadLeaveRequests(){
-    const snap = await getDocs(query(leaveRef, orderBy("createdAt", "desc")));
-    allLeaveRequests = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    const snap =
+      await getDocs(
+        query(
+          leaveRef,
+          orderBy(
+            "createdAt",
+            "desc"
+          )
+        )
+      );
+
+
+    allLeaveRequests =
+      snap.docs.map(
+        d => ({
+          id:d.id,
+          ...d.data()
+        })
+      );
+
+
     renderLeaveTable();
+
+
+    /*
+     * Important:
+     * Payroll uses the same allLeaveRequests array.
+     * Therefore, whenever a manager approves/rejects
+     * a request, payroll will immediately use the
+     * new status after this reload.
+     */
+
+    if(
+      !document
+        .getElementById('payrollTab')
+        .classList
+        .contains('hidden')
+    ){
+
+      renderPayroll();
+
+    }
+
   }
+
 
   function renderLeaveTable(){
-    const body = document.getElementById('leaveBody');
-    const empty = document.getElementById('leaveEmptyState');
-    if(allLeaveRequests.length === 0){
+
+    const body =
+      document.getElementById(
+        'leaveBody'
+      );
+
+
+    const empty =
+      document.getElementById(
+        'leaveEmptyState'
+      );
+
+
+    if(
+      allLeaveRequests.length === 0
+    ){
+
       body.innerHTML = '';
-      empty.classList.remove('hidden');
+
+      empty.classList.remove(
+        'hidden'
+      );
+
       return;
+
     }
-    empty.classList.add('hidden');
-    body.innerHTML = allLeaveRequests.map(r => `
-      <tr data-id="${r.id}">
-        <td><div class="emp-name">${r.name || 'Unknown'}</div><div class="emp-email">${r.email || ''}</div></td>
-        <td class="mono">${r.type}</td>
-        <td class="mono">${r.startDate} → ${r.endDate}</td>
-        <td style="max-width:200px;">${r.reason || '-'}</td>
-        <td>${r.documentUrl ? `<a href="${r.documentUrl}" target="_blank" rel="noopener" style="color:var(--amber); font-weight:700; font-size:12px;">View file</a>` : '<span class="loc-cell">None</span>'}</td>
-        <td><span class="status-pill2 ${r.status === 'approved' ? 'complete' : r.status === 'rejected' ? 'orphan' : 'ongoing'}">${r.status}</span></td>
-        <td>
-          ${r.status === 'pending' ? `
-            <button class="delete-btn approve-leave-btn" style="border-color:var(--green-dim); color:var(--green-text);">Approve</button>
-            <button class="delete-btn reject-leave-btn" style="margin-top:4px;">Reject</button>
-          ` : ''}
-        </td>
-      </tr>
-    `).join('');
+
+
+    empty.classList.add(
+      'hidden'
+    );
+
+
+    body.innerHTML =
+      allLeaveRequests.map(r => `
+
+        <tr data-id="${r.id}">
+
+          <td>
+
+            <div class="emp-name">
+              ${r.name || 'Unknown'}
+            </div>
+
+            <div class="emp-email">
+              ${r.email || ''}
+            </div>
+
+          </td>
+
+
+          <td class="mono">
+            ${r.type}
+          </td>
+
+
+          <td class="mono">
+            ${r.startDate} → ${r.endDate}
+          </td>
+
+
+          <td style="max-width:200px;">
+            ${r.reason || '-'}
+          </td>
+
+
+          <td>
+
+            ${
+              r.documentUrl
+
+                ? `
+                  <a
+                    href="${r.documentUrl}"
+                    target="_blank"
+                    rel="noopener"
+                    style="color:var(--amber); font-weight:700; font-size:12px;"
+                  >
+                    View file
+                  </a>
+                `
+
+                : `
+                  <span class="loc-cell">
+                    None
+                  </span>
+                `
+            }
+
+          </td>
+
+
+          <td>
+
+            <span
+              class="status-pill2 ${
+                r.status === 'approved'
+                  ? 'complete'
+                  : r.status === 'rejected'
+                    ? 'orphan'
+                    : 'ongoing'
+              }"
+            >
+              ${r.status}
+            </span>
+
+          </td>
+
+
+          <td>
+
+            ${
+              r.status === 'pending'
+
+                ? `
+
+                  <button
+                    class="delete-btn approve-leave-btn"
+                    style="border-color:var(--green-dim); color:var(--green-text);"
+                  >
+                    Approve
+                  </button>
+
+                  <button
+                    class="delete-btn reject-leave-btn"
+                    style="margin-top:4px;"
+                  >
+                    Reject
+                  </button>
+
+                `
+
+                : ''
+
+            }
+
+          </td>
+
+        </tr>
+
+      `).join('');
+
   }
 
-  document.getElementById('leaveBody').addEventListener('click', async (e) => {
-    const approveBtn = e.target.closest('.approve-leave-btn');
-    const rejectBtn = e.target.closest('.reject-leave-btn');
-    if(!approveBtn && !rejectBtn) return;
 
-    const row = (approveBtn || rejectBtn).closest('tr');
-    const id = row.dataset.id;
-    const newStatus = approveBtn ? 'approved' : 'rejected';
+  document
+    .getElementById('leaveBody')
+    .addEventListener(
+      'click',
+      async (e) => {
 
-    try {
-      await updateDoc(doc(db, "leave_requests", id), {
-        status: newStatus,
-        reviewedAt: serverTimestamp(),
-      });
-      await loadLeaveRequests();
-    } catch (err) {
-      alert('Could not update request: ' + err.message);
-    }
-  });
+        const approveBtn =
+          e.target.closest(
+            '.approve-leave-btn'
+          );
 
-  // ================= PT SESSIONS =================
 
-  const PT_RATE = 50; // RM per completed class
-  let allPtSessions = [];
+        const rejectBtn =
+          e.target.closest(
+            '.reject-leave-btn'
+          );
+
+
+        if(
+          !approveBtn &&
+          !rejectBtn
+        ){
+          return;
+        }
+
+
+        const row =
+          (
+            approveBtn ||
+            rejectBtn
+          ).closest('tr');
+
+
+        const id =
+          row.dataset.id;
+
+
+        const newStatus =
+          approveBtn
+            ? 'approved'
+            : 'rejected';
+
+
+        try{
+
+          await updateDoc(
+            doc(
+              db,
+              "leave_requests",
+              id
+            ),
+            {
+              status:newStatus,
+              reviewedAt:
+                serverTimestamp()
+            }
+          );
+
+
+          await loadLeaveRequests();
+
+
+        }catch(err){
+
+          alert(
+            'Could not update request: ' +
+            err.message
+          );
+
+        }
+
+      }
+    );
+
+
+  /* ============================================================
+     PT SESSIONS
+     ============================================================ */
+
+  const PT_RATE = 50;
+
 
   async function loadPtSessions(){
-    const snap = await getDocs(query(ptSessionsRef, orderBy("createdAt", "desc")));
-    allPtSessions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    const snap =
+      await getDocs(
+        query(
+          ptSessionsRef,
+          orderBy(
+            "createdAt",
+            "desc"
+          )
+        )
+      );
+
+
+    allPtSessions =
+      snap.docs.map(
+        d => ({
+          id:d.id,
+          ...d.data()
+        })
+      );
+
+
     renderPtTable();
+
   }
+
 
   function renderPtTable(){
-    const body = document.getElementById('ptBody');
-    const empty = document.getElementById('ptEmptyState');
-    if(allPtSessions.length === 0){
+
+    const body =
+      document.getElementById(
+        'ptBody'
+      );
+
+
+    const empty =
+      document.getElementById(
+        'ptEmptyState'
+      );
+
+
+    if(
+      allPtSessions.length === 0
+    ){
+
       body.innerHTML = '';
-      empty.classList.remove('hidden');
+
+      empty.classList.remove(
+        'hidden'
+      );
+
       return;
+
     }
-    empty.classList.add('hidden');
-    body.innerHTML = allPtSessions.map(s => `
-      <tr data-id="${s.id}">
-        <td><div class="emp-name">${s.coachName || 'Unknown'}</div></td>
-        <td>${s.studentName || '-'}</td>
-        <td class="mono">${s.date}</td>
-        <td class="mono">${s.startTime}–${s.endTime}</td>
-        <td>${s.locationName || '-'}</td>
-        <td><span class="status-pill2 ${s.status === 'approved' ? 'complete' : s.status === 'rejected' ? 'orphan' : 'ongoing'}">${s.status}</span></td>
-        <td>
-          ${s.status === 'pending' ? `
-            <button class="delete-btn approve-pt-btn" style="border-color:var(--green-dim); color:var(--green-text);">Approve</button>
-            <button class="delete-btn reject-pt-btn" style="margin-top:4px;">Reject</button>
-          ` : ''}
-        </td>
-      </tr>
-    `).join('');
+
+
+    empty.classList.add(
+      'hidden'
+    );
+
+
+    body.innerHTML =
+      allPtSessions.map(s => `
+
+        <tr data-id="${s.id}">
+
+          <td>
+            <div class="emp-name">
+              ${s.coachName || 'Unknown'}
+            </div>
+          </td>
+
+          <td>
+            ${s.studentName || '-'}
+          </td>
+
+          <td class="mono">
+            ${s.date}
+          </td>
+
+          <td class="mono">
+            ${s.startTime}–${s.endTime}
+          </td>
+
+          <td>
+            ${s.locationName || '-'}
+          </td>
+
+          <td>
+
+            <span
+              class="status-pill2 ${
+                s.status === 'approved'
+                  ? 'complete'
+                  : s.status === 'rejected'
+                    ? 'orphan'
+                    : 'ongoing'
+              }"
+            >
+              ${s.status}
+            </span>
+
+          </td>
+
+
+          <td>
+
+            ${
+              s.status === 'pending'
+
+                ? `
+
+                  <button
+                    class="delete-btn approve-pt-btn"
+                    style="border-color:var(--green-dim); color:var(--green-text);"
+                  >
+                    Approve
+                  </button>
+
+                  <button
+                    class="delete-btn reject-pt-btn"
+                    style="margin-top:4px;"
+                  >
+                    Reject
+                  </button>
+
+                `
+
+                : ''
+
+            }
+
+          </td>
+
+        </tr>
+
+      `).join('');
+
   }
 
-  document.getElementById('ptBody').addEventListener('click', async (e) => {
-    const approveBtn = e.target.closest('.approve-pt-btn');
-    const rejectBtn = e.target.closest('.reject-pt-btn');
-    if(!approveBtn && !rejectBtn) return;
 
-    const row = (approveBtn || rejectBtn).closest('tr');
-    const id = row.dataset.id;
-    const newStatus = approveBtn ? 'approved' : 'rejected';
+  document
+    .getElementById('ptBody')
+    .addEventListener(
+      'click',
+      async (e) => {
 
-    try {
-      await updateDoc(doc(db, "pt_sessions", id), {
-        status: newStatus,
-        reviewedAt: serverTimestamp(),
-      });
-      await loadPtSessions();
-    } catch (err) {
-      alert('Could not update session: ' + err.message);
-    }
-  });
+        const approveBtn =
+          e.target.closest(
+            '.approve-pt-btn'
+          );
 
-  document.getElementById('exportPtBtn').addEventListener('click', () => {
-    const rows = [
-      ['Coach', 'Student', 'Date', 'Start', 'End', 'Location', 'Status', 'Rate (RM)'],
-      ...allPtSessions.map(s => [
-        s.coachName || 'Unknown', s.studentName || '', s.date, s.startTime, s.endTime,
-        s.locationName || '', s.status, PT_RATE
-      ])
-    ];
-    downloadCSV(`pt-sessions-${new Date().toISOString().slice(0,10)}.csv`, rows);
-  });
 
-  function approvedPtCountForMonth(uid, yearMonth){
-    return allPtSessions.filter(s =>
-      s.coachUid === uid && s.status === 'approved' && s.date?.startsWith(yearMonth)
+        const rejectBtn =
+          e.target.closest(
+            '.reject-pt-btn'
+          );
+
+
+        if(
+          !approveBtn &&
+          !rejectBtn
+        ){
+          return;
+        }
+
+
+        const row =
+          (
+            approveBtn ||
+            rejectBtn
+          ).closest('tr');
+
+
+        const id =
+          row.dataset.id;
+
+
+        const newStatus =
+          approveBtn
+            ? 'approved'
+            : 'rejected';
+
+
+        try{
+
+          await updateDoc(
+            doc(
+              db,
+              "pt_sessions",
+              id
+            ),
+            {
+              status:newStatus,
+              reviewedAt:
+                serverTimestamp()
+            }
+          );
+
+
+          await loadPtSessions();
+
+
+          if(
+            !document
+              .getElementById('payrollTab')
+              .classList
+              .contains('hidden')
+          ){
+
+            renderPayroll();
+
+          }
+
+
+        }catch(err){
+
+          alert(
+            'Could not update session: ' +
+            err.message
+          );
+
+        }
+
+      }
+    );
+
+
+  document
+    .getElementById('exportPtBtn')
+    .addEventListener(
+      'click',
+      () => {
+
+        const rows = [
+
+          [
+            'Coach',
+            'Student',
+            'Date',
+            'Start',
+            'End',
+            'Location',
+            'Status',
+            'Rate (RM)'
+          ],
+
+          ...allPtSessions.map(
+            s => [
+
+              s.coachName || 'Unknown',
+              s.studentName || '',
+              s.date,
+              s.startTime,
+              s.endTime,
+              s.locationName || '',
+              s.status,
+              PT_RATE
+
+            ]
+          )
+
+        ];
+
+
+        downloadCSV(
+          `pt-sessions-${new Date().toISOString().slice(0,10)}.csv`,
+          rows
+        );
+
+      }
+    );
+
+
+  function approvedPtCountForMonth(
+    uid,
+    yearMonth
+  ){
+
+    return allPtSessions.filter(
+      s =>
+        s.coachUid === uid &&
+        s.status === 'approved' &&
+        s.date?.startsWith(yearMonth)
     ).length;
+
   }
 
 
-  // ================= SCHEDULE OVERRIDES =================
+  /* ============================================================
+     SCHEDULE OVERRIDES
+     ============================================================ */
 
-  let allOverrides = [];
   let overrideModalUid = null;
 
+
   async function loadOverrides(){
-    const snap = await getDocs(overridesRef);
-    allOverrides = snap.docs.map(d => d.data());
+
+    const snap =
+      await getDocs(
+        overridesRef
+      );
+
+
+    allOverrides =
+      snap.docs.map(
+        d => d.data()
+      );
+
   }
 
-  document.getElementById('overrideOff').addEventListener('change', (e) => {
-    const off = e.target.checked;
-    document.getElementById('overrideStart').disabled = off;
-    document.getElementById('overrideEnd').disabled = off;
-  });
 
-  function openOverrideModal(uid){
-    const profile = allProfiles.find(p => p.uid === uid);
+  document
+    .getElementById('overrideOff')
+    .addEventListener(
+      'change',
+      (e) => {
+
+        const off =
+          e.target.checked;
+
+
+        document.getElementById(
+          'overrideStart'
+        ).disabled = off;
+
+
+        document.getElementById(
+          'overrideEnd'
+        ).disabled = off;
+
+      }
+    );
+
+
+  function openOverrideModal(
+    uid
+  ){
+
+    const profile =
+      allProfiles.find(
+        p => p.uid === uid
+      );
+
+
     if(!profile) return;
-    overrideModalUid = uid;
-    document.getElementById('overrideModalName').textContent = `One-off Changes — ${profile.name || 'Unknown'}`;
-    document.getElementById('addOverrideForm').reset();
-    document.getElementById('overrideStart').value = '09:00';
-    document.getElementById('overrideEnd').value = '13:00';
-    document.getElementById('overrideStart').disabled = false;
-    document.getElementById('overrideEnd').disabled = false;
+
+
+    overrideModalUid =
+      uid;
+
+
+    document.getElementById(
+      'overrideModalName'
+    ).textContent =
+      `One-off Changes — ${
+        profile.name || 'Unknown'
+      }`;
+
+
+    document
+      .getElementById(
+        'addOverrideForm'
+      )
+      .reset();
+
+
+    document.getElementById(
+      'overrideStart'
+    ).value = '09:00';
+
+
+    document.getElementById(
+      'overrideEnd'
+    ).value = '13:00';
+
+
+    document.getElementById(
+      'overrideStart'
+    ).disabled = false;
+
+
+    document.getElementById(
+      'overrideEnd'
+    ).disabled = false;
+
+
     renderOverrideRows();
-    document.getElementById('overrideModal').classList.remove('hidden');
+
+
+    document
+      .getElementById(
+        'overrideModal'
+      )
+      .classList
+      .remove('hidden');
+
   }
+
 
   function renderOverrideRows(){
-    const mine = allOverrides.filter(o => o.uid === overrideModalUid).sort((a, b) => a.date.localeCompare(b.date));
-    const container = document.getElementById('overrideRows');
-    if(mine.length === 0){
-      container.innerHTML = '<div class="modal-sub" style="margin:0;">No one-off changes set.</div>';
+
+    const mine =
+      allOverrides
+        .filter(
+          o =>
+            o.uid ===
+            overrideModalUid
+        )
+        .sort(
+          (a,b) =>
+            a.date.localeCompare(
+              b.date
+            )
+        );
+
+
+    const container =
+      document.getElementById(
+        'overrideRows'
+      );
+
+
+    if(
+      mine.length === 0
+    ){
+
+      container.innerHTML =
+        '<div class="modal-sub" style="margin:0;">No one-off changes set.</div>';
+
       return;
+
     }
-    container.innerHTML = mine.map(o => `
-      <div class="schedule-row" data-date="${o.date}">
-        <div style="flex:1; font-size:12.5px; color:var(--text-onlight);">
-          <b>${o.date}</b> — ${o.off ? 'Day off' : `${o.start}–${o.end}`}
+
+
+    container.innerHTML =
+      mine.map(o => `
+
+        <div
+          class="schedule-row"
+          data-date="${o.date}"
+        >
+
+          <div
+            style="flex:1; font-size:12.5px; color:var(--text-onlight);"
+          >
+
+            <b>${o.date}</b> —
+
+            ${
+              o.off
+                ? 'Day off'
+                : `${o.start}–${o.end}`
+            }
+
+          </div>
+
+
+          <button
+            type="button"
+            class="delete-btn delete-override-btn"
+            data-date="${o.date}"
+          >
+            Delete
+          </button>
+
         </div>
-        <button type="button" class="delete-btn delete-override-btn" data-date="${o.date}">Delete</button>
-      </div>
-    `).join('');
+
+      `).join('');
+
   }
 
-  document.getElementById('addOverrideForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if(!overrideModalUid) return;
-    const date = document.getElementById('overrideDate').value;
-    const off = document.getElementById('overrideOff').checked;
-    const start = document.getElementById('overrideStart').value;
-    const end = document.getElementById('overrideEnd').value;
 
-    if(!date){
-      alert('Please select a date.');
-      return;
-    }
-    if(!off && (!start || !end || start >= end)){
-      alert('Please enter a valid start and end time. End time must be later than start time.');
-      return;
-    }
+  document
+    .getElementById('addOverrideForm')
+    .addEventListener(
+      'submit',
+      async (e) => {
 
-    const btn = document.getElementById('addOverrideBtn');
-    btn.disabled = true;
-    try {
-      await setDoc(doc(db, "schedule_overrides", `${overrideModalUid}_${date}`), {
-        uid: overrideModalUid,
-        date,
-        off,
-        start: off ? null : start,
-        end: off ? null : end,
-        createdAt: serverTimestamp(),
-      });
-      await loadOverrides();
-      renderOverrideRows();
-      if(!document.getElementById('payrollTab').classList.contains('hidden')) renderPayroll();
-      e.target.reset();
-      document.getElementById('overrideStart').value = '09:00';
-      document.getElementById('overrideEnd').value = '13:00';
-      document.getElementById('overrideStart').disabled = false;
-      document.getElementById('overrideEnd').disabled = false;
-    } catch (err) {
-      alert('Could not save change: ' + err.message);
-    }
-    btn.disabled = false;
-  });
+        e.preventDefault();
 
-  document.getElementById('overrideRows').addEventListener('click', async (e) => {
-    const delBtn = e.target.closest('.delete-override-btn');
-    if(!delBtn) return;
-    if(!confirm('Remove this one-off change?')) return;
-    try {
-      await deleteDoc(doc(db, "schedule_overrides", `${overrideModalUid}_${delBtn.dataset.date}`));
-      await loadOverrides();
-      renderOverrideRows();
-      if(!document.getElementById('payrollTab').classList.contains('hidden')) renderPayroll();
-    } catch (err) {
-      alert('Could not delete: ' + err.message);
-    }
-  });
 
-  document.getElementById('overrideCloseBtn').addEventListener('click', () => {
-    document.getElementById('overrideModal').classList.add('hidden');
-    overrideModalUid = null;
-  });
-  
-  // ================= PAYROLL =================
+        if(!overrideModalUid){
+          return;
+        }
 
-  const payrollMonthInput = document.getElementById('payrollMonth');
-  payrollMonthInput.value = new Date().toISOString().slice(0, 7);
-  payrollMonthInput.addEventListener('change', renderPayroll);
 
-  function parseTimeToDate(dateBase, hhmm){
-    const [h, m] = hhmm.split(':').map(Number);
-    const d = new Date(dateBase);
-    d.setHours(h, m, 0, 0);
+        const date =
+          document.getElementById(
+            'overrideDate'
+          ).value;
+
+
+        const off =
+          document.getElementById(
+            'overrideOff'
+          ).checked;
+
+
+        const start =
+          document.getElementById(
+            'overrideStart'
+          ).value;
+
+
+        const end =
+          document.getElementById(
+            'overrideEnd'
+          ).value;
+
+
+        if(!date){
+
+          alert(
+            'Please select a date.'
+          );
+
+          return;
+
+        }
+
+
+        if(
+          !off &&
+          (
+            !start ||
+            !end ||
+            start >= end
+          )
+        ){
+
+          alert(
+            'Please enter a valid start and end time. End time must be later than start time.'
+          );
+
+          return;
+
+        }
+
+
+        const btn =
+          document.getElementById(
+            'addOverrideBtn'
+          );
+
+
+        btn.disabled = true;
+
+
+        try{
+
+          await setDoc(
+            doc(
+              db,
+              "schedule_overrides",
+              `${overrideModalUid}_${date}`
+            ),
+            {
+              uid:overrideModalUid,
+              date,
+              off,
+              start:
+                off
+                  ? null
+                  : start,
+              end:
+                off
+                  ? null
+                  : end,
+              createdAt:
+                serverTimestamp()
+            }
+          );
+
+
+          await loadOverrides();
+
+          renderOverrideRows();
+
+
+          if(
+            !document
+              .getElementById('payrollTab')
+              .classList
+              .contains('hidden')
+          ){
+
+            renderPayroll();
+
+          }
+
+
+          e.target.reset();
+
+
+          document.getElementById(
+            'overrideStart'
+          ).value = '09:00';
+
+
+          document.getElementById(
+            'overrideEnd'
+          ).value = '13:00';
+
+
+          document.getElementById(
+            'overrideStart'
+          ).disabled = false;
+
+
+          document.getElementById(
+            'overrideEnd'
+          ).disabled = false;
+
+
+        }catch(err){
+
+          alert(
+            'Could not save change: ' +
+            err.message
+          );
+
+        }
+
+
+        btn.disabled = false;
+
+      }
+    );
+
+
+  document
+    .getElementById('overrideRows')
+    .addEventListener(
+      'click',
+      async (e) => {
+
+        const delBtn =
+          e.target.closest(
+            '.delete-override-btn'
+          );
+
+
+        if(!delBtn) return;
+
+
+        if(
+          !confirm(
+            'Remove this one-off change?'
+          )
+        ){
+          return;
+        }
+
+
+        try{
+
+          await deleteDoc(
+            doc(
+              db,
+              "schedule_overrides",
+              `${overrideModalUid}_${delBtn.dataset.date}`
+            )
+          );
+
+
+          await loadOverrides();
+
+          renderOverrideRows();
+
+
+          if(
+            !document
+              .getElementById('payrollTab')
+              .classList
+              .contains('hidden')
+          ){
+
+            renderPayroll();
+
+          }
+
+
+        }catch(err){
+
+          alert(
+            'Could not delete: ' +
+            err.message
+          );
+
+        }
+
+      }
+    );
+
+
+  document
+    .getElementById('overrideCloseBtn')
+    .addEventListener(
+      'click',
+      () => {
+
+        document
+          .getElementById(
+            'overrideModal'
+          )
+          .classList
+          .add('hidden');
+
+
+        overrideModalUid = null;
+
+      }
+    );
+
+
+  /* ============================================================
+     PAYROLL
+     ============================================================ */
+
+  const payrollMonthInput =
+    document.getElementById(
+      'payrollMonth'
+    );
+
+
+  payrollMonthInput.value =
+    new Date()
+      .toISOString()
+      .slice(0,7);
+
+
+  payrollMonthInput.addEventListener(
+    'change',
+    renderPayroll
+  );
+
+
+  function parseTimeToDate(
+    dateBase,
+    hhmm
+  ){
+
+    const [h,m] =
+      hhmm
+        .split(':')
+        .map(Number);
+
+
+    const d =
+      new Date(dateBase);
+
+
+    d.setHours(
+      h,
+      m,
+      0,
+      0
+    );
+
+
     return d;
+
   }
 
-  function dateToYMD(date){
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
+
+  function dateToYMD(
+    date
+  ){
+
+    const y =
+      date.getFullYear();
+
+
+    const m =
+      String(
+        date.getMonth() + 1
+      ).padStart(
+        2,
+        '0'
+      );
+
+
+    const d =
+      String(
+        date.getDate()
+      ).padStart(
+        2,
+        '0'
+      );
+
+
     return `${y}-${m}-${d}`;
+
   }
 
-  function computePayrollForMonth(yearMonth){
-    const [year, month] = yearMonth.split('-').map(Number);
-    const daysInMonth = new Date(year, month, 0).getDate();
-    const DAY_INDEX = { Sun:0, Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6 };
-    const holidaySet = new Set(allHolidays.map(h => h.date));
+
+  /* ============================================================
+     PHASE G — LEAVE PAYROLL HELPERS
+     ============================================================ */
+
+  /*
+   * These are the leave types that count as PAID when approved.
+   *
+   * Annual Leave = paid
+   * MC = paid
+   * Emergency Leave = paid
+   *
+   * Unpaid Leave is intentionally NOT included.
+   */
+
+  function isPaidLeaveType(
+    type
+  ){
+
+    if(!type) return false;
+
+
+    const normalized =
+      String(type)
+        .trim()
+        .toLowerCase();
+
+
+    return (
+      normalized === 'annual' ||
+      normalized === 'annual leave' ||
+      normalized === 'mc' ||
+      normalized === 'medical leave' ||
+      normalized === 'emergency' ||
+      normalized === 'emergency leave'
+    );
+
+  }
+
+
+  /*
+   * Convert the leave type into a consistent
+   * display/category value.
+   */
+
+  function normalizeLeaveType(
+    type
+  ){
+
+    if(!type) return '';
+
+
+    const normalized =
+      String(type)
+        .trim()
+        .toLowerCase();
+
+
+    if(
+      normalized === 'annual' ||
+      normalized === 'annual leave'
+    ){
+      return 'annual';
+    }
+
+
+    if(
+      normalized === 'mc' ||
+      normalized === 'medical leave'
+    ){
+      return 'mc';
+    }
+
+
+    if(
+      normalized === 'emergency' ||
+      normalized === 'emergency leave'
+    ){
+      return 'emergency';
+    }
+
+
+    if(
+      normalized === 'unpaid' ||
+      normalized === 'unpaid leave'
+    ){
+      return 'unpaid';
+    }
+
+
+    return normalized;
+
+  }
+
+
+  /*
+   * Return true if the leave request covers the
+   * specific calendar date.
+   *
+   * startDate and endDate are expected to be
+   * YYYY-MM-DD strings from the employee app.
+   */
+
+  function leaveCoversDate(
+    leave,
+    ymd
+  ){
+
+    if(
+      !leave ||
+      !leave.startDate ||
+      !leave.endDate ||
+      !ymd
+    ){
+      return false;
+    }
+
+
+    return (
+      ymd >= leave.startDate &&
+      ymd <= leave.endDate
+    );
+
+  }
+
+
+  /*
+   * Find the leave request that applies to this
+   * employee on this date.
+   *
+   * We only consider pending / approved / rejected
+   * requests here.
+   */
+
+  function getLeaveForDate(
+    uid,
+    ymd
+  ){
+
+    const matching =
+      allLeaveRequests.filter(
+        leave => {
+
+          if(
+            leave.uid !== uid
+          ){
+            return false;
+          }
+
+
+          if(
+            !leaveCoversDate(
+              leave,
+              ymd
+            )
+          ){
+            return false;
+          }
+
+
+          return (
+            leave.status === 'pending' ||
+            leave.status === 'approved' ||
+            leave.status === 'rejected'
+          );
+
+        }
+      );
+
+
+    /*
+     * If multiple requests overlap the same date,
+     * use the latest created request.
+     *
+     * Normally employees should not have overlapping
+     * leave requests, but this prevents unpredictable
+     * payroll behaviour if there is an overlap.
+     */
+
+    matching.sort(
+      (a,b) => {
+
+        const aTime =
+          a.createdAt?.toMillis?.() || 0;
+
+        const bTime =
+          b.createdAt?.toMillis?.() || 0;
+
+        return bTime - aTime;
+
+      }
+    );
+
+
+    return matching[0] || null;
+
+  }
+
+
+  /*
+   * Determines how payroll treats the leave on a
+   * scheduled working day.
+   *
+   * Returns:
+   *
+   * "paid"
+   * "unpaid"
+   * "pending"
+   * "normal"
+   */
+
+  function getLeavePayrollTreatment(
+    leave
+  ){
+
+    /*
+     * No leave request:
+     * normal attendance calculation.
+     */
+
+    if(!leave){
+      return 'normal';
+    }
+
+
+    /*
+     * REJECTED:
+     * normal attendance rules apply.
+     *
+     * The employee can still be paid based on
+     * actual clocked hours.
+     */
+
+    if(
+      leave.status === 'rejected'
+    ){
+      return 'normal';
+    }
+
+
+    /*
+     * PENDING:
+     * temporarily treated as unpaid/absent.
+     *
+     * Even if the employee has no attendance,
+     * payroll remains 0 for this scheduled day.
+     */
+
+    if(
+      leave.status === 'pending'
+    ){
+      return 'pending';
+    }
+
+
+    /*
+     * APPROVED:
+     */
+
+    if(
+      leave.status === 'approved'
+    ){
+
+      /*
+       * Annual / MC / Emergency:
+       * paid leave.
+       */
+
+      if(
+        isPaidLeaveType(
+          leave.type
+        )
+      ){
+        return 'paid';
+      }
+
+
+      /*
+       * Unpaid Leave:
+       * unpaid even when approved.
+       */
+
+      if(
+        normalizeLeaveType(
+          leave.type
+        ) === 'unpaid'
+      ){
+        return 'unpaid';
+      }
+
+
+      /*
+       * Any unknown approved leave type:
+       * treat as unpaid rather than accidentally
+       * giving salary.
+       */
+
+      return 'unpaid';
+
+    }
+
+
+    return 'normal';
+
+  }
+
+
+  /* ============================================================
+     MAIN PAYROLL CALCULATION
+     ============================================================ */
+
+  function computePayrollForMonth(
+    yearMonth
+  ){
+
+    const [
+      year,
+      month
+    ] =
+      yearMonth
+        .split('-')
+        .map(Number);
+
+
+    const daysInMonth =
+      new Date(
+        year,
+        month,
+        0
+      ).getDate();
+
+
+    const DAY_INDEX = {
+
+      Sun:0,
+      Mon:1,
+      Tue:2,
+      Wed:3,
+      Thu:4,
+      Fri:5,
+      Sat:6
+
+    };
+
+
+    const holidaySet =
+      new Set(
+        allHolidays.map(
+          h => h.date
+        )
+      );
+
 
     return allProfiles.map(p => {
-      const schedule = p.schedule || {};
-      const hasSchedule = DAYS.some(d => schedule[d]);
-      if(!hasSchedule || p.basicSalary == null){
-        return { uid: p.uid, name: p.name, incomplete: true };
+
+      const schedule =
+        p.schedule || {};
+
+
+      const hasSchedule =
+        DAYS.some(
+          d => schedule[d]
+        );
+
+
+      if(
+        !hasSchedule ||
+        p.basicSalary == null
+      ){
+
+        return {
+
+          uid:p.uid,
+          name:p.name,
+          incomplete:true
+
+        };
+
       }
+
+
+      /* --------------------------------------------------------
+         ONE-OFF OVERRIDES
+         -------------------------------------------------------- */
 
       const myOverrides = {};
-      allOverrides.filter(o => o.uid === p.uid).forEach(o => { myOverrides[o.date] = o; });
+
+
+      allOverrides
+        .filter(
+          o => o.uid === p.uid
+        )
+        .forEach(
+          o => {
+            myOverrides[o.date] = o;
+          }
+        );
+
+
+      /* --------------------------------------------------------
+         DETERMINE SCHEDULED DAYS
+         -------------------------------------------------------- */
 
       const scheduledDates = [];
-      for(let day = 1; day <= daysInMonth; day++){
-        const date = new Date(year, month - 1, day);
-        const ymd = dateToYMD(date);
-        const override = myOverrides[ymd];
+
+
+      for(
+        let day = 1;
+        day <= daysInMonth;
+        day++
+      ){
+
+        const date =
+          new Date(
+            year,
+            month - 1,
+            day
+          );
+
+
+        const ymd =
+          dateToYMD(
+            date
+          );
+
+
+        const override =
+          myOverrides[ymd];
+
+
+        /*
+         * One-off override always wins over
+         * weekly schedule AND holiday.
+         */
 
         if(override){
-          // A one-off change always wins — over both the weekly schedule and holidays.
+
           if(!override.off){
-            scheduledDates.push({ date, range: { start: override.start, end: override.end } });
+
+            scheduledDates.push({
+
+              date,
+
+              range:{
+                start:
+                  override.start,
+
+                end:
+                  override.end
+              }
+
+            });
+
           }
+
+          continue;
+
+        }
+
+
+        /*
+         * Normal public/company holiday:
+         * not a scheduled working day.
+         */
+
+        if(
+          holidaySet.has(ymd)
+        ){
           continue;
         }
-        if(holidaySet.has(ymd)) continue;
-        const dayName = DAYS.find(d => DAY_INDEX[d] === date.getDay());
-        if(schedule[dayName]) scheduledDates.push({ date, range: schedule[dayName] });
-      }
-      const totalScheduledDays = scheduledDates.length;
-      const dailySalary = totalScheduledDays > 0 ? p.basicSalary / totalScheduledDays : 0;
 
-      const myPunches = allRecords.filter(r => r.uid === p.uid && r.createdAt?.toDate);
 
-      let totalHoursWorked = 0, totalLateMinutes = 0, totalPay = 0, totalLateDeduction = 0;
+        const dayName =
+          DAYS.find(
+            d =>
+              DAY_INDEX[d] ===
+              date.getDay()
+          );
 
-      scheduledDates.forEach(({ date, range }) => {
-        const scheduledHours = computeHoursForRange(range);
-        const hourlyRate = scheduledHours > 0 ? dailySalary / scheduledHours : 0;
 
-        const dayPunches = myPunches.filter(r => {
-          const d = r.createdAt.toDate();
-          return d.getFullYear() === date.getFullYear() &&
-                 d.getMonth() === date.getMonth() &&
-                 d.getDate() === date.getDate();
-        }).sort((a, b) => a.createdAt.toMillis() - b.createdAt.toMillis());
+        if(
+          schedule[dayName]
+        ){
 
-        let dayHours = 0, firstIn = null, openIn = null;
-        dayPunches.forEach(r => {
-          const t = r.createdAt.toDate();
-          if(r.type === 'IN'){
-            if(!firstIn) firstIn = t;
-            openIn = t;
-          } else if(r.type === 'OUT' && openIn){
-            dayHours += (t - openIn) / 3600000;
-            openIn = null;
-          }
-        });
+          scheduledDates.push({
 
-        if(firstIn){
-          const scheduledStart = parseTimeToDate(date, range.start);
-          const lateMin = Math.max(0, Math.round((firstIn - scheduledStart) / 60000));
-          totalLateMinutes += lateMin;
-          totalLateDeduction += (lateMin / 60) * hourlyRate;
+            date,
+
+            range:
+              schedule[dayName]
+
+          });
+
         }
 
-        totalHoursWorked += dayHours;
-        totalPay += dayHours * hourlyRate;
-      });
+      }
 
-      const ptClasses = approvedPtCountForMonth(p.uid, yearMonth);
-      const ptCommission = ptClasses * PT_RATE;
+
+      const totalScheduledDays =
+        scheduledDates.length;
+
+
+      /*
+       * Daily salary is based on the number of
+       * scheduled working days in this month.
+       *
+       * Holidays and off-days are excluded.
+       */
+
+      const dailySalary =
+        totalScheduledDays > 0
+          ? p.basicSalary /
+            totalScheduledDays
+          : 0;
+
+
+      /*
+       * Employee punches.
+       */
+
+      const myPunches =
+        allRecords.filter(
+          r =>
+            r.uid === p.uid &&
+            r.createdAt?.toDate
+        );
+
+
+      let totalHoursWorked = 0;
+      let totalLateMinutes = 0;
+      let totalPay = 0;
+      let totalLateDeduction = 0;
+
+      let paidLeaveDays = 0;
+      let unpaidLeaveDays = 0;
+
+
+      /* --------------------------------------------------------
+         CALCULATE EACH SCHEDULED DATE
+         -------------------------------------------------------- */
+
+      scheduledDates.forEach(
+        ({date, range}) => {
+
+          const ymd =
+            dateToYMD(
+              date
+            );
+
+
+          const scheduledHours =
+            computeHoursForRange(
+              range
+            );
+
+
+          const hourlyRate =
+            scheduledHours > 0
+              ? dailySalary /
+                scheduledHours
+              : 0;
+
+
+          /*
+           * Find leave request for this employee
+           * and specific scheduled date.
+           */
+
+          const leave =
+            getLeaveForDate(
+              p.uid,
+              ymd
+            );
+
+
+          const leaveTreatment =
+            getLeavePayrollTreatment(
+              leave
+            );
+
+
+          /* ----------------------------------------------------
+             PHASE G:
+             APPROVED PAID LEAVE
+             ---------------------------------------------------- */
+
+          if(
+            leaveTreatment === 'paid'
+          ){
+
+            /*
+             * Full scheduled hours are counted as worked
+             * for payroll purposes.
+             *
+             * Example:
+             *
+             * Daily salary = RM100
+             * Scheduled hours = 5
+             * Hourly rate = RM20
+             *
+             * Approved Annual Leave on that day:
+             *
+             * Paid hours = 5
+             * Leave pay = RM100
+             */
+
+            totalHoursWorked +=
+              scheduledHours;
+
+
+            totalPay +=
+              scheduledHours *
+              hourlyRate;
+
+
+            paidLeaveDays += 1;
+
+
+            /*
+             * IMPORTANT:
+             *
+             * No late calculation here.
+             *
+             * The employee did not need to clock in
+             * for an approved paid leave day.
+             */
+
+            return;
+
+          }
+
+
+          /* ----------------------------------------------------
+             PHASE G:
+             APPROVED UNPAID LEAVE
+             ---------------------------------------------------- */
+
+          if(
+            leaveTreatment === 'unpaid'
+          ){
+
+            /*
+             * No working hours.
+             * No salary.
+             * No late deduction.
+             */
+
+            unpaidLeaveDays += 1;
+
+            return;
+
+          }
+
+
+          /* ----------------------------------------------------
+             PHASE G:
+             PENDING LEAVE
+             ---------------------------------------------------- */
+
+          if(
+            leaveTreatment === 'pending'
+          ){
+
+            /*
+             * Pending leave is temporarily treated as
+             * unpaid/absent.
+             *
+             * This means:
+             *
+             * - no hours
+             * - no pay
+             * - no late deduction
+             *
+             * If manager later approves it, this same
+             * payroll calculation automatically changes
+             * it to paid leave when the page reloads.
+             */
+
+            unpaidLeaveDays += 1;
+
+            return;
+
+          }
+
+
+          /* ----------------------------------------------------
+             NORMAL ATTENDANCE CALCULATION
+             ---------------------------------------------------- */
+
+          const dayPunches =
+            myPunches
+              .filter(r => {
+
+                const d =
+                  r.createdAt.toDate();
+
+
+                return (
+                  d.getFullYear() ===
+                    date.getFullYear() &&
+
+                  d.getMonth() ===
+                    date.getMonth() &&
+
+                  d.getDate() ===
+                    date.getDate()
+                );
+
+              })
+              .sort(
+                (a,b) =>
+                  a.createdAt.toMillis() -
+                  b.createdAt.toMillis()
+              );
+
+
+          let dayHours = 0;
+          let firstIn = null;
+          let openIn = null;
+
+
+          dayPunches.forEach(r => {
+
+            const t =
+              r.createdAt.toDate();
+
+
+            if(
+              r.type === 'IN'
+            ){
+
+              if(!firstIn){
+                firstIn = t;
+              }
+
+              openIn = t;
+
+            }else if(
+              r.type === 'OUT' &&
+              openIn
+            ){
+
+              dayHours +=
+                (
+                  t - openIn
+                ) / 3600000;
+
+
+              openIn = null;
+
+            }
+
+          });
+
+
+          /* ----------------------------------------------------
+             LATE CALCULATION
+             ---------------------------------------------------- */
+
+          if(firstIn){
+
+            const scheduledStart =
+              parseTimeToDate(
+                date,
+                range.start
+              );
+
+
+            const lateMin =
+              Math.max(
+                0,
+                Math.round(
+                  (
+                    firstIn -
+                    scheduledStart
+                  ) / 60000
+                )
+              );
+
+
+            totalLateMinutes +=
+              lateMin;
+
+
+            /*
+             * This is informational only.
+             *
+             * totalPay is already calculated from actual
+             * hours worked, so subtracting this amount again
+             * would double-deduct late time.
+             */
+
+            totalLateDeduction +=
+              (
+                lateMin / 60
+              ) *
+              hourlyRate;
+
+          }
+
+
+          totalHoursWorked +=
+            dayHours;
+
+
+          /*
+           * Normal payroll:
+           *
+           * actual hours × that day's hourly rate
+           */
+
+          totalPay +=
+            dayHours *
+            hourlyRate;
+
+        }
+      );
+
+
+      /* --------------------------------------------------------
+         PT COMMISSION
+         -------------------------------------------------------- */
+
+      const ptClasses =
+        approvedPtCountForMonth(
+          p.uid,
+          yearMonth
+        );
+
+
+      const ptCommission =
+        ptClasses *
+        PT_RATE;
+
+
+      /* --------------------------------------------------------
+         FINAL EMPLOYEE PAYROLL RESULT
+         -------------------------------------------------------- */
 
       return {
-        uid: p.uid, name: p.name, email: p.email, incomplete: false,
-        basicSalary: p.basicSalary, totalScheduledDays,
-        totalHoursWorked, totalLateMinutes, totalLateDeduction,
-        ptClasses, ptCommission,
-        totalPay: totalPay + ptCommission,
+
+        uid:p.uid,
+
+        name:p.name,
+
+        email:p.email,
+
+        incomplete:false,
+
+        basicSalary:p.basicSalary,
+
+        totalScheduledDays,
+
+        totalHoursWorked,
+
+        paidLeaveDays,
+
+        unpaidLeaveDays,
+
+        totalLateMinutes,
+
+        totalLateDeduction,
+
+        ptClasses,
+
+        ptCommission,
+
+        totalPay:
+          totalPay +
+          ptCommission
+
       };
+
     });
+
   }
+
+
+  /* ============================================================
+     RENDER PAYROLL
+     ============================================================ */
 
   function renderPayroll(){
-    const rows = computePayrollForMonth(payrollMonthInput.value);
-    const body = document.getElementById('payrollBody');
-    const empty = document.getElementById('payrollEmptyState');
-    const complete = rows.filter(r => !r.incomplete);
 
-    if(complete.length === 0){
+    const rows =
+      computePayrollForMonth(
+        payrollMonthInput.value
+      );
+
+
+    const body =
+      document.getElementById(
+        'payrollBody'
+      );
+
+
+    const empty =
+      document.getElementById(
+        'payrollEmptyState'
+      );
+
+
+    const complete =
+      rows.filter(
+        r => !r.incomplete
+      );
+
+
+    if(
+      complete.length === 0
+    ){
+
       body.innerHTML = '';
-      empty.classList.remove('hidden');
-      return;
-    }
-    empty.classList.add('hidden');
 
-    body.innerHTML = complete.map(r => `
-      <tr>
-        <td><div class="emp-name">${r.name || 'Unknown'}</div><div class="emp-email">${r.email || ''}</div></td>
-        <td class="mono">RM ${r.basicSalary.toFixed(2)}</td>
-        <td class="mono">${r.totalScheduledDays}</td>
-        <td class="mono">${r.totalHoursWorked.toFixed(2)}h</td>
-        <td class="mono">${r.totalLateMinutes}</td>
-        <td class="mono">RM ${r.totalLateDeduction.toFixed(2)}</td>
-        <td class="mono">${r.ptClasses}</td>
-        <td class="mono">RM ${r.ptCommission.toFixed(2)}</td>
-        <td class="mono" style="font-weight:700;">RM ${r.totalPay.toFixed(2)}</td>
-      </tr>
-    `).join('');
+      empty.classList.remove(
+        'hidden'
+      );
+
+      return;
+
+    }
+
+
+    empty.classList.add(
+      'hidden'
+    );
+
+
+    body.innerHTML =
+      complete.map(r => `
+
+        <tr>
+
+          <td>
+
+            <div class="emp-name">
+              ${r.name || 'Unknown'}
+            </div>
+
+            <div class="emp-email">
+              ${r.email || ''}
+            </div>
+
+          </td>
+
+
+          <td class="mono">
+            RM ${r.basicSalary.toFixed(2)}
+          </td>
+
+
+          <td class="mono">
+            ${r.totalScheduledDays}
+          </td>
+
+
+          <td class="mono">
+            ${r.totalHoursWorked.toFixed(2)}h
+          </td>
+
+
+          <td
+            class="mono"
+            style="color:var(--green-text); font-weight:700;"
+          >
+            ${r.paidLeaveDays}
+          </td>
+
+
+          <td
+            class="mono"
+            style="color:var(--red-text);"
+          >
+            ${r.unpaidLeaveDays}
+          </td>
+
+
+          <td class="mono">
+            ${r.totalLateMinutes}
+          </td>
+
+
+          <td class="mono">
+            RM ${r.totalLateDeduction.toFixed(2)}
+          </td>
+
+
+          <td class="mono">
+            ${r.ptClasses}
+          </td>
+
+
+          <td class="mono">
+            RM ${r.ptCommission.toFixed(2)}
+          </td>
+
+
+          <td
+            class="mono"
+            style="font-weight:700;"
+          >
+            RM ${r.totalPay.toFixed(2)}
+          </td>
+
+        </tr>
+
+      `).join('');
+
   }
 
-  document.getElementById('exportPayrollBtn').addEventListener('click', () => {
-    const rows = computePayrollForMonth(payrollMonthInput.value).filter(r => !r.incomplete);
-    const csvRows = [
-      ['Employee', 'Email', 'Basic Salary', 'Scheduled Days', 'Hours Worked', 'Late (min)', 'Late Deduction', 'PT Classes', 'PT Commission', 'Total Pay'],
-      ...rows.map(r => [
-        r.name || 'Unknown', r.email || '', r.basicSalary.toFixed(2),
-        r.totalScheduledDays, r.totalHoursWorked.toFixed(2), r.totalLateMinutes,
-        r.totalLateDeduction.toFixed(2), r.ptClasses, r.ptCommission.toFixed(2), r.totalPay.toFixed(2)
-      ])
-    ];
-    downloadCSV(`payroll-${payrollMonthInput.value}.csv`, csvRows);
-  });
 
-  document.getElementById('scheduleSaveBtn').addEventListener('click', async () => {
-    if(!scheduleModalUid) return;
-    const schedule = {};
-    document.querySelectorAll('#scheduleRows .schedule-row').forEach(row => {
-      const day = row.dataset.day;
-      const off = row.querySelector('.day-off-checkbox').checked;
-      schedule[day] = off ? null : {
-        start: row.querySelector('.day-start').value,
-        end: row.querySelector('.day-end').value,
-      };
-    });
-    const btn = document.getElementById('scheduleSaveBtn');
-    btn.disabled = true;
-    const originalLabel = btn.textContent;
-    btn.textContent = 'Saving…';
-    try {
-      await updateDoc(doc(db, "employee_profiles", scheduleModalUid), { schedule });
-      await loadPeople();
-      document.getElementById('scheduleModal').classList.add('hidden');
-      scheduleModalUid = null;
-    } catch (err) {
-      alert('Could not save schedule: ' + err.message);
-    }
-    btn.disabled = false;
-    btn.textContent = originalLabel;
-  });
+  /* ============================================================
+     PAYROLL CSV EXPORT
+     ============================================================ */
+
+  document
+    .getElementById('exportPayrollBtn')
+    .addEventListener(
+      'click',
+      () => {
+
+        const rows =
+          computePayrollForMonth(
+            payrollMonthInput.value
+          )
+          .filter(
+            r => !r.incomplete
+          );
+
+
+        const csvRows = [
+
+          [
+            'Employee',
+            'Email',
+            'Basic Salary',
+            'Scheduled Days',
+            'Hours Worked',
+            'Paid Leave Days',
+            'Unpaid/Absent Days',
+            'Late (min)',
+            'Late Deduction',
+            'PT Classes',
+            'PT Commission',
+            'Total Pay'
+          ],
+
+
+          ...rows.map(r => [
+
+            r.name || 'Unknown',
+
+            r.email || '',
+
+            r.basicSalary.toFixed(2),
+
+            r.totalScheduledDays,
+
+            r.totalHoursWorked.toFixed(2),
+
+            r.paidLeaveDays,
+
+            r.unpaidLeaveDays,
+
+            r.totalLateMinutes,
+
+            r.totalLateDeduction.toFixed(2),
+
+            r.ptClasses,
+
+            r.ptCommission.toFixed(2),
+
+            r.totalPay.toFixed(2)
+
+          ])
+
+        ];
+
+
+        downloadCSV(
+          `payroll-${payrollMonthInput.value}.csv`,
+          csvRows
+        );
+
+      }
+    );
+
+
+  /* ============================================================
+     SAVE SCHEDULE
+     ============================================================ */
+
+  document
+    .getElementById('scheduleSaveBtn')
+    .addEventListener(
+      'click',
+      async () => {
+
+        if(!scheduleModalUid){
+          return;
+        }
+
+
+        const schedule = {};
+
+
+        document
+          .querySelectorAll(
+            '#scheduleRows .schedule-row'
+          )
+          .forEach(row => {
+
+            const day =
+              row.dataset.day;
+
+
+            const off =
+              row
+                .querySelector(
+                  '.day-off-checkbox'
+                )
+                .checked;
+
+
+            schedule[day] =
+              off
+
+                ? null
+
+                : {
+
+                    start:
+                      row
+                        .querySelector(
+                          '.day-start'
+                        )
+                        .value,
+
+                    end:
+                      row
+                        .querySelector(
+                          '.day-end'
+                        )
+                        .value
+
+                  };
+
+          });
+
+
+        const btn =
+          document.getElementById(
+            'scheduleSaveBtn'
+          );
+
+
+        btn.disabled = true;
+
+
+        const originalLabel =
+          btn.textContent;
+
+
+        btn.textContent =
+          'Saving…';
+
+
+        try{
+
+          await updateDoc(
+            doc(
+              db,
+              "employee_profiles",
+              scheduleModalUid
+            ),
+            {
+              schedule
+            }
+          );
+
+
+          await loadPeople();
+
+
+          document
+            .getElementById(
+              'scheduleModal'
+            )
+            .classList
+            .add('hidden');
+
+
+          scheduleModalUid = null;
+
+
+          /*
+           * If payroll is currently visible,
+           * immediately recalculate it using the
+           * new schedule.
+           */
+
+          if(
+            !document
+              .getElementById('payrollTab')
+              .classList
+              .contains('hidden')
+          ){
+
+            renderPayroll();
+
+          }
+
+
+        }catch(err){
+
+          alert(
+            'Could not save schedule: ' +
+            err.message
+          );
+
+        }
+
+
+        btn.disabled = false;
+
+        btn.textContent =
+          originalLabel;
+
+      }
+    );
+
 </script>
 
 </body>
