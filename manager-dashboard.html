@@ -4,6791 +4,1821 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Manager Dashboard — Worksite Clock</title>
-
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg:#f4f1eb;
-    --panel:#ffffff;
-    --amber:#f2a900;
-    --amber-dark:#c47f00;
-    --green:#1f8f55;
-    --green-dim:#dff3e8;
-    --green-text:#176d42;
-    --red:#c94b4b;
-    --red-dim:#fde5e5;
-    --text:#222;
-    --muted:#777;
-    --line:#e4dfd6;
-    --text-onlight:#252525;
-    --text-onlight-mut:#777;
-    --shadow:0 10px 30px rgba(0,0,0,.07);
-  }
-
-  *{
-    box-sizing:border-box;
-  }
-
-  body{
-    margin:0;
-    background:var(--bg);
-    color:var(--text-onlight);
-    font-family:Inter,Arial,sans-serif;
-  }
-
-  .hidden{
-    display:none !important;
-  }
-
-  .wrap{
-    width:min(1500px,calc(100% - 32px));
-    margin:0 auto;
-  }
-
-  .topbar{
-    padding:22px 0;
-    border-bottom:1px solid var(--line);
-    background:#fff;
-  }
-
-  .topbar-inner{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:16px;
-  }
-
-  .brand{
-    display:flex;
-    align-items:center;
-    gap:12px;
-  }
-
-  .brand-mark{
-    width:42px;
-    height:42px;
-    border-radius:12px;
-    background:var(--amber);
-    display:grid;
-    place-items:center;
-    font-weight:900;
-    color:#111;
-  }
-
-  .brand-title{
-    font-weight:900;
-    font-size:20px;
-  }
-
-  .brand-sub{
-    font-size:12px;
-    color:var(--muted);
-    margin-top:2px;
-  }
-
-  button,
-  input,
-  select,
-  textarea{
-    font:inherit;
-  }
-
-  button{
-    cursor:pointer;
-  }
-
-  .auth-card{
-    width:min(430px,100%);
-    margin:80px auto;
-    background:#fff;
-    border:1px solid var(--line);
-    border-radius:18px;
-    padding:28px;
-    box-shadow:var(--shadow);
-  }
-
-  .auth-card h1{
-    margin:0 0 8px;
-    font-size:25px;
-  }
-
-  .auth-card p{
-    color:var(--muted);
-    margin:0 0 24px;
-    font-size:14px;
-    line-height:1.5;
-  }
-
-  .form-group{
-    margin-bottom:14px;
-  }
-
-  .form-label{
-    display:block;
-    font-size:12px;
-    font-weight:800;
-    margin-bottom:7px;
-  }
-
-  .form-input{
-    width:100%;
-    border:1px solid #d9d3ca;
-    border-radius:9px;
-    padding:10px 11px;
-    outline:none;
-    background:#fff;
-    color:var(--text-onlight);
-  }
-
-  .form-input:focus{
-    border-color:var(--amber);
-  }
-
-  .primary-btn{
-    width:100%;
-    border:0;
-    border-radius:10px;
-    padding:11px 14px;
-    background:var(--amber);
-    color:#111;
-    font-weight:900;
-  }
-
-  .primary-btn:disabled{
-    opacity:.6;
-    cursor:not-allowed;
-  }
-
-  .auth-error{
-    display:none;
-    margin-top:12px;
-    padding:10px 12px;
-    background:var(--red-dim);
-    color:#9d3131;
-    border-radius:8px;
-    font-size:13px;
-  }
-
-  .auth-error.show{
-    display:block;
-  }
-
-  .spin{
-    width:15px;
-    height:15px;
-    border:2px solid rgba(0,0,0,.2);
-    border-top-color:#111;
-    border-radius:50%;
-    display:inline-block;
-    animation:spin .7s linear infinite;
-  }
-
-  @keyframes spin{
-    to{transform:rotate(360deg);}
-  }
-
-  .denied-card{
-    text-align:center;
-  }
-
-  .dashboard{
-    padding:22px 0 50px;
-  }
-
-  .dashboard-head{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:20px;
-    margin-bottom:18px;
-  }
-
-  .dashboard-head h1{
-    margin:0;
-    font-size:24px;
-  }
-
-  .dashboard-head p{
-    margin:4px 0 0;
-    color:var(--muted);
-    font-size:13px;
-  }
-
-  .top-actions{
-    display:flex;
-    align-items:center;
-    gap:10px;
-  }
-
-  .admin-email{
-    font-size:12px;
-    color:var(--muted);
-  }
-
-  .signout-btn{
-    border:1px solid var(--line);
-    background:#fff;
-    border-radius:9px;
-    padding:9px 12px;
-    font-weight:800;
-  }
-
-  .tabs{
-    display:flex;
-    gap:6px;
-    overflow-x:auto;
-    padding-bottom:5px;
-    margin-bottom:18px;
-  }
-
-  .tab-btn{
-    border:1px solid var(--line);
-    background:#fff;
-    padding:10px 14px;
-    border-radius:9px;
-    white-space:nowrap;
-    font-size:12px;
-    font-weight:800;
-    color:#666;
-  }
-
-  .tab-btn.active{
-    background:var(--amber);
-    color:#111;
-    border-color:var(--amber);
-  }
-
-  .panel{
-    background:#fff;
-    border:1px solid var(--line);
-    border-radius:15px;
-    box-shadow:var(--shadow);
-    padding:18px;
-    margin-bottom:18px;
-  }
-
-  .panel-head{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:15px;
-    margin-bottom:15px;
-  }
-
-  .panel-title{
-    font-size:16px;
-    font-weight:900;
-  }
-
-  .panel-sub{
-    color:var(--muted);
-    font-size:12px;
-    margin-top:3px;
-  }
-
-  .stats{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:12px;
-    margin-bottom:18px;
-  }
-
-  .stat-card{
-    background:#fff;
-    border:1px solid var(--line);
-    border-radius:13px;
-    padding:15px;
-  }
-
-  .stat-label{
-    font-size:11px;
-    color:var(--muted);
-    font-weight:800;
-  }
-
-  .stat-value{
-    font-size:25px;
-    font-weight:900;
-    margin-top:5px;
-  }
-
-  .filters{
-    display:flex;
-    flex-wrap:wrap;
-    gap:9px;
-    margin-bottom:15px;
-  }
-
-  .filters .form-input{
-    width:auto;
-    min-width:140px;
-  }
-
-  .date-filter{
-    display:flex;
-    align-items:center;
-    gap:7px;
-  }
-
-  .table-wrap{
-    width:100%;
-    overflow:auto;
-    border:1px solid var(--line);
-    border-radius:11px;
-  }
-
-  table{
-    width:100%;
-    border-collapse:collapse;
-    min-width:800px;
-  }
-
-  th{
-    background:#f8f6f2;
-    text-align:left;
-    font-size:11px;
-    text-transform:uppercase;
-    letter-spacing:.03em;
-    color:#777;
-    padding:11px 12px;
-    border-bottom:1px solid var(--line);
-    white-space:nowrap;
-  }
-
-  td{
-    padding:11px 12px;
-    border-bottom:1px solid #eeeae4;
-    font-size:12px;
-    vertical-align:middle;
-  }
-
-  tr:last-child td{
-    border-bottom:0;
-  }
-
-  .emp-name{
-    font-weight:800;
-  }
-
-  .emp-email{
-    color:var(--muted);
-    font-size:11px;
-    margin-top:2px;
-  }
-
-  .mono{
-    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-  }
-
-  .type-pill{
-    display:inline-flex;
-    padding:4px 8px;
-    border-radius:999px;
-    font-size:10px;
-    font-weight:900;
-  }
-
-  .type-pill.in{
-    background:var(--green-dim);
-    color:var(--green-text);
-  }
-
-  .type-pill.out{
-    background:var(--red-dim);
-    color:#9d3131;
-  }
-
-  .status-pill2{
-    display:inline-flex;
-    padding:5px 8px;
-    border-radius:999px;
-    font-size:10px;
-    font-weight:900;
-    white-space:nowrap;
-  }
-
-  .status-pill2.complete{
-    background:var(--green-dim);
-    color:var(--green-text);
-  }
-
-  .status-pill2.ongoing{
-    background:#fff4df;
-    color:#8a5a1f;
-  }
-
-  .status-pill2.orphan{
-    background:var(--red-dim);
-    color:#9d3131;
-  }
-
-  .status-pill2.late{
-    background:#fff4df;
-    color:#8a5a1f;
-  }
-
-  .loc-cell{
-    font-size:11px;
-  }
-
-  .loc-cell.bad{
-    color:#a13a3a;
-  }
-
-  .empty-state{
-    padding:30px;
-    text-align:center;
-    color:var(--muted);
-    font-size:13px;
-  }
-
-  .export-btn{
-    border:1px solid var(--line);
-    background:#fff;
-    border-radius:8px;
-    padding:8px 11px;
-    font-size:11px;
-    font-weight:800;
-  }
-
-  .delete-btn{
-    border:1px solid var(--red);
-    color:var(--red);
-    background:#fff;
-    border-radius:7px;
-    padding:6px 9px;
-    font-size:11px;
-    font-weight:800;
-  }
-
-  .delete-btn:disabled{
-    opacity:.5;
-  }
-
-  .inline-form{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:10px;
-    align-items:end;
-    margin-bottom:16px;
-  }
-
-  .inline-form .form-group{
-    margin:0;
-  }
-
-  .inline-form button{
-    width:100%;
-  }
-
-  .schedule-row{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    padding:9px 0;
-    border-bottom:1px solid #eeeae4;
-  }
-
-  .schedule-row:last-child{
-    border-bottom:0;
-  }
-
-  .schedule-day{
-    width:45px;
-    font-weight:900;
-  }
-
-  .schedule-off-toggle{
-    font-size:12px;
-    width:70px;
-  }
-
-  .schedule-times{
-    display:flex;
-    align-items:center;
-    gap:7px;
-    flex:1;
-  }
-
-  .schedule-times .form-input{
-    width:auto;
-  }
-
-  .modal{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.35);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
-    z-index:1000;
-  }
-
-  .modal-card{
-    width:min(650px,100%);
-    max-height:90vh;
-    overflow:auto;
-    background:#fff;
-    border-radius:16px;
-    box-shadow:0 20px 60px rgba(0,0,0,.2);
-    padding:20px;
-  }
-
-  .modal-head{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:10px;
-    margin-bottom:15px;
-  }
-
-  .modal-title{
-    font-weight:900;
-    font-size:17px;
-  }
-
-  .modal-sub{
-    font-size:12px;
-    color:var(--muted);
-    margin-top:3px;
-  }
-
-  .modal-close{
-    border:1px solid var(--line);
-    background:#fff;
-    border-radius:8px;
-    padding:6px 9px;
-    font-weight:800;
-  }
-
-  .modal-actions{
-    display:flex;
-    justify-content:flex-end;
-    gap:8px;
-    margin-top:16px;
-  }
-
-  .modal-actions button{
-    width:auto;
-  }
-
-  .secondary-btn{
-    border:1px solid var(--line);
-    background:#fff;
-    border-radius:9px;
-    padding:10px 14px;
-    font-weight:800;
-  }
-
-  @media(max-width:900px){
-    .stats{
-      grid-template-columns:1fr;
-    }
-
-    .inline-form{
-      grid-template-columns:1fr 1fr;
-    }
-
-    .dashboard-head{
-      align-items:flex-start;
-      flex-direction:column;
-    }
-  }
-
-  @media(max-width:600px){
-    .wrap{
-      width:min(100% - 20px,1500px);
-    }
-
-    .inline-form{
-      grid-template-columns:1fr;
-    }
-
-    .top-actions{
-      width:100%;
-      justify-content:space-between;
-    }
-
-    .schedule-row{
-      flex-wrap:wrap;
-    }
-  }
+:root{
+--bg:#E7E9ED;
+--bg-2:#DADDE3;
+--panel:#15191E;
+--panel-2:#1E242B;
+--bezel:#0D0F12;
+--amber:#FFB020;
+--green:#3FA772;
+--green-dim:#E6F5EC;
+--green-text:#1F7A4C;
+--red:#E2574C;
+--red-dim:#FBEAE9;
+--red-text:#B3382F;
+--text-onlight:#1C2126;
+--text-onlight-mut:#5B6470;
+--text-ondark:#ECEDEF;
+--text-ondark-mut:#8B929C;
+--line:#C7CBD3;
+--card:#ffffff;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+html{overflow-y:scroll;}
+body{
+background:radial-gradient(circle at 50% 0%,var(--bg-2),var(--bg) 60%);
+min-height:100vh;
+font-family:'Manrope',sans-serif;
+color:var(--text-onlight);
+padding:32px 20px 64px;
+}
+.wrap{max-width:1200px;margin:0 auto;}
+.topbar{
+display:flex;
+align-items:center;
+justify-content:space-between;
+margin-bottom:22px;
+gap:12px;
+flex-wrap:wrap;
+}
+.eyebrow{
+display:flex;
+align-items:center;
+gap:8px;
+font-size:12px;
+font-weight:800;
+letter-spacing:0.14em;
+text-transform:uppercase;
+color:var(--text-onlight-mut);
+}
+.eyebrow .sq{width:8px;height:8px;background:var(--amber);border-radius:1px;flex-shrink:0;}
+.topbar-right{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--text-onlight-mut);}
+.topbar-right b{color:var(--text-onlight);font-weight:700;}
+.signout-btn{
+background:none;
+border:1px solid var(--line);
+color:var(--text-onlight-mut);
+font-family:'Manrope',sans-serif;
+font-size:11px;
+font-weight:700;
+letter-spacing:0.03em;
+text-transform:uppercase;
+padding:7px 11px;
+border-radius:7px;
+cursor:pointer;
+}
+.signout-btn:hover{color:var(--text-onlight);border-color:#9AA1AC;}
+.auth-wrap{display:flex;justify-content:center;padding-top:40px;}
+.device{
+background:var(--bezel);
+border-radius:22px;
+padding:8px;
+width:100%;
+max-width:400px;
+box-shadow:0 24px 48px -18px rgba(20,22,26,0.45);
+}
+.screen{
+background:linear-gradient(180deg,var(--panel) 0%,var(--panel-2) 100%);
+border-radius:16px;
+padding:28px 22px 22px;
+}
+.auth-head{text-align:center;padding:8px 4px 22px;}
+.auth-head .badge{
+width:44px;height:44px;margin:0 auto 14px;border-radius:11px;
+background:rgba(255,176,32,0.12);border:1px solid rgba(255,176,32,0.25);
+display:flex;align-items:center;justify-content:center;
+}
+.auth-head h1{font-size:17px;font-weight:800;color:var(--text-ondark);margin:0 0 5px;}
+.auth-head p{font-size:12.5px;color:var(--text-ondark-mut);margin:0;line-height:1.5;}
+.field{margin-bottom:14px;}
+.field label{
+display:block;font-size:10.5px;font-weight:700;letter-spacing:0.1em;
+text-transform:uppercase;color:var(--text-ondark-mut);margin-bottom:6px;
+}
+.field input{
+width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);
+border-radius:9px;padding:11px 12px;font-family:'Manrope',sans-serif;font-size:14px;
+font-weight:600;color:var(--text-ondark);outline:none;transition:border-color .2s ease;
+}
+.field input:focus{border-color:var(--amber);}
+.auth-error{
+display:none;font-size:12px;line-height:1.5;color:#E58A82;
+background:rgba(226,87,76,0.1);border:1px solid rgba(226,87,76,0.25);
+border-radius:9px;padding:10px 12px;margin-bottom:14px;
+}
+.auth-error.show{display:block;}
+.primary-btn{
+width:100%;border:none;border-radius:12px;padding:15px 16px;
+font-family:'Manrope',sans-serif;font-size:14px;font-weight:800;letter-spacing:0.03em;
+text-transform:uppercase;cursor:pointer;background:var(--amber);color:#20160A;
+box-shadow:0 10px 22px -8px rgba(255,176,32,0.55);
+}
+.primary-btn:disabled{opacity:0.6;cursor:wait;}
+.spin{
+width:14px;height:14px;border-radius:50%;display:inline-block;
+border:2px solid rgba(0,0,0,0.25);border-top-color:#20160A;animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+.not-admin-note{
+font-size:12px;color:var(--text-ondark-mut);text-align:center;margin-top:14px;line-height:1.6;
+}
+.tab-nav{
+display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--line);
+flex-wrap:wrap;
+}
+.tab-btn{
+background:none;border:none;padding:10px 16px;font-family:'Manrope',sans-serif;
+font-size:13px;font-weight:700;color:var(--text-onlight-mut);cursor:pointer;
+border-bottom:2px solid transparent;margin-bottom:-1px;
+}
+.tab-btn.active{color:var(--text-onlight);border-bottom-color:var(--amber);}
+.tab-btn:hover{color:var(--text-onlight);}
+.stats-row{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
+.stat-card{
+flex:1;min-width:130px;background:var(--card);border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;
+}
+.stat-card .num{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:var(--text-onlight);}
+.stat-card .lbl{font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-onlight-mut);margin-top:2px;}
+.filter-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.filter-bar input,.filter-bar select{
+font-family:'Manrope',sans-serif;font-size:13px;font-weight:600;
+padding:10px 12px;border-radius:9px;border:1px solid var(--line);
+background:var(--card);color:var(--text-onlight);outline:none;
+}
+.filter-bar input{flex:1;min-width:180px;}
+.filter-bar input:focus,.filter-bar select:focus{border-color:var(--amber);}
+.filter-bar input[type="date"]{flex:0 1 160px;min-width:140px;}
+.filter-bar select{flex:0 1 200px;}
+.date-sep{font-size:12.5px;color:var(--text-onlight-mut);font-weight:600;align-self:center;}
+.table-card{
+background:var(--card);border:1px solid var(--line);border-radius:14px;overflow-x:auto;overflow-y:hidden;
+}
+table{width:100%;border-collapse:collapse;}
+thead th{
+text-align:left;font-size:10.5px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;
+color:var(--text-onlight-mut);padding:12px 14px;border-bottom:1px solid var(--line);
+background:#FAFAFB;
+}
+tbody td{
+padding:12px 14px;font-size:13px;border-bottom:1px solid #EFF0F3;vertical-align:middle;
+}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:#FAFAFB;}
+.emp-name{font-weight:700;color:var(--text-onlight);}
+.emp-email{font-size:11.5px;color:var(--text-onlight-mut);}
+.type-pill{
+display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:700;
+padding:3px 8px;border-radius:6px;letter-spacing:0.03em;
+}
+.type-pill.in{background:var(--green-dim);color:var(--green-text);}
+.type-pill.out{background:var(--red-dim);color:var(--red-text);}
+.mono{font-family:'JetBrains Mono',monospace;font-size:12.5px;}
+.loc-cell{font-size:12px;color:var(--text-onlight-mut);}
+.loc-cell.bad{color:#B3382F;}
+.empty-state{padding:40px 20px;text-align:center;color:var(--text-onlight-mut);font-size:13px;}
+.section-head{
+display:flex;align-items:baseline;justify-content:space-between;
+gap:12px;margin:0 0 10px;flex-wrap:wrap;
+}
+.section-head h2{font-size:13px;font-weight:800;color:var(--text-onlight);margin:0;}
+.section-head .hint{font-size:11.5px;font-weight:500;color:var(--text-onlight-mut);}
+.export-btn{
+display:flex;align-items:center;gap:6px;
+background:var(--card);border:1px solid var(--line);color:var(--text-onlight);
+font-family:'Manrope',sans-serif;font-size:12px;font-weight:700;
+padding:8px 12px;border-radius:8px;cursor:pointer;
+}
+.export-btn:hover{border-color:#9AA1AC;}
+.export-btn:disabled{opacity:0.6;cursor:wait;}
+.status-pill2{
+display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;
+}
+.status-pill2.complete{background:var(--green-dim);color:var(--green-text);}
+.status-pill2.ongoing{background:#FFF4E0;color:#8A5A1F;}
+.status-pill2.orphan{background:var(--red-dim);color:var(--red-text);}
+.form-label{
+display:block;font-size:10px;font-weight:700;letter-spacing:0.06em;
+text-transform:uppercase;color:var(--text-onlight-mut);margin-bottom:4px;
+}
+.form-input{
+font-family:'Manrope',sans-serif;font-size:13px;font-weight:600;
+padding:9px 11px;border-radius:9px;border:1px solid var(--line);
+background:var(--card);color:var(--text-onlight);outline:none;width:100%;
+}
+.form-input:focus{border-color:var(--amber);}
+.add-location-form{
+display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;
+background:var(--card);border:1px solid var(--line);border-radius:14px;
+padding:16px;margin-bottom:20px;
+}
+.add-location-form>div{flex:1;min-width:130px;}
+.add-location-form .radius-field{flex:0 0 110px;min-width:90px;}
+.day-toggles{display:flex;gap:3px;}
+.day-btn{
+width:22px;height:22px;border-radius:5px;border:1px solid var(--line);background:var(--card);
+font-size:10px;font-weight:700;color:var(--text-onlight-mut);cursor:pointer;padding:0;
+}
+.day-btn.active{background:var(--amber);border-color:var(--amber);color:#20160A;}
+.delete-btn{
+background:none;border:1px solid var(--red-dim);color:var(--red-text);
+font-family:'Manrope',sans-serif;font-size:11.5px;font-weight:700;
+padding:6px 10px;border-radius:7px;cursor:pointer;
+}
+.delete-btn:hover{background:var(--red-dim);}
+.modal-overlay{
+position:fixed;inset:0;background:rgba(13,15,18,0.55);
+display:flex;align-items:center;justify-content:center;padding:20px;z-index:50;
+}
+.modal-box{
+background:var(--card);border-radius:16px;max-width:480px;width:100%;
+max-height:85vh;overflow-y:auto;padding:22px;
+}
+.modal-box h3{margin:0 0 4px;font-size:15px;font-weight:800;color:var(--text-onlight);}
+.modal-sub{font-size:12px;color:var(--text-onlight-mut);margin-bottom:16px;}
+.schedule-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #EFF0F3;}
+.schedule-row:last-child{border-bottom:none;}
+.schedule-day{width:38px;font-size:12.5px;font-weight:700;color:var(--text-onlight);flex-shrink:0;}
+.schedule-off-toggle{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-onlight-mut);flex-shrink:0;white-space:nowrap;}
+.schedule-times{display:flex;gap:6px;flex:1;align-items:center;}
+.schedule-times input[type="time"]{flex:1;min-width:0;}
+.modal-actions{display:flex;gap:10px;margin-top:18px;justify-content:flex-end;}
+.modal-btn-cancel{
+background:none;border:1px solid var(--line);color:var(--text-onlight-mut);
+font-family:'Manrope',sans-serif;font-size:12.5px;font-weight:700;
+padding:9px 16px;border-radius:8px;cursor:pointer;
+}
+.modal-btn-save{
+background:var(--amber);border:none;color:#20160A;
+font-family:'Manrope',sans-serif;font-size:12.5px;font-weight:800;
+padding:9px 18px;border-radius:8px;cursor:pointer;
+}
+.modal-btn-save:disabled{opacity:0.6;cursor:wait;}
+.add-holiday-form{
+display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;
+background:var(--card);border:1px solid var(--line);border-radius:14px;
+padding:16px;margin-bottom:20px;
+}
+.add-holiday-form>div{flex:1;min-width:150px;}
+.hidden{display:none !important;}
+@media(max-width:640px){
+.table-card{overflow-x:auto;}
+table{min-width:640px;}
+#peopleTable{min-width:620px;}
+}
 </style>
 </head>
-
 <body>
-
-<div id="authGate">
-  <div class="auth-card">
-    <h1>Manager Dashboard</h1>
-    <p>Sign in with your manager account to access Worksite Clock management.</p>
-
-    <form id="signInForm">
-      <div class="form-group">
-        <label class="form-label" for="email">Email</label>
-        <input class="form-input" id="email" type="email" required>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="password">Password</label>
-        <input class="form-input" id="password" type="password" required>
-      </div>
-
-      <button class="primary-btn" id="signInBtn" type="submit">
-        <span id="signInLabel">Sign In</span>
-      </button>
-
-      <div class="auth-error" id="authError"></div>
-    </form>
-  </div>
+<div class="wrap">
+<!-- ===== SIGN IN GATE ===== -->
+<div id="authGate" class="auth-wrap">
+<div class="device">
+<div class="screen">
+<div class="auth-head">
+<div class="badge">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFB020" stroke-width="1.8">
+<rect x="3" y="11" width="18" height="10" rx="2"/>
+<path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+</svg>
+</div>
+<h1>Manager Sign In</h1>
+<p>Sign in with your company email to view team records.</p>
+</div>
+<div class="auth-error" id="authError"></div>
+<form id="signInForm">
+<div class="field">
+<label for="email">Company email</label>
+<input id="email" type="email" placeholder="you@company.com" autocomplete="username" required>
+</div>
+<div class="field">
+<label for="password">Password</label>
+<input id="password" type="password" placeholder="••••••••" autocomplete="current-password" required>
+</div>
+<button type="submit" class="primary-btn" id="signInBtn">
+<span id="signInLabel">Sign In</span>
+</button>
+</form>
+<div class="not-admin-note">Use the same account you sign up with in the employee app.<br>Your account needs manager access enabled — see setup notes.</div>
+</div>
+</div>
 </div>
 
-<div id="notAdminGate" class="hidden">
-  <div class="auth-card denied-card">
-    <h1>Access Denied</h1>
-    <p id="notAdminEmail"></p>
-    <button class="secondary-btn" id="signOutFromDenied">Sign Out</button>
-  </div>
+<!-- ===== NOT AUTHORIZED ===== -->
+<div id="notAdminGate" class="auth-wrap hidden">
+<div class="device">
+<div class="screen">
+<div class="auth-head">
+<div class="badge">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E2574C" stroke-width="1.8">
+<circle cx="12" cy="12" r="9"/>
+<path d="M12 8v5M12 16h.01"/>
+</svg>
+</div>
+<h1>Not authorized</h1>
+<p id="notAdminEmail" style="margin-bottom:16px;"></p>
+</div>
+<button class="primary-btn" id="signOutFromDenied">Sign Out</button>
+</div>
+</div>
 </div>
 
+<!-- ===== DASHBOARD ===== -->
 <div id="dashboard" class="hidden">
-
-  <div class="topbar">
-    <div class="wrap">
-      <div class="topbar-inner">
-        <div class="brand">
-          <div class="brand-mark">WC</div>
-          <div>
-            <div class="brand-title">Worksite Clock</div>
-            <div class="brand-sub">Manager Dashboard</div>
-          </div>
-        </div>
-
-        <div class="top-actions">
-          <span class="admin-email" id="adminEmail"></span>
-          <button class="signout-btn" id="signOutBtn">Sign Out</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <main class="wrap dashboard">
-
-    <div class="dashboard-head">
-      <div>
-        <h1>Manager Dashboard</h1>
-        <p>Manage attendance, employees, schedules, leave, PT sessions and payroll.</p>
-      </div>
-    </div>
-
-    <div class="tabs">
-      <button class="tab-btn active" data-tab="attendance">Attendance</button>
-      <button class="tab-btn" data-tab="locations">Locations</button>
-      <button class="tab-btn" data-tab="people">People</button>
-      <button class="tab-btn" data-tab="holidays">Holidays</button>
-      <button class="tab-btn" data-tab="leave">Leave</button>
-      <button class="tab-btn" data-tab="ptsessions">PT Sessions</button>
-      <button class="tab-btn" data-tab="payroll">Payroll</button>
-      <button class="tab-btn" data-tab="monthlyreport">Monthly Report</button>
-    </div>
-
-    <!-- ================= ATTENDANCE ================= -->
-
-    <section id="attendanceTab">
-
-      <div class="stats">
-        <div class="stat-card">
-          <div class="stat-label">TOTAL PUNCHES</div>
-          <div class="stat-value" id="statTotal">0</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-label">EMPLOYEES</div>
-          <div class="stat-value" id="statEmployees">0</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-label">TODAY'S PUNCHES</div>
-          <div class="stat-value" id="statToday">0</div>
-        </div>
-      </div>
-
-      <div class="panel">
-
-        <div class="panel-head">
-          <div>
-            <div class="panel-title">Attendance</div>
-            <div class="panel-sub">Raw clock-in and clock-out records.</div>
-          </div>
-
-          <button class="export-btn" id="exportRawBtn">Export CSV</button>
-        </div>
-
-        <div class="filters">
-
-          <input
-            class="form-input"
-            id="searchInput"
-            type="text"
-            placeholder="Search employee..."
-          >
-
-          <select class="form-input" id="employeeFilter">
-            <option value="">All employees</option>
-          </select>
-
-          <select class="form-input" id="typeFilter">
-            <option value="">All types</option>
-            <option value="IN">IN</option>
-            <option value="OUT">OUT</option>
-          </select>
-
-          <select class="form-input" id="dateRangePreset">
-            <option value="today">Today</option>
-            <option value="7days">Last 7 days</option>
-            <option value="thisweek">This week</option>
-            <option value="thismonth">This month</option>
-            <option value="custom">Custom</option>
-            <option value="">All dates</option>
-          </select>
-
-          <input class="form-input hidden" id="dateFrom" type="date">
-          <span class="hidden" id="dateSep">→</span>
-          <input class="form-input hidden" id="dateTo" type="date">
-
-        </div>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Employee</th>
-                <th>Type</th>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Location</th>
-              </tr>
-            </thead>
-
-            <tbody id="recordsBody"></tbody>
-          </table>
-
-          <div class="empty-state hidden" id="emptyState">
-            No attendance records found.
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-
-        <div class="panel-head">
-          <div>
-            <div class="panel-title">Shift Summary</div>
-            <div class="panel-sub">
-              Raw IN → OUT shift pairs. This table shows actual clocked duration.
-            </div>
-          </div>
-
-          <button class="export-btn" id="exportShiftsBtn">Export CSV</button>
-        </div>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Employee</th>
-                <th>Date</th>
-                <th>Clock In</th>
-                <th>Clock Out</th>
-                <th>Hours</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-
-            <tbody id="shiftsBody"></tbody>
-          </table>
-
-          <div class="empty-state hidden" id="shiftsEmptyState">
-            No shifts found.
-          </div>
-        </div>
-
-      </div>
-
-    </section>
-
-    <!-- ================= LOCATIONS ================= -->
-
-    <section id="locationsTab" class="hidden">
-
-      <div class="panel">
-
-        <div class="panel-head">
-          <div>
-            <div class="panel-title">Locations</div>
-            <div class="panel-sub">Manage allowed clock-in locations.</div>
-          </div>
-        </div>
-
-        <form id="addLocationForm" class="inline-form">
-
-          <div class="form-group">
-            <label class="form-label">Name</label>
-            <input class="form-input" id="locName" required>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Latitude</label>
-            <input class="form-input" id="locLat" type="number" step="any" required>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Longitude</label>
-            <input class="form-input" id="locLng" type="number" step="any" required>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Radius (m)</label>
-            <input class="form-input" id="locRadius" type="number" value="150" min="1" required>
-          </div>
-
-          <button class="primary-btn" id="addLocationBtn" type="submit">
-            Add Location
-          </button>
-
-        </form>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Latitude</th>
-                <th>Longitude</th>
-                <th>Radius</th>
-                <th></th>
-              </tr>
-            </thead>
-
-            <tbody id="locationsBody"></tbody>
-          </table>
-
-          <div class="empty-state hidden" id="locationsEmptyState">
-            No locations configured.
-          </div>
-        </div>
-
-      </div>
-
-    </section>
-
-    <!-- ================= PEOPLE ================= -->
-
-    <section id="peopleTab" class="hidden">
-
-      <div class="panel">
-
-        <div class="panel-head">
-          <div>
-            <div class="panel-title">People</div>
-            <div class="panel-sub">Employee profiles, salary, locations and schedules.</div>
-          </div>
-        </div>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Employee</th>
-                <th>Location</th>
-                <th>Basic Salary</th>
-                <th>Schedule</th>
-                <th></th>
-              </tr>
-            </thead>
-
-            <tbody id="peopleBody"></tbody>
-          </table>
-
-          <div class="empty-state hidden" id="peopleEmptyState">
-            No employees found.
-          </div>
-        </div>
-
-      </div>
-
-    </section>
-
-    <!-- ================= HOLIDAYS ================= -->
-
-    <section id="holidaysTab" class="hidden">
-
-      <div class="panel">
-
-        <div class="panel-head">
-          <div>
-            <div class="panel-title">Holidays</div>
-            <div class="panel-sub">Holidays are excluded from scheduled working days unless overridden.</div>
-          </div>
-        </div>
-
-        <form id="addHolidayForm" class="inline-form">
-
-          <div class="form-group">
-            <label class="form-label">Holiday Name</label>
-            <input class="form-input" id="holidayName" required>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Date</label>
-            <input class="form-input" id="holidayDate" type="date" required>
-          </div>
-
-          <div></div>
-
-          <button class="primary-btn" id="addHolidayBtn" type="submit">
-            Add Holiday
-          </button>
-
-        </form>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Date</th>
-                <th></th>
-              </tr>
-            </thead>
-
-            <tbody id="holidaysBody"></tbody>
-          </table>
-
-          <div class="empty-state hidden" id="holidaysEmptyState">
-            No holidays configured.
-          </div>
-        </div>
-
-      </div>
-
-    </section>
-
-    <!-- ================= LEAVE ================= -->
-
-    <section id="leaveTab" class="hidden">
-
-      <div class="panel">
-
-        <div class="panel-head">
-          <div>
-            <div class="panel-title">Leave Requests</div>
-            <div class="panel-sub">Approve or reject employee leave requests.</div>
-          </div>
-        </div>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Employee</th>
-                <th>Type</th>
-                <th>Date</th>
-                <th>Reason</th>
-                <th>Document</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-
-            <tbody id="leaveBody"></tbody>
-          </table>
-
-          <div class="empty-state hidden" id="leaveEmptyState">
-            No leave requests found.
-          </div>
-        </div>
-
-      </div>
-
-    </section>
-
-    <!-- ================= PT SESSIONS ================= -->
-
-    <section id="ptsessionsTab" class="hidden">
-
-      <div class="panel">
-
-        <div class="panel-head">
-          <div>
-            <div class="panel-title">PT Sessions</div>
-            <div class="panel-sub">
-              Every PT session counts automatically at RM 50 per session.
-            </div>
-          </div>
-
-          <button class="export-btn" id="exportPtBtn">
-            Export CSV
-          </button>
-        </div>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Coach</th>
-                <th>Student</th>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Location</th>
-                <th>Clocked In During PT</th>
-                <th>Commission</th>
-              </tr>
-            </thead>
-
-            <tbody id="ptBody"></tbody>
-          </table>
-
-          <div class="empty-state hidden" id="ptEmptyState">
-            No PT sessions found.
-          </div>
-        </div>
-
-      </div>
-
-    </section>
-
-    <!-- ================= PAYROLL ================= -->
-
-    <section id="payrollTab" class="hidden">
-
-      <div class="panel">
-
-        <div class="panel-head">
-          <div>
-            <div class="panel-title">Payroll</div>
-            <div class="panel-sub">
-              Pay is calculated only from scheduled time actually covered.
-              Early clock-in and late clock-out do not increase pay.
-            </div>
-          </div>
-
-          <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-input" id="payrollMonth" type="month">
-            <button class="export-btn" id="exportPayrollBtn">
-              Export CSV
-            </button>
-          </div>
-        </div>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Employee</th>
-                <th>Basic Salary</th>
-                <th>Scheduled Days</th>
-                <th>Hours Worked</th>
-                <th>Late (min)</th>
-                <th>Late Deduction</th>
-                <th>PT Classes</th>
-                <th>PT Commission</th>
-                <th>Total Pay</th>
-              </tr>
-            </thead>
-
-            <tbody id="payrollBody"></tbody>
-          </table>
-
-          <div class="empty-state hidden" id="payrollEmptyState">
-            No payroll data available.
-          </div>
-        </div>
-
-      </div>
-
-    </section>
-
-    <!-- ================= MONTHLY REPORT ================= -->
-
-    <section id="monthlyreportTab" class="hidden">
-
-      <div class="panel">
-
-        <div class="panel-head">
-          <div>
-            <div class="panel-title">Monthly Report</div>
-            <div class="panel-sub">
-              Daily attendance, payable scheduled hours, leave, deductions and PT commission.
-            </div>
-          </div>
-
-          <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-input" id="reportMonth" type="month">
-
-            <select class="form-input" id="reportEmployeeFilter">
-              <option value="">All employees</option>
-            </select>
-
-            <button class="export-btn" id="exportMonthlyReportBtn">
-              Export CSV
-            </button>
-          </div>
-        </div>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Employee</th>
-                <th>Schedule</th>
-                <th>Clock In</th>
-                <th>Clock Out</th>
-                <th>Hours</th>
-                <th>Status</th>
-                <th>Leave</th>
-                <th>Leave Status</th>
-                <th>Late (min)</th>
-                <th>Late Deduction</th>
-                <th>PT Classes</th>
-                <th>PT Commission</th>
-                <th>Daily Pay</th>
-              </tr>
-            </thead>
-
-            <tbody id="monthlyReportBody"></tbody>
-          </table>
-
-          <div class="empty-state hidden" id="monthlyReportEmptyState">
-            No monthly report data available.
-          </div>
-        </div>
-
-      </div>
-
-    </section>
-
-  </main>
+<div class="topbar">
+<div class="eyebrow"><span class="sq"></span>Manager Dashboard</div>
+<div class="topbar-right">
+Signed in as <b id="adminEmail">-</b>
+<button class="signout-btn" id="signOutBtn">Sign Out</button>
+</div>
+</div>
+<div class="tab-nav">
+<button class="tab-btn active" data-tab="attendance">Attendance</button>
+<button class="tab-btn" data-tab="locations">Locations</button>
+<button class="tab-btn" data-tab="people">People</button>
+<button class="tab-btn" data-tab="holidays">Holidays</button>
+<button class="tab-btn" data-tab="leave">Leave</button>
+<button class="tab-btn" data-tab="ptsessions">PT Sessions</button>
+<button class="tab-btn" data-tab="payroll">Payroll</button>
+<button class="tab-btn" data-tab="monthlyreport">Monthly Report</button>
 </div>
 
-<!-- ================= SCHEDULE MODAL ================= -->
-
-<div class="modal hidden" id="scheduleModal">
-
-  <div class="modal-card">
-
-    <div class="modal-head">
-      <div>
-        <div class="modal-title" id="scheduleModalName">
-          Edit Schedule
-        </div>
-        <div class="modal-sub">
-          Set the employee's normal weekly working schedule.
-        </div>
-      </div>
-
-      <button class="modal-close" id="scheduleCancelBtn">
-        Close
-      </button>
-    </div>
-
-    <div id="scheduleRows"></div>
-
-    <div class="modal-actions">
-      <button class="secondary-btn" id="scheduleCancelBtn2" type="button">
-        Cancel
-      </button>
-
-      <button class="primary-btn" id="scheduleSaveBtn" type="button" style="width:auto;">
-        Save Schedule
-      </button>
-    </div>
-
-  </div>
-
+<!-- ===== ATTENDANCE TAB ===== -->
+<div id="attendanceTab">
+<div class="stats-row">
+<div class="stat-card">
+<div class="num" id="statTotal">0</div>
+<div class="lbl">Total records</div>
+</div>
+<div class="stat-card">
+<div class="num" id="statEmployees">0</div>
+<div class="lbl">Employees</div>
+</div>
+<div class="stat-card">
+<div class="num" id="statToday">0</div>
+<div class="lbl">Punches today</div>
+</div>
+</div>
+<div class="filter-bar">
+<input type="text" id="searchInput" placeholder="Search by employee name or email…">
+<select id="employeeFilter">
+<option value="">All employees</option>
+</select>
+<select id="typeFilter">
+<option value="">All types</option>
+<option value="IN">Clock in only</option>
+<option value="OUT">Clock out only</option>
+</select>
+</div>
+<div class="filter-bar">
+<select id="dateRangePreset">
+<option value="all">All time</option>
+<option value="today">Today</option>
+<option value="7days">Last 7 days</option>
+<option value="thisweek">This week (Mon–today)</option>
+<option value="thismonth">This month</option>
+<option value="custom">Custom range…</option>
+</select>
+<input type="date" id="dateFrom" class="hidden">
+<span class="date-sep hidden" id="dateSep">to</span>
+<input type="date" id="dateTo" class="hidden">
+</div>
+<div class="section-head">
+<h2>Shift Summary <span class="hint">— clock in paired with clock out, hours calculated</span></h2>
+<button class="export-btn" id="exportShiftsBtn">Export CSV</button>
+</div>
+<div class="table-card" style="margin-bottom:28px;">
+<table id="shiftsTable">
+<thead>
+<tr>
+<th>Employee</th>
+<th>Date</th>
+<th>Clock In</th>
+<th>Clock Out</th>
+<th>Hours</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody id="shiftsBody"></tbody>
+</table>
+<div class="empty-state hidden" id="shiftsEmptyState">No shifts match your filters.</div>
+</div>
+<div class="section-head">
+<h2>Raw Punches <span class="hint">— every individual clock in/out event</span></h2>
+<button class="export-btn" id="exportRawBtn">Export CSV</button>
+</div>
+<div class="table-card">
+<table id="recordsTable">
+<thead>
+<tr>
+<th>Employee</th>
+<th>Type</th>
+<th>Date</th>
+<th>Time</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody id="recordsBody"></tbody>
+</table>
+<div class="empty-state hidden" id="emptyState">No records match your filters.</div>
+</div>
 </div>
 
-<!-- ================= OVERRIDE MODAL ================= -->
+<!-- ===== LOCATIONS TAB ===== -->
+<div id="locationsTab" class="hidden">
+<div class="section-head">
+<h2>Locations <span class="hint">— gym branches used for geofencing</span></h2>
+</div>
+<form id="addLocationForm" class="add-location-form">
+<div>
+<label class="form-label">Name</label>
+<input type="text" id="locName" class="form-input" placeholder="e.g. Bukit Jalil" required>
+</div>
+<div>
+<label class="form-label">Latitude</label>
+<input type="number" step="any" id="locLat" class="form-input" placeholder="3.1390" required>
+</div>
+<div>
+<label class="form-label">Longitude</label>
+<input type="number" step="any" id="locLng" class="form-input" placeholder="101.6869" required>
+</div>
+<div class="radius-field">
+<label class="form-label">Radius (m)</label>
+<input type="number" id="locRadius" class="form-input" value="150" required>
+</div>
+<button type="submit" class="primary-btn" id="addLocationBtn" style="width:auto;padding:10px 18px;">Add Location</button>
+</form>
+<div class="table-card">
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Latitude</th>
+<th>Longitude</th>
+<th>Radius</th>
+<th></th>
+</tr>
+</thead>
+<tbody id="locationsBody"></tbody>
+</table>
+<div class="empty-state hidden" id="locationsEmptyState">No locations added yet.</div>
+</div>
+</div>
 
-<div class="modal hidden" id="overrideModal">
+<!-- ===== PEOPLE TAB ===== -->
+<div id="peopleTab" class="hidden">
+<div class="section-head">
+<h2>People <span class="hint">— assign location, salary, and per-day schedule for each employee</span></h2>
+</div>
+<div class="table-card">
+<table id="peopleTable">
+<thead>
+<tr>
+<th>Employee</th>
+<th>Location</th>
+<th>Basic Salary</th>
+<th>Schedule</th>
+<th></th>
+</tr>
+</thead>
+<tbody id="peopleBody"></tbody>
+</table>
+<div class="empty-state hidden" id="peopleEmptyState">No employee profiles yet — they're created automatically when someone signs up.</div>
+</div>
+</div>
 
-  <div class="modal-card">
+<!-- ===== HOLIDAYS TAB ===== -->
+<div id="holidaysTab" class="hidden">
+<div class="section-head">
+<h2>Holidays <span class="hint">— public and company holidays, excluded from working-day payroll calculations</span></h2>
+</div>
+<form id="addHolidayForm" class="add-holiday-form">
+<div>
+<label class="form-label">Holiday name</label>
+<input type="text" id="holidayName" class="form-input" placeholder="e.g. Merdeka Day" required>
+</div>
+<div style="flex:0 0 180px;min-width:150px;">
+<label class="form-label">Date</label>
+<input type="date" id="holidayDate" class="form-input" required>
+</div>
+<button type="submit" class="primary-btn" id="addHolidayBtn" style="width:auto;padding:10px 18px;">Add Holiday</button>
+</form>
+<div class="table-card">
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Date</th>
+<th></th>
+</tr>
+</thead>
+<tbody id="holidaysBody"></tbody>
+</table>
+<div class="empty-state hidden" id="holidaysEmptyState">No holidays added yet.</div>
+</div>
+</div>
 
-    <div class="modal-head">
-      <div>
-        <div class="modal-title" id="overrideModalName">
-          One-off Changes
-        </div>
-        <div class="modal-sub">
-          Override the normal schedule for a specific date.
-        </div>
-      </div>
+<!-- ===== LEAVE TAB ===== -->
+<div id="leaveTab" class="hidden">
+<div class="section-head">
+<h2>Leave Requests <span class="hint">— review MC, annual, and emergency leave submissions</span></h2>
+</div>
+<div class="table-card">
+<table>
+<thead>
+<tr>
+<th>Employee</th>
+<th>Type</th>
+<th>Dates</th>
+<th>Reason</th>
+<th>Document</th>
+<th>Status</th>
+<th></th>
+</tr>
+</thead>
+<tbody id="leaveBody"></tbody>
+</table>
+<div class="empty-state hidden" id="leaveEmptyState">No leave requests yet.</div>
+</div>
+</div>
 
-      <button class="modal-close" id="overrideCloseBtn">
-        Close
-      </button>
-    </div>
+<!-- ===== PT SESSIONS TAB ===== -->
+<div id="ptsessionsTab" class="hidden">
+<div class="section-head">
+<h2>PT Sessions <span class="hint">— PT sessions are recorded automatically; RM50 commission per session</span></h2>
+<button class="export-btn" id="exportPtBtn">Export CSV</button>
+</div>
+<div class="table-card">
+<table>
+<thead>
+<tr>
+<th>Coach</th>
+<th>Student</th>
+<th>Date</th>
+<th>PT Time</th>
+<th>Location</th>
+<th>Clocked In During PT</th>
+<th>Commission</th>
+</tr>
+</thead>
+<tbody id="ptBody"></tbody>
+</table>
+<div class="empty-state hidden" id="ptEmptyState">No PT sessions logged yet.</div>
+</div>
+</div>
 
-    <form id="addOverrideForm">
+<!-- ===== PAYROLL TAB ===== -->
+<div id="payrollTab" class="hidden">
+<div class="section-head">
+<h2>Payroll <span class="hint">— Daily Salary = Basic ÷ scheduled working days (holidays/one-off off-days excluded), Hourly Rate = Daily Salary ÷ that day's scheduled hours, plus PT commission</span></h2>
+<button class="export-btn" id="exportPayrollBtn">Export CSV</button>
+</div>
+<div class="filter-bar">
+<input type="month" id="payrollMonth" class="form-input" style="max-width:200px;">
+</div>
+<div class="table-card">
+<table>
+<thead>
+<tr>
+<th>Employee</th>
+<th>Basic Salary</th>
+<th>Scheduled Days</th>
+<th>Hours Worked</th>
+<th>Late (min)</th>
+<th>Late Deduction</th>
+<th>PT Classes</th>
+<th>PT Commission</th>
+<th>Total Pay</th>
+</tr>
+</thead>
+<tbody id="payrollBody"></tbody>
+</table>
+<div class="empty-state hidden" id="payrollEmptyState">No profiles with salary and schedule set yet.</div>
+</div>
+</div>
 
-      <div class="inline-form" style="grid-template-columns:1fr 1fr 1fr;">
+<!-- ===== MONTHLY REPORT TAB ===== -->
+<div id="monthlyreportTab" class="hidden">
+<div class="section-head">
+<h2>Unified Monthly Report <span class="hint">— one row per employee per day, combining schedule, attendance, leave, late, PT, and daily pay</span></h2>
+<button class="export-btn" id="exportMonthlyReportBtn">Export CSV</button>
+</div>
+<div class="filter-bar">
+<input type="month" id="reportMonth" class="form-input" style="max-width:200px;">
+<select id="reportEmployeeFilter" class="form-input" style="max-width:220px;"><option value="">All employees</option></select>
+</div>
+<div class="table-card">
+<table style="min-width:1450px;">
+<thead><tr><th>Date</th><th>Employee</th><th>Schedule</th><th>Clock In</th><th>Clock Out</th><th>Hours</th><th>Status</th><th>Leave</th><th>Leave Status</th><th>Late (min)</th><th>Late Deduction</th><th>PT Classes</th><th>PT Commission</th><th>Daily Pay</th></tr></thead>
+<tbody id="monthlyReportBody"></tbody>
+</table>
+<div class="empty-state hidden" id="monthlyReportEmptyState">No report data for this month.</div>
+</div>
+</div>
+</div>
+</div>
 
-        <div class="form-group">
-          <label class="form-label">Date</label>
-          <input class="form-input" id="overrideDate" type="date" required>
-        </div>
+<!-- ===== SCHEDULE MODAL ===== -->
+<div id="scheduleModal" class="modal-overlay hidden">
+<div class="modal-box">
+<h3 id="scheduleModalName">Edit Schedule</h3>
+<div class="modal-sub">Set working hours for each day. Toggle "Off" for rest days.</div>
+<div id="scheduleRows"></div>
+<div class="modal-actions">
+<button class="modal-btn-cancel" id="scheduleCancelBtn">Cancel</button>
+<button class="modal-btn-save" id="scheduleSaveBtn">Save Schedule</button>
+</div>
+</div>
+</div>
 
-        <div class="form-group">
-          <label class="form-label">Start</label>
-          <input class="form-input" id="overrideStart" type="time" value="09:00">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">End</label>
-          <input class="form-input" id="overrideEnd" type="time" value="13:00">
-        </div>
-
-      </div>
-
-      <label style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;">
-        <input type="checkbox" id="overrideOff">
-        Day off
-      </label>
-
-      <div class="modal-actions">
-        <button class="primary-btn" id="addOverrideBtn" type="submit" style="width:auto;">
-          Add Change
-        </button>
-      </div>
-
-    </form>
-
-    <div style="margin-top:20px;">
-      <div class="modal-title" style="font-size:14px;margin-bottom:8px;">
-        Existing Changes
-      </div>
-
-      <div id="overrideRows"></div>
-    </div>
-
-  </div>
-
+<div id="overrideModal" class="modal-overlay hidden">
+<div class="modal-box">
+<h3 id="overrideModalName">One-off Schedule Changes</h3>
+<div class="modal-sub">Override the regular schedule for a single date — e.g. working a usual off-day, or taking an extra day off. Takes priority over both the weekly schedule and holidays.</div>
+<form id="addOverrideForm" style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;">
+<div style="flex:0 0 150px;">
+<label class="form-label">Date</label>
+<input type="date" id="overrideDate" class="form-input" required>
+</div>
+<label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-onlight-mut);flex-shrink:0;">
+<input type="checkbox" id="overrideOff"> Day off
+</label>
+<div style="flex:1;min-width:90px;" id="overrideStartWrap">
+<label class="form-label">Start</label>
+<input type="time" id="overrideStart" class="form-input" value="09:00">
+</div>
+<div style="flex:1;min-width:90px;" id="overrideEndWrap">
+<label class="form-label">End</label>
+<input type="time" id="overrideEnd" class="form-input" value="13:00">
+</div>
+<button type="submit" class="modal-btn-save" id="addOverrideBtn">Add</button>
+</form>
+<div id="overrideRows"></div>
+<div class="modal-actions">
+<button class="modal-btn-cancel" id="overrideCloseBtn">Close</button>
+</div>
+</div>
 </div>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
+import { getFirestore, collection, query, orderBy, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js";
 
-import {
-  getFirestore,
-  collection,
-  query,
-  orderBy,
-  getDocs,
-  doc,
-  getDoc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  serverTimestamp,
-  setDoc
-} from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
-
-import {
-  getAuth,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signOut
-} from "https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js";
-
-
-const firebaseConfig = {
-  apiKey: "AIzaSyA0xw-kjBcOyNqcSafVwz4qPuCIkvea_Ds",
-  authDomain: "omni-7744f.firebaseapp.com",
-  projectId: "omni-7744f",
-  storageBucket: "omni-7744f.firebasestorage.app",
-  messagingSenderId: "438095814227",
-  appId: "1:438095814227:web:de21ba922a38f236f930a6",
-  measurementId: "G-HWQJNJB1E6"
+const firebaseConfig={
+apiKey:"AIzaSyA0xw-kjBcOyNqcSafVwz4qPuCIkvea_Ds",
+authDomain:"omni-7744f.firebaseapp.com",
+projectId:"omni-7744f",
+storageBucket:"omni-7744f.firebasestorage.app",
+messagingSenderId:"438095814227",
+appId:"1:438095814227:web:de21ba922a38f236f930a6",
+measurementId:"G-HWQJNJB1E6"
 };
 
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+const auth=getAuth(app);
+const punchesRef=collection(db,"punches");
+const locationsRef=collection(db,"locations");
+const profilesRef=collection(db,"employee_profiles");
+const holidaysRef=collection(db,"holidays");
+const leaveRef=collection(db,"leave_requests");
+const ptSessionsRef=collection(db,"pt_sessions");
+const overridesRef=collection(db,"schedule_overrides");
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-
-
-/* ================= COLLECTIONS ================= */
-
-const punchesRef = collection(db, "punches");
-const locationsRef = collection(db, "locations");
-const profilesRef = collection(db, "employee_profiles");
-const holidaysRef = collection(db, "holidays");
-const leaveRef = collection(db, "leave_requests");
-const ptSessionsRef = collection(db, "pt_sessions");
-const overridesRef = collection(db, "schedule_overrides");
-
-
-/* ================= DOM ================= */
-
-const authGate = document.getElementById('authGate');
-const notAdminGate = document.getElementById('notAdminGate');
-const dashboard = document.getElementById('dashboard');
-const authError = document.getElementById('authError');
-const signInForm = document.getElementById('signInForm');
-const signInBtn = document.getElementById('signInBtn');
-
-
-/* ================= AUTH ================= */
+const authGate=document.getElementById('authGate');
+const notAdminGate=document.getElementById('notAdminGate');
+const dashboard=document.getElementById('dashboard');
+const authError=document.getElementById('authError');
+const signInForm=document.getElementById('signInForm');
+const signInBtn=document.getElementById('signInBtn');
 
 function showGate(which){
-  authGate.classList.toggle('hidden', which !== 'auth');
-  notAdminGate.classList.toggle('hidden', which !== 'denied');
-  dashboard.classList.toggle('hidden', which !== 'dashboard');
+authGate.classList.toggle('hidden',which!=='auth');
+notAdminGate.classList.toggle('hidden',which!=='denied');
+dashboard.classList.toggle('hidden',which!=='dashboard');
 }
-
 
 function friendlyAuthError(err){
-  const map = {
-    'auth/invalid-email': 'That email address looks invalid.',
-    'auth/user-not-found': 'No account found with that email.',
-    'auth/wrong-password': 'Incorrect password.',
-    'auth/invalid-credential': 'Incorrect email or password.',
-  };
-
-  return map[err.code] || err.message;
+const map={
+'auth/invalid-email':'That email address looks invalid.',
+'auth/user-not-found':'No account found with that email.',
+'auth/wrong-password':'Incorrect password.',
+'auth/invalid-credential':'Incorrect email or password.',
+};
+return map[err.code]||err.message;
 }
 
-
-signInForm.addEventListener('submit', async (e) => {
-
-  e.preventDefault();
-
-  authError.classList.remove('show');
-
-  signInBtn.disabled = true;
-
-  document.getElementById('signInLabel').innerHTML =
-    '<span class="spin"></span>';
-
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
-
-  try{
-
-    await signInWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
-
-  }catch(err){
-
-    authError.textContent = friendlyAuthError(err);
-    authError.classList.add('show');
-
-  }
-
-  signInBtn.disabled = false;
-  document.getElementById('signInLabel').textContent = 'Sign In';
-
+signInForm.addEventListener('submit',async(e)=>{
+e.preventDefault();
+authError.classList.remove('show');
+signInBtn.disabled=true;
+document.getElementById('signInLabel').innerHTML='<span class="spin"></span>';
+const email=document.getElementById('email').value.trim();
+const password=document.getElementById('password').value;
+try{
+await signInWithEmailAndPassword(auth,email,password);
+}catch(err){
+authError.textContent=friendlyAuthError(err);
+authError.classList.add('show');
+}
+signInBtn.disabled=false;
+document.getElementById('signInLabel').textContent='Sign In';
 });
 
+document.getElementById('signOutBtn').addEventListener('click',()=>signOut(auth));
+document.getElementById('signOutFromDenied').addEventListener('click',()=>signOut(auth));
 
-document.getElementById('signOutBtn').addEventListener(
-  'click',
-  () => signOut(auth)
-);
-
-
-document.getElementById('signOutFromDenied').addEventListener(
-  'click',
-  () => signOut(auth)
-);
-
-
-/* ================= TAB SWITCHING ================= */
-
-const tabButtons = document.querySelectorAll('.tab-btn');
-
-const tabPanels = {
-
-  attendance: document.getElementById('attendanceTab'),
-
-  locations: document.getElementById('locationsTab'),
-
-  people: document.getElementById('peopleTab'),
-
-  holidays: document.getElementById('holidaysTab'),
-
-  leave: document.getElementById('leaveTab'),
-
-  ptsessions: document.getElementById('ptsessionsTab'),
-
-  payroll: document.getElementById('payrollTab'),
-
-  monthlyreport: document.getElementById('monthlyreportTab'),
-
+const tabButtons=document.querySelectorAll('.tab-btn');
+const tabPanels={
+attendance:document.getElementById('attendanceTab'),
+locations:document.getElementById('locationsTab'),
+people:document.getElementById('peopleTab'),
+holidays:document.getElementById('holidaysTab'),
+leave:document.getElementById('leaveTab'),
+ptsessions:document.getElementById('ptsessionsTab'),
+payroll:document.getElementById('payrollTab'),
+monthlyreport:document.getElementById('monthlyreportTab'),
 };
+tabButtons.forEach(btn=>btn.addEventListener('click',()=>{
+tabButtons.forEach(b=>b.classList.remove('active'));
+btn.classList.add('active');
+Object.entries(tabPanels).forEach(([key,el])=>el.classList.toggle('hidden',key!==btn.dataset.tab));
+if(btn.dataset.tab==='payroll')renderPayroll();
+if(btn.dataset.tab==='leave')loadLeaveRequests();
+if(btn.dataset.tab==='ptsessions')loadPtSessions();
+if(btn.dataset.tab==='monthlyreport')renderMonthlyReport();
+}));
 
+let allRecords=[];
+let allLocations=[];
+let allProfiles=[];
+let allHolidays=[];
 
-tabButtons.forEach(btn => {
-
-  btn.addEventListener('click', () => {
-
-    tabButtons.forEach(b => b.classList.remove('active'));
-
-    btn.classList.add('active');
-
-    Object.entries(tabPanels).forEach(([key, el]) => {
-
-      el.classList.toggle(
-        'hidden',
-        key !== btn.dataset.tab
-      );
-
-    });
-
-    if(btn.dataset.tab === 'payroll'){
-      renderPayroll();
-    }
-
-    if(btn.dataset.tab === 'leave'){
-      loadLeaveRequests();
-    }
-
-    if(btn.dataset.tab === 'ptsessions'){
-      loadPtSessions();
-    }
-
-    if(btn.dataset.tab === 'monthlyreport'){
-      renderMonthlyReport();
-    }
-
-  });
-
+onAuthStateChanged(auth,async(user)=>{
+if(!user){
+showGate('auth');
+signInForm.reset();
+return;
+}
+try{
+const adminDoc=await getDoc(doc(db,"admins",user.uid));
+if(!adminDoc.exists()){
+document.getElementById('notAdminEmail').textContent=`${user.email} is signed in but doesn't have manager access yet.`;
+showGate('denied');
+return;
+}
+document.getElementById('adminEmail').textContent=user.email;
+showGate('dashboard');
+await loadLocations();
+await loadPeople();
+await loadHolidays();
+await loadLeaveRequests();
+await loadPtSessions();
+await loadOverrides();
+await loadRecords();
+}catch(err){
+document.getElementById('notAdminEmail').textContent=`Couldn't check manager access for ${user.email}. (${err.message})`;
+showGate('denied');
+}
 });
 
-
-/* ================= GLOBAL DATA ================= */
-
-let allRecords = [];
-let allLocations = [];
-let allProfiles = [];
-let allHolidays = [];
-let allLeaveRequests = [];
-let allPtSessions = [];
-let allOverrides = [];
-
-
-/* ================= AUTH STATE ================= */
-
-onAuthStateChanged(auth, async (user) => {
-
-  if(!user){
-
-    showGate('auth');
-
-    signInForm.reset();
-
-    return;
-  }
-
-  try{
-
-    const adminDoc = await getDoc(
-      doc(db, "admins", user.uid)
-    );
-
-    if(!adminDoc.exists()){
-
-      document.getElementById('notAdminEmail').textContent =
-        `${user.email} is signed in but doesn't have manager access yet.`;
-
-      showGate('denied');
-
-      return;
-    }
-
-    document.getElementById('adminEmail').textContent =
-      user.email;
-
-    showGate('dashboard');
-
-    await loadLocations();
-    await loadPeople();
-    await loadHolidays();
-    await loadLeaveRequests();
-    await loadPtSessions();
-    await loadOverrides();
-    await loadRecords();
-
-  }catch(err){
-
-    document.getElementById('notAdminEmail').textContent =
-      `Couldn't check manager access for ${user.email}. (${err.message})`;
-
-    showGate('denied');
-
-  }
-
-});
-
-
-/* ============================================================
-   ATTENDANCE
-   ============================================================ */
+// ================= ATTENDANCE =================
 
 async function loadRecords(){
-
-  const q = query(
-    punchesRef,
-    orderBy("createdAt", "desc")
-  );
-
-  const snap = await getDocs(q);
-
-  allRecords = snap.docs.map(d => d.data());
-
-  populateEmployeeFilter();
-
-  renderStats();
-  renderTable();
-  renderShifts();
-
+const q=query(punchesRef,orderBy("createdAt","desc"));
+const snap=await getDocs(q);
+allRecords=snap.docs.map(d=>d.data());
+populateEmployeeFilter();
+renderStats();
+renderTable();
+renderShifts();
 }
-
 
 function populateEmployeeFilter(){
-
-  const select =
-    document.getElementById('employeeFilter');
-
-  const names = [
-    ...new Set(
-      allRecords
-        .map(r => r.name)
-        .filter(Boolean)
-    )
-  ].sort();
-
-  select.innerHTML =
-    '<option value="">All employees</option>' +
-    names.map(
-      n => `<option value="${n}">${n}</option>`
-    ).join('');
-
+const select=document.getElementById('employeeFilter');
+const names=[...new Set(allRecords.map(r=>r.name).filter(Boolean))].sort();
+select.innerHTML='<option value="">All employees</option>'+names.map(n=>`<option value="${n}">${n}</option>`).join('');
 }
-
 
 function renderStats(){
-
-  document.getElementById('statTotal').textContent =
-    allRecords.length;
-
-  document.getElementById('statEmployees').textContent =
-    new Set(
-      allRecords.map(r => r.uid)
-    ).size;
-
-  const todayStr =
-    new Date().toDateString();
-
-  const todayCount =
-    allRecords.filter(r => {
-
-      const d = r.createdAt?.toDate?.();
-
-      return d &&
-        d.toDateString() === todayStr;
-
-    }).length;
-
-  document.getElementById('statToday').textContent =
-    todayCount;
-
+document.getElementById('statTotal').textContent=allRecords.length;
+document.getElementById('statEmployees').textContent=new Set(allRecords.map(r=>r.uid)).size;
+const todayStr=new Date().toDateString();
+const todayCount=allRecords.filter(r=>{
+const d=r.createdAt?.toDate?.();
+return d&&d.toDateString()===todayStr;
+}).length;
+document.getElementById('statToday').textContent=todayCount;
 }
-
-
-/* ================= DATE RANGE ================= */
 
 function computeDateRange(preset){
-
-  const now = new Date();
-
-  const startOfToday =
-    new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate()
-    );
-
-  const endExclusive =
-    new Date(startOfToday);
-
-  endExclusive.setDate(
-    endExclusive.getDate() + 1
-  );
-
-
-  switch(preset){
-
-    case 'today':
-
-      return {
-        start:startOfToday,
-        end:endExclusive
-      };
-
-
-    case '7days':{
-
-      const s =
-        new Date(startOfToday);
-
-      s.setDate(
-        s.getDate() - 6
-      );
-
-      return {
-        start:s,
-        end:endExclusive
-      };
-
-    }
-
-
-    case 'thisweek':{
-
-      const day =
-        startOfToday.getDay();
-
-      const diff =
-        day === 0 ? 6 : day - 1;
-
-      const s =
-        new Date(startOfToday);
-
-      s.setDate(
-        s.getDate() - diff
-      );
-
-      return {
-        start:s,
-        end:endExclusive
-      };
-
-    }
-
-
-    case 'thismonth':
-
-      return {
-        start:new Date(
-          now.getFullYear(),
-          now.getMonth(),
-          1
-        ),
-        end:endExclusive
-      };
-
-
-    case 'custom':{
-
-      const fromVal =
-        document.getElementById('dateFrom').value;
-
-      const toVal =
-        document.getElementById('dateTo').value;
-
-      const s =
-        fromVal
-          ? new Date(fromVal + 'T00:00:00')
-          : null;
-
-      let e =
-        toVal
-          ? new Date(toVal + 'T00:00:00')
-          : null;
-
-      if(e){
-        e.setDate(e.getDate() + 1);
-      }
-
-      return {
-        start:s,
-        end:e
-      };
-
-    }
-
-
-    default:
-
-      return {
-        start:null,
-        end:null
-      };
-
-  }
-
+const now=new Date();
+const startOfToday=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+const endExclusive=new Date(startOfToday);
+endExclusive.setDate(endExclusive.getDate()+1);
+switch(preset){
+case'today':return{start:startOfToday,end:endExclusive};
+case'7days':{const s=new Date(startOfToday);s.setDate(s.getDate()-6);return{start:s,end:endExclusive};}
+case'thisweek':{const day=startOfToday.getDay();const diff=(day===0)?6:day-1;const s=new Date(startOfToday);s.setDate(s.getDate()-diff);return{start:s,end:endExclusive};}
+case'thismonth':return{start:new Date(now.getFullYear(),now.getMonth(),1),end:endExclusive};
+case'custom':{const fromVal=document.getElementById('dateFrom').value;const toVal=document.getElementById('dateTo').value;const s=fromVal?new Date(fromVal+'T00:00:00'):null;let e=toVal?new Date(toVal+'T00:00:00'):null;if(e)e.setDate(e.getDate()+1);return{start:s,end:e};}
+default:return{start:null,end:null};
+}
 }
 
-
-function inDateRange(date, range){
-
-  if(!date) return false;
-
-  if(range.start && date < range.start){
-    return false;
-  }
-
-  if(range.end && date >= range.end){
-    return false;
-  }
-
-  return true;
+function inDateRange(date,range){
+if(!date)return false;
+if(range.start&&date<range.start)return false;
+if(range.end&&date>=range.end)return false;
+return true;
 }
 
+function currentRange(){return computeDateRange(document.getElementById('dateRangePreset').value);}
 
-function currentRange(){
-
-  return computeDateRange(
-    document.getElementById(
-      'dateRangePreset'
-    ).value
-  );
-
-}
-
-
-document.getElementById(
-  'dateRangePreset'
-).addEventListener('change', (e) => {
-
-  const isCustom =
-    e.target.value === 'custom';
-
-  document.getElementById('dateFrom')
-    .classList.toggle(
-      'hidden',
-      !isCustom
-    );
-
-  document.getElementById('dateSep')
-    .classList.toggle(
-      'hidden',
-      !isCustom
-    );
-
-  document.getElementById('dateTo')
-    .classList.toggle(
-      'hidden',
-      !isCustom
-    );
-
-  renderTable();
-  renderShifts();
-
+document.getElementById('dateRangePreset').addEventListener('change',(e)=>{
+const isCustom=e.target.value==='custom';
+document.getElementById('dateFrom').classList.toggle('hidden',!isCustom);
+document.getElementById('dateSep').classList.toggle('hidden',!isCustom);
+document.getElementById('dateTo').classList.toggle('hidden',!isCustom);
+renderTable();
+renderShifts();
 });
-
-
-document.getElementById(
-  'dateFrom'
-).addEventListener(
-  'change',
-  () => {
-    renderTable();
-    renderShifts();
-  }
-);
-
-
-document.getElementById(
-  'dateTo'
-).addEventListener(
-  'change',
-  () => {
-    renderTable();
-    renderShifts();
-  }
-);
-
-
-/* ================= FILTER ================= */
+document.getElementById('dateFrom').addEventListener('change',()=>{renderTable();renderShifts();});
+document.getElementById('dateTo').addEventListener('change',()=>{renderTable();renderShifts();});
 
 function getFiltered(){
-
-  const search =
-    document.getElementById(
-      'searchInput'
-    ).value
-      .trim()
-      .toLowerCase();
-
-  const empFilter =
-    document.getElementById(
-      'employeeFilter'
-    ).value;
-
-  const typeFilter =
-    document.getElementById(
-      'typeFilter'
-    ).value;
-
-  const range =
-    currentRange();
-
-  return allRecords.filter(r => {
-
-    if(
-      empFilter &&
-      r.name !== empFilter
-    ){
-      return false;
-    }
-
-    if(
-      typeFilter &&
-      r.type !== typeFilter
-    ){
-      return false;
-    }
-
-    if(
-      range.start ||
-      range.end
-    ){
-
-      if(
-        !inDateRange(
-          r.createdAt?.toDate?.(),
-          range
-        )
-      ){
-        return false;
-      }
-
-    }
-
-    if(search){
-
-      const hay =
-        `${r.name || ''} ${r.email || ''}`
-          .toLowerCase();
-
-      if(!hay.includes(search)){
-        return false;
-      }
-
-    }
-
-    return true;
-
-  });
-
+const search=document.getElementById('searchInput').value.trim().toLowerCase();
+const empFilter=document.getElementById('employeeFilter').value;
+const typeFilter=document.getElementById('typeFilter').value;
+const range=currentRange();
+return allRecords.filter(r=>{
+if(empFilter&&r.name!==empFilter)return false;
+if(typeFilter&&r.type!==typeFilter)return false;
+if(range.start||range.end){
+if(!inDateRange(r.createdAt?.toDate?.(),range))return false;
 }
-
-
-/* ================= RAW ATTENDANCE TABLE ================= */
+if(search){
+const hay=`${r.name||''} ${r.email||''}`.toLowerCase();
+if(!hay.includes(search))return false;
+}
+return true;
+});
+}
 
 function renderTable(){
-
-  const rows =
-    getFiltered();
-
-  const body =
-    document.getElementById(
-      'recordsBody'
-    );
-
-  const empty =
-    document.getElementById(
-      'emptyState'
-    );
-
-
-  if(rows.length === 0){
-
-    body.innerHTML = '';
-
-    empty.classList.remove('hidden');
-
-    return;
-  }
-
-
-  empty.classList.add('hidden');
-
-
-  body.innerHTML =
-    rows.map(r => {
-
-      const d =
-        r.createdAt?.toDate?.();
-
-      const dateStr =
-        d
-          ? d.toLocaleDateString(
-              [],
-              {
-                month:'short',
-                day:'numeric',
-                year:'numeric'
-              }
-            )
-          : '-';
-
-      const typeClass =
-        r.type === 'IN'
-          ? 'in'
-          : 'out';
-
-      let locHtml;
-
-
-      if(
-        r.loc &&
-        r.loc.ok
-      ){
-
-        locHtml =
-          `<span class="loc-cell">
-            ${r.loc.lat.toFixed(5)},
-            ${r.loc.lng.toFixed(5)}
-            <span class="mono">
-              (±${r.loc.accuracy}m)
-            </span>
-          </span>`;
-
-      }else{
-
-        locHtml =
-          `<span class="loc-cell bad">
-            ${r.loc?.message || 'No location'}
-          </span>`;
-
-      }
-
-
-      return `
-        <tr>
-
-          <td>
-            <div class="emp-name">
-              ${r.name || 'Unknown'}
-            </div>
-          </td>
-
-          <td>
-            <span class="type-pill ${typeClass}">
-              ${r.type}
-            </span>
-          </td>
-
-          <td class="mono">
-            ${dateStr}
-          </td>
-
-          <td class="mono">
-            ${r.time || '-'}
-          </td>
-
-          <td>
-            ${locHtml}
-          </td>
-
-        </tr>
-      `;
-
-    }).join('');
-
+const rows=getFiltered();
+const body=document.getElementById('recordsBody');
+const empty=document.getElementById('emptyState');
+if(rows.length===0){
+body.innerHTML='';
+empty.classList.remove('hidden');
+return;
 }
-
-
-/* ================= SHIFT SUMMARY ================= */
+empty.classList.add('hidden');
+body.innerHTML=rows.map(r=>{
+const d=r.createdAt?.toDate?.();
+const dateStr=d?d.toLocaleDateString([],{month:'short',day:'numeric',year:'numeric'}):'-';
+const typeClass=r.type==='IN'?'in':'out';
+let locHtml;
+if(r.loc&&r.loc.ok){
+locHtml=`<span class="loc-cell">${r.loc.lat.toFixed(5)}, ${r.loc.lng.toFixed(5)} <span class="mono">(±${r.loc.accuracy}m)</span></span>`;
+}else{
+locHtml=`<span class="loc-cell bad">${r.loc?.message||'No location'}</span>`;
+}
+return `<tr><td><div class="emp-name">${r.name||'Unknown'}</div></td><td><span class="type-pill ${typeClass}">${r.type}</span></td><td class="mono">${dateStr}</td><td class="mono">${r.time||'-'}</td><td>${locHtml}</td></tr>`;
+}).join('');
+}
 
 function computeShifts(records){
-
-  const byUid = {};
-
-
-  records.forEach(r => {
-
-    if(!r.uid) return;
-
-    (
-      byUid[r.uid] =
-      byUid[r.uid] || []
-    ).push(r);
-
-  });
-
-
-  function makeShift(
-    inRec,
-    outRec
-  ){
-
-    const inDate =
-      inRec?.createdAt?.toDate?.();
-
-    const outDate =
-      outRec?.createdAt?.toDate?.();
-
-    let duration = '-';
-    let status = 'orphan';
-    let statusLabel =
-      'Missing clock-in';
-
-
-    if(
-      inDate &&
-      outDate
-    ){
-
-      const ms =
-        outDate - inDate;
-
-      const hrs =
-        Math.floor(
-          ms / 3600000
-        );
-
-      const mins =
-        Math.round(
-          (ms % 3600000) /
-          60000
-        );
-
-      duration =
-        `${hrs}h ${mins}m`;
-
-      status = 'complete';
-
-      statusLabel =
-        'Complete';
-
-    }else if(
-      inDate &&
-      !outDate
-    ){
-
-      status =
-        'ongoing';
-
-      statusLabel =
-        'Still clocked in';
-
-    }else if(
-      !inDate &&
-      outDate
-    ){
-
-      status =
-        'orphan';
-
-      statusLabel =
-        'Missing clock-in';
-
-    }
-
-
-    const base =
-      inDate || outDate;
-
-
-    return {
-
-      name:
-        (inRec || outRec)?.name ||
-        'Unknown',
-
-      dateObj:
-        base || null,
-
-      dateStr:
-        base
-          ? base.toLocaleDateString(
-              [],
-              {
-                month:'short',
-                day:'numeric',
-                year:'numeric'
-              }
-            )
-          : '-',
-
-      inTime:
-        inRec?.time || '-',
-
-      outTime:
-        outRec?.time || '-',
-
-      duration,
-
-      status,
-
-      statusLabel,
-
-      sortKey:
-        (outDate || inDate)?.getTime() ||
-        0
-
-    };
-
-  }
-
-
-  const shifts = [];
-
-
-  Object.values(byUid).forEach(list => {
-
-    list.sort(
-      (a,b) =>
-        (a.createdAt?.toMillis?.() || 0) -
-        (b.createdAt?.toMillis?.() || 0)
-    );
-
-
-    let open = null;
-
-
-    list.forEach(r => {
-
-      if(r.type === 'IN'){
-
-        if(open){
-          shifts.push(
-            makeShift(open,null)
-          );
-        }
-
-        open = r;
-
-      }else if(
-        r.type === 'OUT'
-      ){
-
-        if(open){
-
-          shifts.push(
-            makeShift(open,r)
-          );
-
-          open = null;
-
-        }else{
-
-          shifts.push(
-            makeShift(null,r)
-          );
-
-        }
-
-      }
-
-    });
-
-
-    if(open){
-      shifts.push(
-        makeShift(open,null)
-      );
-    }
-
-  });
-
-
-  shifts.sort(
-    (a,b) =>
-      b.sortKey - a.sortKey
-  );
-
-
-  return shifts;
-
+const byUid={};
+records.forEach(r=>{
+if(!r.uid)return;
+(byUid[r.uid]=byUid[r.uid]||[]).push(r);
+});
+function makeShift(inRec,outRec){
+const inDate=inRec?.createdAt?.toDate?.();
+const outDate=outRec?.createdAt?.toDate?.();
+let duration='-',status='orphan',statusLabel='Missing clock-in';
+if(inDate&&outDate){
+const ms=outDate-inDate;
+const hrs=Math.floor(ms/3600000);
+const mins=Math.round((ms%3600000)/60000);
+duration=`${hrs}h ${mins}m`;
+status='complete';
+statusLabel='Complete';
+}else if(inDate&&!outDate){
+status='ongoing';
+statusLabel='Still clocked in';
+}else if(!inDate&&outDate){
+status='orphan';
+statusLabel='Missing clock-in';
 }
-
+const base=inDate||outDate;
+return{
+name:(inRec||outRec)?.name||'Unknown',
+dateObj:base||null,
+dateStr:base?base.toLocaleDateString([],{month:'short',day:'numeric',year:'numeric'}):'-',
+inTime:inRec?.time||'-',
+outTime:outRec?.time||'-',
+duration,status,statusLabel,
+sortKey:(outDate||inDate)?.getTime()||0
+};
+}
+const shifts=[];
+Object.values(byUid).forEach(list=>{
+list.sort((a,b)=>(a.createdAt?.toMillis?.()||0)-(b.createdAt?.toMillis?.()||0));
+let open=null;
+list.forEach(r=>{
+if(r.type==='IN'){
+if(open)shifts.push(makeShift(open,null));
+open=r;
+}else if(r.type==='OUT'){
+if(open){shifts.push(makeShift(open,r));open=null;}
+else shifts.push(makeShift(null,r));
+}
+});
+if(open)shifts.push(makeShift(open,null));
+});
+shifts.sort((a,b)=>b.sortKey-a.sortKey);
+return shifts;
+}
 
 function getFilteredShifts(){
-
-  const search =
-    document.getElementById(
-      'searchInput'
-    ).value
-      .trim()
-      .toLowerCase();
-
-  const empFilter =
-    document.getElementById(
-      'employeeFilter'
-    ).value;
-
-  const range =
-    currentRange();
-
-
-  return computeShifts(allRecords)
-    .filter(s => {
-
-      if(
-        empFilter &&
-        s.name !== empFilter
-      ){
-        return false;
-      }
-
-      if(
-        search &&
-        !s.name
-          .toLowerCase()
-          .includes(search)
-      ){
-        return false;
-      }
-
-      if(
-        range.start ||
-        range.end
-      ){
-
-        if(
-          !inDateRange(
-            s.dateObj,
-            range
-          )
-        ){
-          return false;
-        }
-
-      }
-
-      return true;
-
-    });
-
+const search=document.getElementById('searchInput').value.trim().toLowerCase();
+const empFilter=document.getElementById('employeeFilter').value;
+const range=currentRange();
+return computeShifts(allRecords).filter(s=>{
+if(empFilter&&s.name!==empFilter)return false;
+if(search&&!s.name.toLowerCase().includes(search))return false;
+if(range.start||range.end){
+if(!inDateRange(s.dateObj,range))return false;
 }
-
+return true;
+});
+}
 
 function renderShifts(){
-
-  const shifts =
-    getFilteredShifts();
-
-  const body =
-    document.getElementById(
-      'shiftsBody'
-    );
-
-  const empty =
-    document.getElementById(
-      'shiftsEmptyState'
-    );
-
-
-  if(shifts.length === 0){
-
-    body.innerHTML = '';
-
-    empty.classList.remove('hidden');
-
-    return;
-  }
-
-
-  empty.classList.add('hidden');
-
-
-  body.innerHTML =
-    shifts.map(s => `
-
-      <tr>
-
-        <td>
-          <div class="emp-name">
-            ${s.name}
-          </div>
-        </td>
-
-        <td class="mono">
-          ${s.dateStr}
-        </td>
-
-        <td class="mono">
-          ${s.inTime}
-        </td>
-
-        <td class="mono">
-          ${s.outTime}
-        </td>
-
-        <td class="mono">
-          ${s.duration}
-        </td>
-
-        <td>
-          <span class="status-pill2 ${s.status}">
-            ${s.statusLabel}
-          </span>
-        </td>
-
-      </tr>
-
-    `).join('');
-
+const shifts=getFilteredShifts();
+const body=document.getElementById('shiftsBody');
+const empty=document.getElementById('shiftsEmptyState');
+if(shifts.length===0){
+body.innerHTML='';
+empty.classList.remove('hidden');
+return;
 }
-
-
-/* ================= CSV ================= */
+empty.classList.add('hidden');
+body.innerHTML=shifts.map(s=>`<tr><td><div class="emp-name">${s.name}</div></td><td class="mono">${s.dateStr}</td><td class="mono">${s.inTime}</td><td class="mono">${s.outTime}</td><td class="mono">${s.duration}</td><td><span class="status-pill2 ${s.status}">${s.statusLabel}</span></td></tr>`).join('');
+}
 
 function csvEscape(val){
-
-  const s =
-    String(val ?? '');
-
-  if(
-    /[",\n]/.test(s)
-  ){
-
-    return '"' +
-      s.replace(/"/g,'""') +
-      '"';
-
-  }
-
-  return s;
-
+const s=String(val??'');
+if(/[",\n]/.test(s))return'"'+s.replace(/"/g,'""')+'"';
+return s;
 }
 
-
-function downloadCSV(
-  filename,
-  rows
-){
-
-  const csv =
-    rows
-      .map(
-        row =>
-          row
-            .map(csvEscape)
-            .join(',')
-      )
-      .join('\n');
-
-  const blob =
-    new Blob(
-      [csv],
-      {
-        type:
-          'text/csv;charset=utf-8;'
-      }
-    );
-
-  const url =
-    URL.createObjectURL(blob);
-
-  const a =
-    document.createElement('a');
-
-  a.href = url;
-
-  a.download = filename;
-
-  document.body.appendChild(a);
-
-  a.click();
-
-  document.body.removeChild(a);
-
-  URL.revokeObjectURL(url);
-
+function downloadCSV(filename,rows){
+const csv=rows.map(row=>row.map(csvEscape).join(',')).join('\n');
+const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+const url=URL.createObjectURL(blob);
+const a=document.createElement('a');
+a.href=url;
+a.download=filename;
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+URL.revokeObjectURL(url);
 }
 
+document.getElementById('exportShiftsBtn').addEventListener('click',()=>{
+const shifts=getFilteredShifts();
+const rows=[['Employee','Date','Clock In','Clock Out','Hours','Status'],...shifts.map(s=>[s.name,s.dateStr,s.inTime,s.outTime,s.duration,s.statusLabel])];
+downloadCSV(`shift-summary-${new Date().toISOString().slice(0,10)}.csv`,rows);
+});
 
-document.getElementById(
-  'exportShiftsBtn'
-).addEventListener(
-  'click',
-  () => {
+document.getElementById('exportRawBtn').addEventListener('click',()=>{
+const rows=getFiltered();
+const csvRows=[['Employee','Type','Date','Time','Latitude','Longitude','Accuracy (m)'],...rows.map(r=>{
+const d=r.createdAt?.toDate?.();
+const dateStr=d?d.toLocaleDateString([],{month:'short',day:'numeric',year:'numeric'}):'-';
+return[r.name||'Unknown',r.type,dateStr,r.time||'-',r.loc?.ok?r.loc.lat.toFixed(6):'',r.loc?.ok?r.loc.lng.toFixed(6):'',r.loc?.ok?r.loc.accuracy:''];
+})];
+downloadCSV(`raw-punches-${new Date().toISOString().slice(0,10)}.csv`,csvRows);
+});
 
-    const shifts =
-      getFilteredShifts();
+document.getElementById('searchInput').addEventListener('input',()=>{renderTable();renderShifts();});
+document.getElementById('employeeFilter').addEventListener('change',()=>{renderTable();renderShifts();});
+document.getElementById('typeFilter').addEventListener('change',renderTable);
 
-    const rows = [
-      [
-        'Employee',
-        'Date',
-        'Clock In',
-        'Clock Out',
-        'Hours',
-        'Status'
-      ],
-
-      ...shifts.map(
-        s => [
-          s.name,
-          s.dateStr,
-          s.inTime,
-          s.outTime,
-          s.duration,
-          s.statusLabel
-        ]
-      )
-    ];
-
-    downloadCSV(
-      `shift-summary-${new Date().toISOString().slice(0,10)}.csv`,
-      rows
-    );
-
-  }
-);
-
-
-document.getElementById(
-  'exportRawBtn'
-).addEventListener(
-  'click',
-  () => {
-
-    const rows =
-      getFiltered();
-
-    const csvRows = [
-
-      [
-        'Employee',
-        'Type',
-        'Date',
-        'Time',
-        'Latitude',
-        'Longitude',
-        'Accuracy (m)'
-      ],
-
-      ...rows.map(r => {
-
-        const d =
-          r.createdAt?.toDate?.();
-
-        const dateStr =
-          d
-            ? d.toLocaleDateString(
-                [],
-                {
-                  month:'short',
-                  day:'numeric',
-                  year:'numeric'
-                }
-              )
-            : '-';
-
-        return [
-
-          r.name || 'Unknown',
-
-          r.type,
-
-          dateStr,
-
-          r.time || '-',
-
-          r.loc?.ok
-            ? r.loc.lat.toFixed(6)
-            : '',
-
-          r.loc?.ok
-            ? r.loc.lng.toFixed(6)
-            : '',
-
-          r.loc?.ok
-            ? r.loc.accuracy
-            : ''
-
-        ];
-
-      })
-
-    ];
-
-    downloadCSV(
-      `raw-punches-${new Date().toISOString().slice(0,10)}.csv`,
-      csvRows
-    );
-
-  }
-);
-
-
-document.getElementById(
-  'searchInput'
-).addEventListener(
-  'input',
-  () => {
-    renderTable();
-    renderShifts();
-  }
-);
-
-
-document.getElementById(
-  'employeeFilter'
-).addEventListener(
-  'change',
-  () => {
-    renderTable();
-    renderShifts();
-  }
-);
-
-
-document.getElementById(
-  'typeFilter'
-).addEventListener(
-  'change',
-  renderTable
-);
-
-
-/* ============================================================
-   LOCATIONS
-   ============================================================ */
+// ================= LOCATIONS =================
 
 async function loadLocations(){
-
-  const snap =
-    await getDocs(
-      query(
-        locationsRef,
-        orderBy("name")
-      )
-    );
-
-  allLocations =
-    snap.docs.map(
-      d => ({
-        id:d.id,
-        ...d.data()
-      })
-    );
-
-  renderLocationsTable();
-
+const snap=await getDocs(query(locationsRef,orderBy("name")));
+allLocations=snap.docs.map(d=>({id:d.id,...d.data()}));
+renderLocationsTable();
 }
-
 
 function renderLocationsTable(){
-
-  const body =
-    document.getElementById(
-      'locationsBody'
-    );
-
-  const empty =
-    document.getElementById(
-      'locationsEmptyState'
-    );
-
-
-  if(allLocations.length === 0){
-
-    body.innerHTML = '';
-
-    empty.classList.remove('hidden');
-
-    return;
-  }
-
-
-  empty.classList.add('hidden');
-
-
-  body.innerHTML =
-    allLocations.map(loc => `
-
-      <tr data-id="${loc.id}">
-
-        <td>
-          <div class="emp-name">
-            ${loc.name}
-          </div>
-        </td>
-
-        <td class="mono">
-          ${loc.latitude}
-        </td>
-
-        <td class="mono">
-          ${loc.longitude}
-        </td>
-
-        <td class="mono">
-          ${loc.radius}m
-        </td>
-
-        <td>
-          <button
-            class="delete-btn delete-location-btn"
-            data-id="${loc.id}">
-            Delete
-          </button>
-        </td>
-
-      </tr>
-
-    `).join('');
-
+const body=document.getElementById('locationsBody');
+const empty=document.getElementById('locationsEmptyState');
+if(allLocations.length===0){
+body.innerHTML='';
+empty.classList.remove('hidden');
+return;
+}
+empty.classList.add('hidden');
+body.innerHTML=allLocations.map(loc=>`<tr data-id="${loc.id}"><td><div class="emp-name">${loc.name}</div></td><td class="mono">${loc.latitude}</td><td class="mono">${loc.longitude}</td><td class="mono">${loc.radius}m</td><td><button class="delete-btn delete-location-btn" data-id="${loc.id}">Delete</button></td></tr>`).join('');
 }
 
+document.getElementById('addLocationForm').addEventListener('submit',async(e)=>{
+e.preventDefault();
+const name=document.getElementById('locName').value.trim();
+const latitude=parseFloat(document.getElementById('locLat').value);
+const longitude=parseFloat(document.getElementById('locLng').value);
+const radius=parseInt(document.getElementById('locRadius').value,10);
+const btn=document.getElementById('addLocationBtn');
+btn.disabled=true;
+const originalLabel=btn.textContent;
+btn.textContent='Adding…';
+try{
+await addDoc(locationsRef,{name,latitude,longitude,radius,createdAt:serverTimestamp()});
+e.target.reset();
+document.getElementById('locRadius').value=150;
+await loadLocations();
+refreshPeopleLocationDropdowns();
+}catch(err){
+alert('Could not add location: '+err.message);
+}
+btn.disabled=false;
+btn.textContent=originalLabel;
+});
 
-document.getElementById(
-  'addLocationForm'
-).addEventListener(
-  'submit',
-  async (e) => {
+document.getElementById('locationsBody').addEventListener('click',async(e)=>{
+const delBtn=e.target.closest('.delete-location-btn');
+if(!delBtn)return;
+if(!confirm('Delete this location? Employees assigned to it will need to be reassigned.'))return;
+delBtn.disabled=true;
+try{
+await deleteDoc(doc(db,"locations",delBtn.dataset.id));
+await loadLocations();
+refreshPeopleLocationDropdowns();
+}catch(err){
+alert('Could not delete location: '+err.message);
+delBtn.disabled=false;
+}
+});
 
-    e.preventDefault();
+// ================= PEOPLE =================
 
-    const name =
-      document.getElementById(
-        'locName'
-      ).value.trim();
-
-    const latitude =
-      parseFloat(
-        document.getElementById(
-          'locLat'
-        ).value
-      );
-
-    const longitude =
-      parseFloat(
-        document.getElementById(
-          'locLng'
-        ).value
-      );
-
-    const radius =
-      parseInt(
-        document.getElementById(
-          'locRadius'
-        ).value,
-        10
-      );
-
-    const btn =
-      document.getElementById(
-        'addLocationBtn'
-      );
-
-    btn.disabled = true;
-
-    const originalLabel =
-      btn.textContent;
-
-    btn.textContent =
-      'Adding…';
-
-
-    try{
-
-      await addDoc(
-        locationsRef,
-        {
-          name,
-          latitude,
-          longitude,
-          radius,
-          createdAt:
-            serverTimestamp()
-        }
-      );
-
-      e.target.reset();
-
-      document.getElementById(
-        'locRadius'
-      ).value = 150;
-
-      await loadLocations();
-
-      refreshPeopleLocationDropdowns();
-
-    }catch(err){
-
-      alert(
-        'Could not add location: ' +
-        err.message
-      );
-
-    }
-
-
-    btn.disabled = false;
-
-    btn.textContent =
-      originalLabel;
-
-  }
-);
-
-
-document.getElementById(
-  'locationsBody'
-).addEventListener(
-  'click',
-  async (e) => {
-
-    const delBtn =
-      e.target.closest(
-        '.delete-location-btn'
-      );
-
-    if(!delBtn) return;
-
-
-    if(
-      !confirm(
-        'Delete this location? Employees assigned to it will need to be reassigned.'
-      )
-    ){
-      return;
-    }
-
-
-    delBtn.disabled = true;
-
-
-    try{
-
-      await deleteDoc(
-        doc(
-          db,
-          "locations",
-          delBtn.dataset.id
-        )
-      );
-
-      await loadLocations();
-
-      refreshPeopleLocationDropdowns();
-
-    }catch(err){
-
-      alert(
-        'Could not delete location: ' +
-        err.message
-      );
-
-      delBtn.disabled = false;
-
-    }
-
-  }
-);
-
-
-/* ============================================================
-   PEOPLE
-   ============================================================ */
-
-const DAYS =
-  [
-    'Mon',
-    'Tue',
-    'Wed',
-    'Thu',
-    'Fri',
-    'Sat',
-    'Sun'
-  ];
-
+const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
 async function loadPeople(){
-
-  const snap =
-    await getDocs(
-      profilesRef
-    );
-
-  allProfiles =
-    snap.docs.map(
-      d => ({
-        uid:d.id,
-        ...d.data()
-      })
-    );
-
-  renderPeopleTable();
-
+const snap=await getDocs(profilesRef);
+allProfiles=snap.docs.map(d=>({uid:d.id,...d.data()}));
+renderPeopleTable();
 }
 
-
-function locationOptionsHtml(
-  selectedId
-){
-
-  const opts = [
-    '<option value="">— Unassigned —</option>'
-  ]
-  .concat(
-    allLocations.map(
-      l =>
-        `<option value="${l.id}" ${
-          l.id === selectedId
-            ? 'selected'
-            : ''
-        }>
-          ${l.name}
-        </option>`
-    )
-  );
-
-  return opts.join('');
-
+function locationOptionsHtml(selectedId){
+const opts=['<option value="">— Unassigned —</option>'].concat(allLocations.map(l=>`<option value="${l.id}" ${l.id===selectedId?'selected':''}>${l.name}</option>`));
+return opts.join('');
 }
-
 
 function computeHoursForRange(range){
-
-  if(
-    !range ||
-    !range.start ||
-    !range.end
-  ){
-    return 0;
-  }
-
-  const [sh,sm] =
-    range.start
-      .split(':')
-      .map(Number);
-
-  const [eh,em] =
-    range.end
-      .split(':')
-      .map(Number);
-
-  return (
-    (eh * 60 + em) -
-    (sh * 60 + sm)
-  ) / 60;
-
+if(!range||!range.start||!range.end)return 0;
+const[sh,sm]=range.start.split(':').map(Number);
+const[eh,em]=range.end.split(':').map(Number);
+return((eh*60+em)-(sh*60+sm))/60;
 }
-
 
 function scheduleSummary(schedule){
-
-  if(!schedule){
-    return 'Not set';
-  }
-
-  const working =
-    DAYS.filter(
-      d => schedule[d]
-    );
-
-  if(working.length === 0){
-    return 'No working days set';
-  }
-
-  const hoursList =
-    working.map(
-      d =>
-        computeHoursForRange(
-          schedule[d]
-        )
-    );
-
-  const allSame =
-    hoursList.every(
-      h => h === hoursList[0]
-    );
-
-  const daysLabel =
-    `${working.length} day${
-      working.length > 1
-        ? 's'
-        : ''
-    }/week`;
-
-  return allSame
-    ? `${daysLabel} · ${hoursList[0].toFixed(1)}h each`
-    : `${daysLabel} · varies`;
-
+if(!schedule)return'Not set';
+const working=DAYS.filter(d=>schedule[d]);
+if(working.length===0)return'No working days set';
+const hoursList=working.map(d=>computeHoursForRange(schedule[d]));
+const allSame=hoursList.every(h=>h===hoursList[0]);
+const daysLabel=`${working.length} day${working.length>1?'s':''}/week`;
+return allSame?`${daysLabel} · ${hoursList[0].toFixed(1)}h each`:`${daysLabel} · varies`;
 }
-
 
 function renderPeopleTable(){
-
-  const body =
-    document.getElementById(
-      'peopleBody'
-    );
-
-  const empty =
-    document.getElementById(
-      'peopleEmptyState'
-    );
-
-
-  if(allProfiles.length === 0){
-
-    body.innerHTML = '';
-
-    empty.classList.remove('hidden');
-
-    return;
-  }
-
-
-  empty.classList.add('hidden');
-
-
-  body.innerHTML =
-    allProfiles.map(p => `
-
-      <tr data-uid="${p.uid}">
-
-        <td>
-
-          <div class="emp-name">
-            ${p.name || 'Unknown'}
-          </div>
-
-          <div class="emp-email">
-            ${p.email || ''}
-          </div>
-
-        </td>
-
-        <td>
-          <select class="form-input loc-select">
-            ${locationOptionsHtml(
-              p.locationId
-            )}
-          </select>
-        </td>
-
-        <td>
-          <input
-            type="number"
-            class="form-input salary-input"
-            value="${p.basicSalary ?? ''}"
-            placeholder="RM"
-            style="width:90px;">
-        </td>
-
-        <td>
-
-          <div style="
-            font-size:12px;
-            color:var(--text-onlight-mut);
-            margin-bottom:6px;
-          ">
-            ${scheduleSummary(p.schedule)}
-          </div>
-
-          <button
-            class="delete-btn edit-schedule-btn"
-            style="
-              border-color:var(--line);
-              color:var(--text-onlight);
-            ">
-            Edit Schedule
-          </button>
-
-          <button
-            class="delete-btn edit-override-btn"
-            style="
-              border-color:var(--line);
-              color:var(--text-onlight);
-              margin-top:4px;
-            ">
-            One-off Changes
-          </button>
-
-        </td>
-
-        <td>
-          <button class="export-btn save-profile-btn">
-            Save
-          </button>
-        </td>
-
-      </tr>
-
-    `).join('');
-
+const body=document.getElementById('peopleBody');
+const empty=document.getElementById('peopleEmptyState');
+if(allProfiles.length===0){
+body.innerHTML='';
+empty.classList.remove('hidden');
+return;
 }
-
+empty.classList.add('hidden');
+body.innerHTML=allProfiles.map(p=>`<tr data-uid="${p.uid}"><td><div class="emp-name">${p.name||'Unknown'}</div><div class="emp-email">${p.email||''}</div></td><td><select class="form-input loc-select">${locationOptionsHtml(p.locationId)}</select></td><td><input type="number" class="form-input salary-input" value="${p.basicSalary??''}" placeholder="RM" style="width:90px;"></td><td><div style="font-size:12px;color:var(--text-onlight-mut);margin-bottom:6px;">${scheduleSummary(p.schedule)}</div><button class="delete-btn edit-schedule-btn" style="border-color:var(--line);color:var(--text-onlight);">Edit Schedule</button><button class="delete-btn edit-override-btn" style="border-color:var(--line);color:var(--text-onlight);margin-top:4px;">One-off Changes</button></td><td><button class="export-btn save-profile-btn">Save</button></td></tr>`).join('');
+}
 
 function refreshPeopleLocationDropdowns(){
-
-  document
-    .querySelectorAll(
-      '#peopleBody .loc-select'
-    )
-    .forEach(sel => {
-
-      const current =
-        sel.value;
-
-      sel.innerHTML =
-        locationOptionsHtml(
-          current
-        );
-
-    });
-
+document.querySelectorAll('#peopleBody .loc-select').forEach(sel=>{
+const current=sel.value;
+sel.innerHTML=locationOptionsHtml(current);
+});
 }
 
+document.getElementById('peopleBody').addEventListener('click',async(e)=>{
+const editBtn=e.target.closest('.edit-schedule-btn');
+if(editBtn){
+const row=editBtn.closest('tr');
+openScheduleModal(row.dataset.uid);
+return;
+}
+const overrideBtn=e.target.closest('.edit-override-btn');
+if(overrideBtn){
+const row=overrideBtn.closest('tr');
+openOverrideModal(row.dataset.uid);
+return;
+}
+const saveBtn=e.target.closest('.save-profile-btn');
+if(saveBtn){
+const row=saveBtn.closest('tr');
+const uid=row.dataset.uid;
+const locationId=row.querySelector('.loc-select').value||null;
+const basicSalaryVal=row.querySelector('.salary-input').value;
+saveBtn.disabled=true;
+const originalLabel=saveBtn.textContent;
+saveBtn.textContent='Saving…';
+try{
+await updateDoc(doc(db,"employee_profiles",uid),{locationId,basicSalary:basicSalaryVal===''?null:parseFloat(basicSalaryVal)});
+saveBtn.textContent='Saved ✓';
+setTimeout(()=>{saveBtn.textContent=originalLabel;saveBtn.disabled=false;},1500);
+}catch(err){
+alert('Could not save: '+err.message);
+saveBtn.textContent=originalLabel;
+saveBtn.disabled=false;
+}
+}
+});
 
-document.getElementById(
-  'peopleBody'
-).addEventListener(
-  'click',
-  async (e) => {
+// ---- Schedule modal ----
 
-    const editBtn =
-      e.target.closest(
-        '.edit-schedule-btn'
-      );
-
-    if(editBtn){
-
-      const row =
-        editBtn.closest('tr');
-
-      openScheduleModal(
-        row.dataset.uid
-      );
-
-      return;
-    }
-
-
-    const overrideBtn =
-      e.target.closest(
-        '.edit-override-btn'
-      );
-
-    if(overrideBtn){
-
-      const row =
-        overrideBtn.closest('tr');
-
-      openOverrideModal(
-        row.dataset.uid
-      );
-
-      return;
-    }
-
-
-    const saveBtn =
-      e.target.closest(
-        '.save-profile-btn'
-      );
-
-    if(saveBtn){
-
-      const row =
-        saveBtn.closest('tr');
-
-      const uid =
-        row.dataset.uid;
-
-      const locationId =
-        row.querySelector(
-          '.loc-select'
-        ).value || null;
-
-      const basicSalaryVal =
-        row.querySelector(
-          '.salary-input'
-        ).value;
-
-
-      saveBtn.disabled = true;
-
-      const originalLabel =
-        saveBtn.textContent;
-
-      saveBtn.textContent =
-        'Saving…';
-
-
-      try{
-
-        await updateDoc(
-          doc(
-            db,
-            "employee_profiles",
-            uid
-          ),
-          {
-            locationId,
-
-            basicSalary:
-              basicSalaryVal === ''
-                ? null
-                : parseFloat(
-                    basicSalaryVal
-                  )
-          }
-        );
-
-
-        saveBtn.textContent =
-          'Saved ✓';
-
-
-        setTimeout(
-          () => {
-
-            saveBtn.textContent =
-              originalLabel;
-
-            saveBtn.disabled = false;
-
-          },
-          1500
-        );
-
-
-      }catch(err){
-
-        alert(
-          'Could not save: ' +
-          err.message
-        );
-
-        saveBtn.textContent =
-          originalLabel;
-
-        saveBtn.disabled = false;
-
-      }
-
-    }
-
-  }
-);
-
-
-/* ================= SCHEDULE MODAL ================= */
-
-let scheduleModalUid = null;
-
+let scheduleModalUid=null;
 
 function openScheduleModal(uid){
-
-  const profile =
-    allProfiles.find(
-      p => p.uid === uid
-    );
-
-  if(!profile) return;
-
-  scheduleModalUid = uid;
-
-
-  document.getElementById(
-    'scheduleModalName'
-  ).textContent =
-    `Edit Schedule — ${
-      profile.name || 'Unknown'
-    }`;
-
-
-  const schedule =
-    profile.schedule || {};
-
-
-  document.getElementById(
-    'scheduleRows'
-  ).innerHTML =
-    DAYS.map(d => {
-
-      const range =
-        schedule[d];
-
-      const isOff =
-        !range;
-
-
-      return `
-
-        <div
-          class="schedule-row"
-          data-day="${d}">
-
-          <div class="schedule-day">
-            ${d}
-          </div>
-
-          <label class="schedule-off-toggle">
-
-            <input
-              type="checkbox"
-              class="day-off-checkbox"
-              ${isOff ? 'checked' : ''}>
-
-            Off
-
-          </label>
-
-          <div class="schedule-times">
-
-            <input
-              type="time"
-              class="form-input day-start"
-              value="${range?.start || '09:00'}"
-              ${isOff ? 'disabled' : ''}>
-
-            <span style="
-              color:var(--text-onlight-mut);
-              font-size:12px;
-            ">
-              to
-            </span>
-
-            <input
-              type="time"
-              class="form-input day-end"
-              value="${range?.end || '13:00'}"
-              ${isOff ? 'disabled' : ''}>
-
-          </div>
-
-        </div>
-
-      `;
-
-    }).join('');
-
-
-  document.getElementById(
-    'scheduleModal'
-  ).classList.remove('hidden');
-
+const profile=allProfiles.find(p=>p.uid===uid);
+if(!profile)return;
+scheduleModalUid=uid;
+document.getElementById('scheduleModalName').textContent=`Edit Schedule — ${profile.name||'Unknown'}`;
+const schedule=profile.schedule||{};
+document.getElementById('scheduleRows').innerHTML=DAYS.map(d=>{
+const range=schedule[d];
+const isOff=!range;
+return`<div class="schedule-row" data-day="${d}"><div class="schedule-day">${d}</div><label class="schedule-off-toggle"><input type="checkbox" class="day-off-checkbox" ${isOff?'checked':''}> Off</label><div class="schedule-times"><input type="time" class="form-input day-start" value="${range?.start||'09:00'}" ${isOff?'disabled':''}><span style="color:var(--text-onlight-mut);font-size:12px;">to</span><input type="time" class="form-input day-end" value="${range?.end||'13:00'}" ${isOff?'disabled':''}></div></div>`;
+}).join('');
+document.getElementById('scheduleModal').classList.remove('hidden');
 }
 
-
-document.getElementById(
-  'scheduleRows'
-).addEventListener(
-  'change',
-  (e) => {
-
-    if(
-      e.target.classList.contains(
-        'day-off-checkbox'
-      )
-    ){
-
-      const row =
-        e.target.closest(
-          '.schedule-row'
-        );
-
-      const off =
-        e.target.checked;
-
-      row.querySelector(
-        '.day-start'
-      ).disabled = off;
-
-      row.querySelector(
-        '.day-end'
-      ).disabled = off;
-
-    }
-
-  }
-);
-
-
-function closeScheduleModal(){
-
-  document.getElementById(
-    'scheduleModal'
-  ).classList.add('hidden');
-
-  scheduleModalUid = null;
-
+document.getElementById('scheduleRows').addEventListener('change',e=>{
+if(e.target.classList.contains('day-off-checkbox')){
+const row=e.target.closest('.schedule-row');
+const off=e.target.checked;
+row.querySelector('.day-start').disabled=off;
+row.querySelector('.day-end').disabled=off;
 }
+});
 
+document.getElementById('scheduleCancelBtn').addEventListener('click',()=>{
+document.getElementById('scheduleModal').classList.add('hidden');
+scheduleModalUid=null;
+});
 
-document.getElementById(
-  'scheduleCancelBtn'
-).addEventListener(
-  'click',
-  closeScheduleModal
-);
-
-
-document.getElementById(
-  'scheduleCancelBtn2'
-).addEventListener(
-  'click',
-  closeScheduleModal
-);
-
-
-/* ============================================================
-   HOLIDAYS
-   ============================================================ */
+// ================= HOLIDAYS =================
 
 async function loadHolidays(){
-
-  const snap =
-    await getDocs(
-      query(
-        holidaysRef,
-        orderBy("date")
-      )
-    );
-
-  allHolidays =
-    snap.docs.map(
-      d => ({
-        id:d.id,
-        ...d.data()
-      })
-    );
-
-  renderHolidaysTable();
-
+const snap=await getDocs(query(holidaysRef,orderBy("date")));
+allHolidays=snap.docs.map(d=>({id:d.id,...d.data()}));
+renderHolidaysTable();
 }
-
 
 function renderHolidaysTable(){
-
-  const body =
-    document.getElementById(
-      'holidaysBody'
-    );
-
-  const empty =
-    document.getElementById(
-      'holidaysEmptyState'
-    );
-
-
-  if(allHolidays.length === 0){
-
-    body.innerHTML = '';
-
-    empty.classList.remove('hidden');
-
-    return;
-  }
-
-
-  empty.classList.add('hidden');
-
-
-  body.innerHTML =
-    allHolidays.map(h => `
-
-      <tr data-id="${h.id}">
-
-        <td>
-          <div class="emp-name">
-            ${h.name}
-          </div>
-        </td>
-
-        <td class="mono">
-          ${h.date}
-        </td>
-
-        <td>
-          <button
-            class="delete-btn delete-holiday-btn"
-            data-id="${h.id}">
-            Delete
-          </button>
-        </td>
-
-      </tr>
-
-    `).join('');
-
+const body=document.getElementById('holidaysBody');
+const empty=document.getElementById('holidaysEmptyState');
+if(allHolidays.length===0){
+body.innerHTML='';
+empty.classList.remove('hidden');
+return;
+}
+empty.classList.add('hidden');
+body.innerHTML=allHolidays.map(h=>`<tr data-id="${h.id}"><td><div class="emp-name">${h.name}</div></td><td class="mono">${h.date}</td><td><button class="delete-btn delete-holiday-btn" data-id="${h.id}">Delete</button></td></tr>`).join('');
 }
 
+document.getElementById('addHolidayForm').addEventListener('submit',async(e)=>{
+e.preventDefault();
+const name=document.getElementById('holidayName').value.trim();
+const date=document.getElementById('holidayDate').value;
+const btn=document.getElementById('addHolidayBtn');
+btn.disabled=true;
+const originalLabel=btn.textContent;
+btn.textContent='Adding…';
+try{
+await addDoc(holidaysRef,{name,date,createdAt:serverTimestamp()});
+e.target.reset();
+await loadHolidays();
+}catch(err){
+alert('Could not add holiday: '+err.message);
+}
+btn.disabled=false;
+btn.textContent=originalLabel;
+});
 
-document.getElementById(
-  'addHolidayForm'
-).addEventListener(
-  'submit',
-  async (e) => {
+document.getElementById('holidaysBody').addEventListener('click',async(e)=>{
+const delBtn=e.target.closest('.delete-holiday-btn');
+if(!delBtn)return;
+if(!confirm('Delete this holiday?'))return;
+delBtn.disabled=true;
+try{
+await deleteDoc(doc(db,"holidays",delBtn.dataset.id));
+await loadHolidays();
+}catch(err){
+alert('Could not delete holiday: '+err.message);
+delBtn.disabled=false;
+}
+});
 
-    e.preventDefault();
+// ================= LEAVE =================
 
-    const name =
-      document.getElementById(
-        'holidayName'
-      ).value.trim();
-
-    const date =
-      document.getElementById(
-        'holidayDate'
-      ).value;
-
-    const btn =
-      document.getElementById(
-        'addHolidayBtn'
-      );
-
-    btn.disabled = true;
-
-    const originalLabel =
-      btn.textContent;
-
-    btn.textContent =
-      'Adding…';
-
-
-    try{
-
-      await addDoc(
-        holidaysRef,
-        {
-          name,
-          date,
-          createdAt:
-            serverTimestamp()
-        }
-      );
-
-      e.target.reset();
-
-      await loadHolidays();
-
-    }catch(err){
-
-      alert(
-        'Could not add holiday: ' +
-        err.message
-      );
-
-    }
-
-
-    btn.disabled = false;
-
-    btn.textContent =
-      originalLabel;
-
-  }
-);
-
-
-document.getElementById(
-  'holidaysBody'
-).addEventListener(
-  'click',
-  async (e) => {
-
-    const delBtn =
-      e.target.closest(
-        '.delete-holiday-btn'
-      );
-
-    if(!delBtn) return;
-
-
-    if(
-      !confirm(
-        'Delete this holiday?'
-      )
-    ){
-      return;
-    }
-
-
-    delBtn.disabled = true;
-
-
-    try{
-
-      await deleteDoc(
-        doc(
-          db,
-          "holidays",
-          delBtn.dataset.id
-        )
-      );
-
-      await loadHolidays();
-
-    }catch(err){
-
-      alert(
-        'Could not delete holiday: ' +
-        err.message
-      );
-
-      delBtn.disabled = false;
-
-    }
-
-  }
-);
-
-
-/* ============================================================
-   LEAVE
-   ============================================================ */
+let allLeaveRequests=[];
 
 async function loadLeaveRequests(){
-
-  const snap =
-    await getDocs(
-      query(
-        leaveRef,
-        orderBy(
-          "createdAt",
-          "desc"
-        )
-      )
-    );
-
-  allLeaveRequests =
-    snap.docs.map(
-      d => ({
-        id:d.id,
-        ...d.data()
-      })
-    );
-
-  renderLeaveTable();
-
+const snap=await getDocs(query(leaveRef,orderBy("createdAt","desc")));
+allLeaveRequests=snap.docs.map(d=>({id:d.id,...d.data()}));
+renderLeaveTable();
 }
-
 
 function renderLeaveTable(){
-
-  const body =
-    document.getElementById(
-      'leaveBody'
-    );
-
-  const empty =
-    document.getElementById(
-      'leaveEmptyState'
-    );
-
-
-  if(
-    allLeaveRequests.length === 0
-  ){
-
-    body.innerHTML = '';
-
-    empty.classList.remove('hidden');
-
-    return;
-  }
-
-
-  empty.classList.add('hidden');
-
-
-  body.innerHTML =
-    allLeaveRequests.map(r => `
-
-      <tr data-id="${r.id}">
-
-        <td>
-
-          <div class="emp-name">
-            ${r.name || 'Unknown'}
-          </div>
-
-          <div class="emp-email">
-            ${r.email || ''}
-          </div>
-
-        </td>
-
-        <td class="mono">
-          ${r.type}
-        </td>
-
-        <td class="mono">
-          ${r.startDate}
-          →
-          ${r.endDate}
-        </td>
-
-        <td style="max-width:200px;">
-          ${r.reason || '-'}
-        </td>
-
-        <td>
-
-          ${
-            r.documentUrl
-
-              ? `<a
-                  href="${r.documentUrl}"
-                  target="_blank"
-                  rel="noopener"
-                  style="
-                    color:var(--amber);
-                    font-weight:700;
-                    font-size:12px;
-                  ">
-                  View file
-                </a>`
-
-              : `<span class="loc-cell">
-                  None
-                </span>`
-          }
-
-        </td>
-
-        <td>
-
-          <span class="
-            status-pill2
-            ${
-              r.status === 'approved'
-                ? 'complete'
-                : r.status === 'rejected'
-                  ? 'orphan'
-                  : 'ongoing'
-            }
-          ">
-            ${r.status}
-          </span>
-
-        </td>
-
-        <td>
-
-          ${
-            r.status === 'pending'
-              ? `
-
-                <button
-                  class="delete-btn approve-leave-btn"
-                  style="
-                    border-color:var(--green-dim);
-                    color:var(--green-text);
-                  ">
-                  Approve
-                </button>
-
-                <button
-                  class="delete-btn reject-leave-btn"
-                  style="margin-top:4px;">
-                  Reject
-                </button>
-
-              `
-              : ''
-          }
-
-        </td>
-
-      </tr>
-
-    `).join('');
-
+const body=document.getElementById('leaveBody');
+const empty=document.getElementById('leaveEmptyState');
+if(allLeaveRequests.length===0){
+body.innerHTML='';
+empty.classList.remove('hidden');
+return;
+}
+empty.classList.add('hidden');
+body.innerHTML=allLeaveRequests.map(r=>`<tr data-id="${r.id}"><td><div class="emp-name">${r.name||'Unknown'}</div><div class="emp-email">${r.email||''}</div></td><td class="mono">${r.type}</td><td class="mono">${r.startDate} → ${r.endDate}</td><td style="max-width:200px;">${r.reason||'-'}</td><td>${r.documentUrl?`<a href="${r.documentUrl}" target="_blank" rel="noopener" style="color:var(--amber);font-weight:700;font-size:12px;">View file</a>`:'<span class="loc-cell">None</span>'}</td><td><span class="status-pill2 ${r.status==='approved'?'complete':r.status==='rejected'?'orphan':'ongoing'}">${r.status}</span></td><td>${r.status==='pending'?`<button class="delete-btn approve-leave-btn" style="border-color:var(--green-dim);color:var(--green-text);">Approve</button><button class="delete-btn reject-leave-btn" style="margin-top:4px;">Reject</button>`:''}</td></tr>`).join('');
 }
 
+document.getElementById('leaveBody').addEventListener('click',async(e)=>{
+const approveBtn=e.target.closest('.approve-leave-btn');
+const rejectBtn=e.target.closest('.reject-leave-btn');
+if(!approveBtn&&!rejectBtn)return;
+const row=(approveBtn||rejectBtn).closest('tr');
+const id=row.dataset.id;
+const newStatus=approveBtn?'approved':'rejected';
+try{
+await updateDoc(doc(db,"leave_requests",id),{status:newStatus,reviewedAt:serverTimestamp()});
+await loadLeaveRequests();
+if(!document.getElementById('payrollTab').classList.contains('hidden'))renderPayroll();
+if(!document.getElementById('monthlyreportTab').classList.contains('hidden'))renderMonthlyReport();
+}catch(err){
+alert('Could not update request: '+err.message);
+}
+});
 
-document.getElementById(
-  'leaveBody'
-).addEventListener(
-  'click',
-  async (e) => {
+// ================= PT SESSIONS =================
 
-    const approveBtn =
-      e.target.closest(
-        '.approve-leave-btn'
-      );
-
-    const rejectBtn =
-      e.target.closest(
-        '.reject-leave-btn'
-      );
-
-
-    if(
-      !approveBtn &&
-      !rejectBtn
-    ){
-      return;
-    }
-
-
-    const row =
-      (
-        approveBtn ||
-        rejectBtn
-      ).closest('tr');
-
-    const id =
-      row.dataset.id;
-
-    const newStatus =
-      approveBtn
-        ? 'approved'
-        : 'rejected';
-
-
-    try{
-
-      await updateDoc(
-        doc(
-          db,
-          "leave_requests",
-          id
-        ),
-        {
-          status:newStatus,
-          reviewedAt:
-            serverTimestamp()
-        }
-      );
-
-      await loadLeaveRequests();
-
-      if(
-        !document
-          .getElementById(
-            'payrollTab'
-          )
-          .classList.contains(
-            'hidden'
-          )
-      ){
-        renderPayroll();
-      }
-
-      if(
-        !document
-          .getElementById(
-            'monthlyreportTab'
-          )
-          .classList.contains(
-            'hidden'
-          )
-      ){
-        renderMonthlyReport();
-      }
-
-    }catch(err){
-
-      alert(
-        'Could not update request: ' +
-        err.message
-      );
-
-    }
-
-  }
-);
-
-
-/* ============================================================
-   PT SESSIONS
-   ============================================================ */
-
-const PT_RATE = 50;
+const PT_RATE=50;
+let allPtSessions=[];
 
 async function loadPtSessions(){
-
-  const snap =
-    await getDocs(
-      query(
-        ptSessionsRef,
-        orderBy(
-          "createdAt",
-          "desc"
-        )
-      )
-    );
-
-  allPtSessions =
-    snap.docs.map(
-      d => ({
-        id:d.id,
-        ...d.data()
-      })
-    );
-
-  renderPtTable();
-
+const snap=await getDocs(query(ptSessionsRef,orderBy("createdAt","desc")));
+allPtSessions=snap.docs.map(d=>({id:d.id,...d.data()}));
+renderPtTable();
 }
 
-
-function parsePtDateTime(
-  date,
-  time
-){
-
-  if(!date || !time){
-    return null;
-  }
-
-  const parts =
-    String(time)
-      .split(':')
-      .map(Number);
-
-  if(
-    parts.length < 2 ||
-    parts.some(Number.isNaN)
-  ){
-    return null;
-  }
-
-  const d =
-    new Date(
-      `${date}T00:00:00`
-    );
-
-  d.setHours(
-    parts[0],
-    parts[1],
-    parts[2] || 0,
-    0
-  );
-
-  return d;
-
+function parsePtDateTime(date,time){
+if(!date||!time)return null;
+const parts=String(time).split(':').map(Number);
+if(parts.length<2||parts.some(Number.isNaN))return null;
+const d=new Date(`${date}T00:00:00`);
+d.setHours(parts[0],parts[1],parts[2]||0,0);
+return d;
 }
-
 
 function formatMinutes(minutes){
-
-  if(
-    !minutes ||
-    minutes <= 0
-  ){
-    return '0 min';
-  }
-
-  const h =
-    Math.floor(
-      minutes / 60
-    );
-
-  const m =
-    minutes % 60;
-
-
-  if(h === 0){
-    return `${m} min`;
-  }
-
-  if(m === 0){
-    return `${h} hr`;
-  }
-
-  return `${h} hr ${m} min`;
-
+if(!minutes||minutes<=0)return'0 min';
+const h=Math.floor(minutes/60);
+const m=minutes%60;
+if(h===0)return`${m} min`;
+if(m===0)return`${h} hr`;
+return`${h} hr ${m} min`;
 }
 
-
-function getPtClockedMinutes(
-  session
-){
-
-  const sessionStart =
-    parsePtDateTime(
-      session.date,
-      session.startTime
-    );
-
-  const sessionEnd =
-    parsePtDateTime(
-      session.date,
-      session.endTime
-    );
-
-
-  if(
-    !sessionStart ||
-    !sessionEnd ||
-    sessionEnd <= sessionStart
-  ){
-    return 0;
-  }
-
-
-  const punches =
-    allRecords
-      .filter(r => {
-
-        if(
-          r.uid !==
-          session.coachUid ||
-          !r.createdAt?.toDate
-        ){
-          return false;
-        }
-
-        const d =
-          r.createdAt.toDate();
-
-        return (
-          d.getFullYear() ===
-            sessionStart.getFullYear() &&
-
-          d.getMonth() ===
-            sessionStart.getMonth() &&
-
-          d.getDate() ===
-            sessionStart.getDate()
-        );
-
-      })
-      .sort(
-        (a,b) =>
-          a.createdAt.toMillis() -
-          b.createdAt.toMillis()
-      );
-
-
-  let totalMs = 0;
-  let openIn = null;
-
-
-  punches.forEach(r => {
-
-    const t =
-      r.createdAt.toDate();
-
-
-    if(r.type === 'IN'){
-
-      if(!openIn){
-        openIn = t;
-      }
-
-    }else if(
-      r.type === 'OUT' &&
-      openIn
-    ){
-
-      const overlapStart =
-        Math.max(
-          openIn.getTime(),
-          sessionStart.getTime()
-        );
-
-      const overlapEnd =
-        Math.min(
-          t.getTime(),
-          sessionEnd.getTime()
-        );
-
-
-      if(
-        overlapEnd >
-        overlapStart
-      ){
-
-        totalMs +=
-          overlapEnd -
-          overlapStart;
-
-      }
-
-
-      openIn = null;
-
-    }
-
-  });
-
-
-  if(openIn){
-
-    const now =
-      Date.now();
-
-    const overlapStart =
-      Math.max(
-        openIn.getTime(),
-        sessionStart.getTime()
-      );
-
-    const overlapEnd =
-      Math.min(
-        now,
-        sessionEnd.getTime()
-      );
-
-
-    if(
-      overlapEnd >
-      overlapStart
-    ){
-
-      totalMs +=
-        overlapEnd -
-        overlapStart;
-
-    }
-
-  }
-
-
-  return Math.floor(
-    totalMs / 60000
-  );
-
+function getPtClockedMinutes(session){
+const sessionStart=parsePtDateTime(session.date,session.startTime);
+const sessionEnd=parsePtDateTime(session.date,session.endTime);
+if(!sessionStart||!sessionEnd||sessionEnd<=sessionStart)return 0;
+const punches=allRecords.filter(r=>{
+if(r.uid!==session.coachUid||!r.createdAt?.toDate)return false;
+const d=r.createdAt.toDate();
+return d.getFullYear()===sessionStart.getFullYear()&&d.getMonth()===sessionStart.getMonth()&&d.getDate()===sessionStart.getDate();
+}).sort((a,b)=>a.createdAt.toMillis()-b.createdAt.toMillis());
+let totalMs=0;
+let openIn=null;
+punches.forEach(r=>{
+const t=r.createdAt.toDate();
+if(r.type==='IN'){
+if(!openIn)openIn=t;
+}else if(r.type==='OUT'&&openIn){
+const overlapStart=Math.max(openIn.getTime(),sessionStart.getTime());
+const overlapEnd=Math.min(t.getTime(),sessionEnd.getTime());
+if(overlapEnd>overlapStart)totalMs+=overlapEnd-overlapStart;
+openIn=null;
 }
-
+});
+if(openIn){
+const now=Date.now();
+const overlapStart=Math.max(openIn.getTime(),sessionStart.getTime());
+const overlapEnd=Math.min(now,sessionEnd.getTime());
+if(overlapEnd>overlapStart)totalMs+=overlapEnd-overlapStart;
+}
+return Math.floor(totalMs/60000);
+}
 
 function renderPtTable(){
-
-  const body =
-    document.getElementById(
-      'ptBody'
-    );
-
-  const empty =
-    document.getElementById(
-      'ptEmptyState'
-    );
-
-
-  if(allPtSessions.length === 0){
-
-    body.innerHTML = '';
-
-    empty.classList.remove(
-      'hidden'
-    );
-
-    return;
-  }
-
-
-  empty.classList.add(
-    'hidden'
-  );
-
-
-  body.innerHTML =
-    allPtSessions.map(s => `
-
-      <tr data-id="${s.id}">
-
-        <td>
-          <div class="emp-name">
-            ${s.coachName || 'Unknown'}
-          </div>
-        </td>
-
-        <td>
-          ${s.studentName || '-'}
-        </td>
-
-        <td class="mono">
-          ${s.date || '-'}
-        </td>
-
-        <td class="mono">
-          ${s.startTime || '-'}
-          –
-          ${s.endTime || '-'}
-        </td>
-
-        <td>
-          ${s.locationName || '-'}
-        </td>
-
-        <td class="mono">
-          ${formatMinutes(
-            getPtClockedMinutes(s)
-          )}
-        </td>
-
-        <td
-          class="mono"
-          style="font-weight:700;">
-          RM ${PT_RATE.toFixed(2)}
-        </td>
-
-      </tr>
-
-    `).join('');
-
+const body=document.getElementById('ptBody');
+const empty=document.getElementById('ptEmptyState');
+if(allPtSessions.length===0){
+body.innerHTML='';
+empty.classList.remove('hidden');
+return;
+}
+empty.classList.add('hidden');
+body.innerHTML=allPtSessions.map(s=>`<tr data-id="${s.id}"><td><div class="emp-name">${s.coachName||'Unknown'}</div></td><td>${s.studentName||'-'}</td><td class="mono">${s.date||'-'}</td><td class="mono">${s.startTime||'-'}–${s.endTime||'-'}</td><td>${s.locationName||'-'}</td><td class="mono">${formatMinutes(getPtClockedMinutes(s))}</td><td class="mono" style="font-weight:700;">RM ${PT_RATE.toFixed(2)}</td></tr>`).join('');
 }
 
+document.getElementById('exportPtBtn').addEventListener('click',()=>{
+const rows=[['Coach','Student','Date','Start','End','Location','Clocked In During PT','Commission (RM)'],...allPtSessions.map(s=>[s.coachName||'Unknown',s.studentName||'',s.date||'',s.startTime||'',s.endTime||'',s.locationName||'',formatMinutes(getPtClockedMinutes(s)),PT_RATE.toFixed(2)])];
+downloadCSV(`pt-sessions-${new Date().toISOString().slice(0,10)}.csv`,rows);
+});
 
-document.getElementById(
-  'exportPtBtn'
-).addEventListener(
-  'click',
-  () => {
-
-    const rows = [
-
-      [
-        'Coach',
-        'Student',
-        'Date',
-        'Start',
-        'End',
-        'Location',
-        'Clocked In During PT',
-        'Commission (RM)'
-      ],
-
-      ...allPtSessions.map(
-        s => [
-
-          s.coachName ||
-            'Unknown',
-
-          s.studentName ||
-            '',
-
-          s.date ||
-            '',
-
-          s.startTime ||
-            '',
-
-          s.endTime ||
-            '',
-
-          s.locationName ||
-            '',
-
-          formatMinutes(
-            getPtClockedMinutes(s)
-          ),
-
-          PT_RATE.toFixed(2)
-
-        ]
-      )
-
-    ];
-
-
-    downloadCSV(
-      `pt-sessions-${new Date().toISOString().slice(0,10)}.csv`,
-      rows
-    );
-
-  }
-);
-
-
-/* IMPORTANT:
-   Every PT session counts.
-   There is intentionally NO:
-   s.status === 'approved'
-   filter here.
-*/
-
-function ptCountForMonth(
-  uid,
-  yearMonth
-){
-
-  return allPtSessions.filter(
-    s =>
-      s.coachUid === uid &&
-      s.date?.startsWith(
-        yearMonth
-      )
-  ).length;
-
+function ptCountForMonth(uid,yearMonth){
+return allPtSessions.filter(s=>s.coachUid===uid&&s.date?.startsWith(yearMonth)).length;
 }
 
+// ================= SCHEDULE OVERRIDES =================
 
-/* ============================================================
-   SCHEDULE OVERRIDES
-   ============================================================ */
-
-let overrideModalUid = null;
-
+let allOverrides=[];
+let overrideModalUid=null;
 
 async function loadOverrides(){
-
-  const snap =
-    await getDocs(
-      overridesRef
-    );
-
-  allOverrides =
-    snap.docs.map(
-      d => d.data()
-    );
-
+const snap=await getDocs(overridesRef);
+allOverrides=snap.docs.map(d=>d.data());
 }
 
-
-document.getElementById(
-  'overrideOff'
-).addEventListener(
-  'change',
-  (e) => {
-
-    const off =
-      e.target.checked;
-
-    document.getElementById(
-      'overrideStart'
-    ).disabled = off;
-
-    document.getElementById(
-      'overrideEnd'
-    ).disabled = off;
-
-  }
-);
-
+document.getElementById('overrideOff').addEventListener('change',e=>{
+const off=e.target.checked;
+document.getElementById('overrideStart').disabled=off;
+document.getElementById('overrideEnd').disabled=off;
+});
 
 function openOverrideModal(uid){
-
-  const profile =
-    allProfiles.find(
-      p => p.uid === uid
-    );
-
-  if(!profile) return;
-
-  overrideModalUid = uid;
-
-
-  document.getElementById(
-    'overrideModalName'
-  ).textContent =
-    `One-off Changes — ${
-      profile.name || 'Unknown'
-    }`;
-
-
-  document.getElementById(
-    'addOverrideForm'
-  ).reset();
-
-
-  document.getElementById(
-    'overrideStart'
-  ).value =
-    '09:00';
-
-  document.getElementById(
-    'overrideEnd'
-  ).value =
-    '13:00';
-
-  document.getElementById(
-    'overrideStart'
-  ).disabled = false;
-
-  document.getElementById(
-    'overrideEnd'
-  ).disabled = false;
-
-
-  renderOverrideRows();
-
-
-  document.getElementById(
-    'overrideModal'
-  ).classList.remove(
-    'hidden'
-  );
-
+const profile=allProfiles.find(p=>p.uid===uid);
+if(!profile)return;
+overrideModalUid=uid;
+document.getElementById('overrideModalName').textContent=`One-off Changes — ${profile.name||'Unknown'}`;
+document.getElementById('addOverrideForm').reset();
+document.getElementById('overrideStart').value='09:00';
+document.getElementById('overrideEnd').value='13:00';
+document.getElementById('overrideStart').disabled=false;
+document.getElementById('overrideEnd').disabled=false;
+renderOverrideRows();
+document.getElementById('overrideModal').classList.remove('hidden');
 }
-
 
 function renderOverrideRows(){
-
-  const mine =
-    allOverrides
-      .filter(
-        o =>
-          o.uid ===
-          overrideModalUid
-      )
-      .sort(
-        (a,b) =>
-          a.date.localeCompare(
-            b.date
-          )
-      );
-
-
-  const container =
-    document.getElementById(
-      'overrideRows'
-    );
-
-
-  if(mine.length === 0){
-
-    container.innerHTML =
-      '<div class="modal-sub" style="margin:0;">No one-off changes set.</div>';
-
-    return;
-  }
-
-
-  container.innerHTML =
-    mine.map(o => `
-
-      <div
-        class="schedule-row"
-        data-date="${o.date}">
-
-        <div style="
-          flex:1;
-          font-size:12.5px;
-          color:var(--text-onlight);
-        ">
-
-          <b>${o.date}</b>
-          —
-          ${
-            o.off
-              ? 'Day off'
-              : `${o.start}–${o.end}`
-          }
-
-        </div>
-
-        <button
-          type="button"
-          class="delete-btn delete-override-btn"
-          data-date="${o.date}">
-          Delete
-        </button>
-
-      </div>
-
-    `).join('');
-
+const mine=allOverrides.filter(o=>o.uid===overrideModalUid).sort((a,b)=>a.date.localeCompare(b.date));
+const container=document.getElementById('overrideRows');
+if(mine.length===0){
+container.innerHTML='<div class="modal-sub" style="margin:0;">No one-off changes set.</div>';
+return;
+}
+container.innerHTML=mine.map(o=>`<div class="schedule-row" data-date="${o.date}"><div style="flex:1;font-size:12.5px;color:var(--text-onlight);"><b>${o.date}</b> — ${o.off?'Day off':`${o.start}–${o.end}`}</div><button type="button" class="delete-btn delete-override-btn" data-date="${o.date}">Delete</button></div>`).join('');
 }
 
-
-document.getElementById(
-  'addOverrideForm'
-).addEventListener(
-  'submit',
-  async (e) => {
-
-    e.preventDefault();
-
-    if(!overrideModalUid){
-      return;
-    }
-
-
-    const date =
-      document.getElementById(
-        'overrideDate'
-      ).value;
-
-    const off =
-      document.getElementById(
-        'overrideOff'
-      ).checked;
-
-    const start =
-      document.getElementById(
-        'overrideStart'
-      ).value;
-
-    const end =
-      document.getElementById(
-        'overrideEnd'
-      ).value;
-
-
-    if(!date){
-
-      alert(
-        'Please select a date.'
-      );
-
-      return;
-    }
-
-
-    if(
-      !off &&
-      (
-        !start ||
-        !end ||
-        start >= end
-      )
-    ){
-
-      alert(
-        'Please enter a valid start and end time. End time must be later than start time.'
-      );
-
-      return;
-    }
-
-
-    const btn =
-      document.getElementById(
-        'addOverrideBtn'
-      );
-
-    btn.disabled = true;
-
-
-    try{
-
-      await setDoc(
-        doc(
-          db,
-          "schedule_overrides",
-          `${overrideModalUid}_${date}`
-        ),
-        {
-          uid:overrideModalUid,
-          date,
-          off,
-          start:
-            off
-              ? null
-              : start,
-          end:
-            off
-              ? null
-              : end,
-          createdAt:
-            serverTimestamp()
-        }
-      );
-
-
-      await loadOverrides();
-
-      renderOverrideRows();
-
-
-      if(
-        !document
-          .getElementById(
-            'payrollTab'
-          )
-          .classList.contains(
-            'hidden'
-          )
-      ){
-
-        renderPayroll();
-
-      }
-
-
-      if(
-        !document
-          .getElementById(
-            'monthlyreportTab'
-          )
-          .classList.contains(
-            'hidden'
-          )
-      ){
-
-        renderMonthlyReport();
-
-      }
-
-
-      e.target.reset();
-
-
-      document.getElementById(
-        'overrideStart'
-      ).value =
-        '09:00';
-
-      document.getElementById(
-        'overrideEnd'
-      ).value =
-        '13:00';
-
-      document.getElementById(
-        'overrideStart'
-      ).disabled = false;
-
-      document.getElementById(
-        'overrideEnd'
-      ).disabled = false;
-
-
-    }catch(err){
-
-      alert(
-        'Could not save change: ' +
-        err.message
-      );
-
-    }
-
-
-    btn.disabled = false;
-
-  }
-);
-
-
-document.getElementById(
-  'overrideRows'
-).addEventListener(
-  'click',
-  async (e) => {
-
-    const delBtn =
-      e.target.closest(
-        '.delete-override-btn'
-      );
-
-    if(!delBtn) return;
-
-
-    if(
-      !confirm(
-        'Remove this one-off change?'
-      )
-    ){
-      return;
-    }
-
-
-    try{
-
-      await deleteDoc(
-        doc(
-          db,
-          "schedule_overrides",
-          `${overrideModalUid}_${delBtn.dataset.date}`
-        )
-      );
-
-
-      await loadOverrides();
-
-      renderOverrideRows();
-
-
-      if(
-        !document
-          .getElementById(
-            'payrollTab'
-          )
-          .classList.contains(
-            'hidden'
-          )
-      ){
-
-        renderPayroll();
-
-      }
-
-
-      if(
-        !document
-          .getElementById(
-            'monthlyreportTab'
-          )
-          .classList.contains(
-            'hidden'
-          )
-      ){
-
-        renderMonthlyReport();
-
-      }
-
-
-    }catch(err){
-
-      alert(
-        'Could not delete: ' +
-        err.message
-      );
-
-    }
-
-  }
-);
-
-
-document.getElementById(
-  'overrideCloseBtn'
-).addEventListener(
-  'click',
-  () => {
-
-    document.getElementById(
-      'overrideModal'
-    ).classList.add(
-      'hidden'
-    );
-
-    overrideModalUid = null;
-
-  }
-);
-
-
-/* ============================================================
-   PAYROLL
-   ============================================================ */
-
-const payrollMonthInput =
-  document.getElementById(
-    'payrollMonth'
-  );
-
-
-payrollMonthInput.value =
-  new Date()
-    .toISOString()
-    .slice(0,7);
-
-
-payrollMonthInput.addEventListener(
-  'change',
-  renderPayroll
-);
-
-
-const reportMonthInput =
-  document.getElementById(
-    'reportMonth'
-  );
-
-
-const reportEmployeeFilter =
-  document.getElementById(
-    'reportEmployeeFilter'
-  );
-
-
-reportMonthInput.value =
-  new Date()
-    .toISOString()
-    .slice(0,7);
-
-
-reportMonthInput.addEventListener(
-  'change',
-  renderMonthlyReport
-);
-
-
-reportEmployeeFilter.addEventListener(
-  'change',
-  renderMonthlyReport
-);
-
-
-/* ================= TIME HELPERS ================= */
-
-function parseTimeToDate(
-  dateBase,
-  hhmm
-){
-
-  const [h,m] =
-    hhmm
-      .split(':')
-      .map(Number);
-
-  const d =
-    new Date(dateBase);
-
-  d.setHours(
-    h,
-    m,
-    0,
-    0
-  );
-
-  return d;
-
+document.getElementById('addOverrideForm').addEventListener('submit',async(e)=>{
+e.preventDefault();
+if(!overrideModalUid)return;
+const date=document.getElementById('overrideDate').value;
+const off=document.getElementById('overrideOff').checked;
+const start=document.getElementById('overrideStart').value;
+const end=document.getElementById('overrideEnd').value;
+if(!date){
+alert('Please select a date.');
+return;
 }
+if(!off&&(!start||!end||start>=end)){
+alert('Please enter a valid start and end time. End time must be later than start time.');
+return;
+}
+const btn=document.getElementById('addOverrideBtn');
+btn.disabled=true;
+try{
+await setDoc(doc(db,"schedule_overrides",`${overrideModalUid}_${date}`),{uid:overrideModalUid,date,off,start:off?null:start,end:off?null:end,createdAt:serverTimestamp()});
+await loadOverrides();
+renderOverrideRows();
+if(!document.getElementById('payrollTab').classList.contains('hidden'))renderPayroll();
+if(!document.getElementById('monthlyreportTab').classList.contains('hidden'))renderMonthlyReport();
+e.target.reset();
+document.getElementById('overrideStart').value='09:00';
+document.getElementById('overrideEnd').value='13:00';
+document.getElementById('overrideStart').disabled=false;
+document.getElementById('overrideEnd').disabled=false;
+}catch(err){
+alert('Could not save change: '+err.message);
+}
+btn.disabled=false;
+});
 
+document.getElementById('overrideRows').addEventListener('click',async(e)=>{
+const delBtn=e.target.closest('.delete-override-btn');
+if(!delBtn)return;
+if(!confirm('Remove this one-off change?'))return;
+try{
+await deleteDoc(doc(db,"schedule_overrides",`${overrideModalUid}_${delBtn.dataset.date}`));
+await loadOverrides();
+renderOverrideRows();
+if(!document.getElementById('payrollTab').classList.contains('hidden'))renderPayroll();
+if(!document.getElementById('monthlyreportTab').classList.contains('hidden'))renderMonthlyReport();
+}catch(err){
+alert('Could not delete: '+err.message);
+}
+});
+
+document.getElementById('overrideCloseBtn').addEventListener('click',()=>{
+document.getElementById('overrideModal').classList.add('hidden');
+overrideModalUid=null;
+});
+
+// ================= PAYROLL =================
+
+const payrollMonthInput=document.getElementById('payrollMonth');
+payrollMonthInput.value=new Date().toISOString().slice(0,7);
+payrollMonthInput.addEventListener('change',renderPayroll);
+
+const reportMonthInput=document.getElementById('reportMonth');
+const reportEmployeeFilter=document.getElementById('reportEmployeeFilter');
+reportMonthInput.value=new Date().toISOString().slice(0,7);
+reportMonthInput.addEventListener('change',renderMonthlyReport);
+reportEmployeeFilter.addEventListener('change',renderMonthlyReport);
+
+function parseTimeToDate(dateBase,hhmm){
+const[h,m]=hhmm.split(':').map(Number);
+const d=new Date(dateBase);
+d.setHours(h,m,0,0);
+return d;
+}
 
 function dateToYMD(date){
-
-  const y =
-    date.getFullYear();
-
-  const m =
-    String(
-      date.getMonth() + 1
-    ).padStart(2,'0');
-
-  const d =
-    String(
-      date.getDate()
-    ).padStart(2,'0');
-
-  return `${y}-${m}-${d}`;
-
+const y=date.getFullYear();
+const m=String(date.getMonth()+1).padStart(2,'0');
+const d=String(date.getDate()).padStart(2,'0');
+return`${y}-${m}-${d}`;
 }
 
-
-/* ============================================================
-   SHARED PAYABLE ATTENDANCE CALCULATION
-   ============================================================
-
-   IMPORTANT PAYROLL RULE:
-
-   Example schedule:
-       02:00 → 18:00
-
-   Employee:
-       IN  01:00
-       OUT 10:00
-       IN  11:00
-       OUT 20:00
-
-   Actual clocked time:
-       01:00 → 10:00 = 9h
-       11:00 → 20:00 = 9h
-
-   But payable time is only inside:
-       02:00 → 18:00
-
-   Therefore:
-       02:00 → 10:00 = 8h
-       11:00 → 18:00 = 7h
-
-   Payable = 15h
-
-   Missing scheduled time = 1h
-
-   Early and late extra hours are ignored.
-   ============================================================ */
-
-function getScheduledAttendance(
-  date,
-  range,
-  punches
-){
-
-  if(
-    !range ||
-    !range.start ||
-    !range.end
-  ){
-
-    return {
-      firstIn:null,
-      lastOut:null,
-      actualHours:0,
-      payableHours:0,
-      missingMinutes:0,
-      status:'Absent'
-    };
-
-  }
-
-
-  const scheduledStart =
-    parseTimeToDate(
-      date,
-      range.start
-    );
-
-  const scheduledEnd =
-    parseTimeToDate(
-      date,
-      range.end
-    );
-
-
-  const scheduledHours =
-    Math.max(
-      0,
-      (
-        scheduledEnd -
-        scheduledStart
-      ) / 3600000
-    );
-
-
-  let firstIn = null;
-  let lastOut = null;
-  let openIn = null;
-
-  let actualHours = 0;
-  let payableHours = 0;
-
-
-  const sorted =
-    [...punches]
-      .sort(
-        (a,b) =>
-          a.createdAt.toMillis() -
-          b.createdAt.toMillis()
-      );
-
-
-  sorted.forEach(r => {
-
-    const t =
-      r.createdAt.toDate();
-
-
-    if(r.type === 'IN'){
-
-      if(!firstIn){
-        firstIn = t;
-      }
-
-      openIn = t;
-
-
-    }else if(
-      r.type === 'OUT'
-    ){
-
-      if(openIn){
-
-        if(
-          t > openIn
-        ){
-
-          actualHours +=
-            (
-              t -
-              openIn
-            ) / 3600000;
-
-
-          const overlapStartMs =
-            Math.max(
-              openIn.getTime(),
-              scheduledStart.getTime()
-            );
-
-
-          const overlapEndMs =
-            Math.min(
-              t.getTime(),
-              scheduledEnd.getTime()
-            );
-
-
-          if(
-            overlapEndMs >
-            overlapStartMs
-          ){
-
-            payableHours +=
-              (
-                overlapEndMs -
-                overlapStartMs
-              ) / 3600000;
-
-          }
-
-        }
-
-
-        openIn = null;
-
-      }
-
-
-      if(
-        !lastOut ||
-        t > lastOut
-      ){
-
-        lastOut = t;
-
-      }
-
-    }
-
-  });
-
-
-  /*
-    Only scheduled time is payable.
-
-    Example:
-      scheduled = 16h
-      payable = 15h
-      missing = 1h
-
-    Round to the nearest minute so a one-minute
-    shortage is correctly treated as one minute.
-  */
-
-  const missingMinutes =
-    Math.max(
-      0,
-      Math.round(
-        (
-          scheduledHours -
-          payableHours
-        ) * 60
-      )
-    );
-
-
-  let status = 'Absent';
-
-
-  if(
-    payableHours > 0 &&
-    missingMinutes <= 0
-  ){
-
-    status = 'Present';
-
-  }else if(
-    payableHours > 0
-  ){
-
-    status = 'Late';
-
-  }
-
-
-  return {
-
-    firstIn,
-    lastOut,
-
-    actualHours,
-
-    payableHours,
-
-    missingMinutes,
-
-    status
-
-  };
-
+/*
+  This calculates only the part of each valid IN -> OUT session
+  that overlaps the employee's scheduled working period.
+  Example:
+  Schedule 02:00–18:00
+  IN 01:00 OUT 10:00 = 8 payable hours
+  IN 11:00 OUT 20:00 = 7 payable hours
+  Total = 15 payable hours
+*/
+function getScheduledAttendance(date,range,punches){
+const scheduledStart=parseTimeToDate(date,range.start);
+const scheduledEnd=parseTimeToDate(date,range.end);
+let firstIn=null,lastOut=null,openIn=null,actualHours=0,payableHours=0;
+const sorted=[...punches].sort((a,b)=>a.createdAt.toMillis()-b.createdAt.toMillis());
+sorted.forEach(r=>{
+const t=r.createdAt.toDate();
+if(r.type==='IN'){
+if(!firstIn)firstIn=t;
+openIn=t;
+}else if(r.type==='OUT'&&openIn){
+if(!lastOut||t>lastOut)lastOut=t;
+actualHours+=(t-openIn)/3600000;
+const overlapStartMs=Math.max(openIn.getTime(),scheduledStart.getTime());
+const overlapEndMs=Math.min(t.getTime(),scheduledEnd.getTime());
+if(overlapEndMs>overlapStartMs)payableHours+=(overlapEndMs-overlapStartMs)/3600000;
+openIn=null;
+}
+});
+const scheduledHours=Math.max(0,(scheduledEnd-scheduledStart)/3600000);
+const missingMinutes=Math.max(0,Math.round((scheduledHours-payableHours)*60));
+let status='Absent';
+if(payableHours>0&&missingMinutes<=0)status='Present';
+else if(payableHours>0)status='Late';
+return{firstIn,lastOut,actualHours,payableHours,missingMinutes,status};
 }
 
-
-/* ============================================================
-   BUILD SCHEDULED DATES
-   ============================================================ */
-
-function getScheduledDatesForEmployee(
-  p,
-  year,
-  month,
-  daysInMonth
-){
-
-  const schedule =
-    p.schedule || {};
-
-  const DAY_INDEX = {
-    Sun:0,
-    Mon:1,
-    Tue:2,
-    Wed:3,
-    Thu:4,
-    Fri:5,
-    Sat:6
-  };
-
-
-  const holidaySet =
-    new Set(
-      allHolidays.map(
-        h => h.date
-      )
-    );
-
-
-  const myOverrides = {};
-
-
-  allOverrides
-    .filter(
-      o => o.uid === p.uid
-    )
-    .forEach(
-      o => {
-        myOverrides[o.date] = o;
-      }
-    );
-
-
-  const scheduledDates = [];
-
-
-  for(
-    let day = 1;
-    day <= daysInMonth;
-    day++
-  ){
-
-    const date =
-      new Date(
-        year,
-        month - 1,
-        day
-      );
-
-    const ymd =
-      dateToYMD(date);
-
-    const override =
-      myOverrides[ymd];
-
-
-    /*
-      Override always wins over:
-      - normal weekly schedule
-      - holiday
-    */
-
-    if(override){
-
-      if(
-        !override.off
-      ){
-
-        scheduledDates.push({
-          date,
-          range:{
-            start:override.start,
-            end:override.end
-          }
-        });
-
-      }
-
-      continue;
-    }
-
-
-    /*
-      Normal holidays are not scheduled.
-    */
-
-    if(
-      holidaySet.has(ymd)
-    ){
-
-      continue;
-
-    }
-
-
-    const dayName =
-      DAYS.find(
-        d =>
-          DAY_INDEX[d] ===
-          date.getDay()
-      );
-
-
-    if(
-      schedule[dayName]
-    ){
-
-      scheduledDates.push({
-        date,
-        range:schedule[dayName]
-      });
-
-    }
-
-  }
-
-
-  return scheduledDates;
-
+function getLeaveForDate(uid,ymd){
+const active=allLeaveRequests.filter(r=>r.uid===uid&&r.startDate&&r.endDate&&ymd>=r.startDate&&ymd<=r.endDate&&r.status!=='rejected');
+const unpaid=active.find(r=>r.status==='approved'&&r.type==='Unpaid');
+if(unpaid)return{type:unpaid.type,status:unpaid.status};
+const paid=active.find(r=>r.status==='approved'&&['Annual','MC','Emergency'].includes(r.type));
+if(paid)return{type:paid.type,status:paid.status};
+const pending=active.find(r=>r.status==='pending');
+if(pending)return{type:pending.type,status:pending.status};
+return null;
 }
 
-
-/* ============================================================
-   PAYROLL CALCULATION
-   ============================================================ */
-
-function computePayrollForMonth(
-  yearMonth
-){
-
-  const [
-    year,
-    month
-  ] =
-    yearMonth
-      .split('-')
-      .map(Number);
-
-
-  const daysInMonth =
-    new Date(
-      year,
-      month,
-      0
-    ).getDate();
-
-
-  return allProfiles.map(p => {
-
-    const schedule =
-      p.schedule || {};
-
-    const hasSchedule =
-      DAYS.some(
-        d => schedule[d]
-      );
-
-
-    if(
-      !hasSchedule ||
-      p.basicSalary == null
-    ){
-
-      return {
-        uid:p.uid,
-        name:p.name,
-        incomplete:true
-      };
-
-    }
-
-
-    const scheduledDates =
-      getScheduledDatesForEmployee(
-        p,
-        year,
-        month,
-        daysInMonth
-      );
-
-
-    const totalScheduledDays =
-      scheduledDates.length;
-
-
-    /*
-      Basic salary is divided by the number of
-      scheduled working days in the month.
-
-      Leave does NOT reduce this denominator.
-    */
-
-    const dailySalary =
-      totalScheduledDays > 0
-        ? p.basicSalary /
-          totalScheduledDays
-        : 0;
-
-
-    const myPunches =
-      allRecords.filter(
-        r =>
-          r.uid === p.uid &&
-          r.createdAt?.toDate
-      );
-
-
-    let totalHoursWorked = 0;
-
-    let totalLateMinutes = 0;
-
-    let totalLateDeduction = 0;
-
-    let totalPay = 0;
-
-
-    scheduledDates.forEach(
-      ({
-        date,
-        range
-      }) => {
-
-        const ymd =
-          dateToYMD(date);
-
-
-        const scheduledHours =
-          computeHoursForRange(
-            range
-          );
-
-
-        const hourlyRate =
-          scheduledHours > 0
-            ? dailySalary /
-              scheduledHours
-            : 0;
-
-
-        const dayPunches =
-          myPunches.filter(
-            r => {
-
-              const d =
-                r.createdAt
-                  .toDate();
-
-              return (
-
-                d.getFullYear() ===
-                  date.getFullYear() &&
-
-                d.getMonth() ===
-                  date.getMonth() &&
-
-                d.getDate() ===
-                  date.getDate()
-
-              );
-
-            }
-          );
-
-
-        const attendance =
-          getScheduledAttendance(
-            date,
-            range,
-            dayPunches
-          );
-
-
-        /*
-          Leave takes priority over normal attendance
-          when it is approved/pending.
-        */
-
-        const leave =
-          getLeaveForDate(
-            p.uid,
-            ymd
-          );
-
-
-        if(leave){
-
-          if(
-            leave.status ===
-              'approved' &&
-            [
-              'Annual',
-              'MC',
-              'Emergency'
-            ].includes(
-              leave.type
-            )
-          ){
-
-            /*
-              Paid leave gets the full daily salary.
-            */
-
-            totalPay +=
-              dailySalary;
-
-            /*
-              No attendance hours or late deduction
-              for paid leave.
-            */
-
-            return;
-
-          }
-
-
-          if(
-            leave.type ===
-              'Unpaid'
-          ){
-
-            /*
-              Approved unpaid leave:
-              RM0.
-
-              Pending unpaid leave:
-              temporarily RM0.
-
-              When manager approves/rejects it,
-              this calculation automatically updates.
-            */
-
-            return;
-
-          }
-
-
-          if(
-            leave.status ===
-              'pending'
-          ){
-
-            /*
-              Pending leave is temporarily unpaid.
-            */
-
-            return;
-
-          }
-
-        }
-
-
-        /*
-          Normal attendance calculation.
-        */
-
-        totalHoursWorked +=
-          attendance.payableHours;
-
-
-        totalLateMinutes +=
-          attendance.missingMinutes;
-
-
-        const lateDeduction =
-          (
-            attendance.missingMinutes /
-            60
-          ) * hourlyRate;
-
-
-        totalLateDeduction +=
-          lateDeduction;
-
-
-        /*
-          PAY ONLY PAYABLE SCHEDULED HOURS.
-
-          Do NOT deduct lateDeduction again.
-
-          Example:
-            daily salary = RM160
-            scheduled = 8h
-            payable = 7h
-
-            hourly rate = RM20
-
-            pay = 7 × RM20 = RM140
-
-            deduction = RM20
-
-          RM140 is already the correct final daily
-          attendance pay.
-        */
-
-        totalPay +=
-          attendance.payableHours *
-          hourlyRate;
-
-      }
-    );
-
-
-    const ptClasses =
-      ptCountForMonth(
-        p.uid,
-        yearMonth
-      );
-
-
-    const ptCommission =
-      ptClasses *
-      PT_RATE;
-
-
-    return {
-
-      uid:p.uid,
-
-      name:p.name,
-
-      email:p.email,
-
-      incomplete:false,
-
-      basicSalary:p.basicSalary,
-
-      totalScheduledDays,
-
-      totalHoursWorked,
-
-      totalLateMinutes,
-
-      totalLateDeduction,
-
-      ptClasses,
-
-      ptCommission,
-
-      totalPay:
-        totalPay +
-        ptCommission
-
-    };
-
-  });
-
+function computePayrollForMonth(yearMonth){
+const[year,month]=yearMonth.split('-').map(Number);
+const daysInMonth=new Date(year,month,0).getDate();
+const DAY_INDEX={Sun:0,Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6};
+const holidaySet=new Set(allHolidays.map(h=>h.date));
+return allProfiles.map(p=>{
+const schedule=p.schedule||{};
+const hasSchedule=DAYS.some(d=>schedule[d]);
+if(!hasSchedule||p.basicSalary==null)return{uid:p.uid,name:p.name,incomplete:true};
+
+const myOverrides={};
+allOverrides.filter(o=>o.uid===p.uid).forEach(o=>{myOverrides[o.date]=o;});
+
+const scheduledDates=[];
+for(let day=1;day<=daysInMonth;day++){
+const date=new Date(year,month-1,day);
+const ymd=dateToYMD(date);
+const override=myOverrides[ymd];
+if(override){
+if(!override.off)scheduledDates.push({date,range:{start:override.start,end:override.end}});
+continue;
+}
+if(holidaySet.has(ymd))continue;
+const dayName=DAYS.find(d=>DAY_INDEX[d]===date.getDay());
+if(schedule[dayName])scheduledDates.push({date,range:schedule[dayName]});
 }
 
+const totalScheduledDays=scheduledDates.length;
+const dailySalary=totalScheduledDays>0?p.basicSalary/totalScheduledDays:0;
+const myPunches=allRecords.filter(r=>r.uid===p.uid&&r.createdAt?.toDate);
+let totalHoursWorked=0,totalLateMinutes=0,totalLateDeduction=0,totalPay=0;
 
-/* ================= RENDER PAYROLL ================= */
+scheduledDates.forEach(({date,range})=>{
+const ymd=dateToYMD(date);
+const scheduledHours=computeHoursForRange(range);
+const hourlyRate=scheduledHours>0?dailySalary/scheduledHours:0;
+const leave=getLeaveForDate(p.uid,ymd);
+const dayPunches=myPunches.filter(r=>{
+const d=r.createdAt.toDate();
+return d.getFullYear()===date.getFullYear()&&d.getMonth()===date.getMonth()&&d.getDate()===date.getDate();
+});
+const attendance=getScheduledAttendance(date,range,dayPunches);
+
+if(leave){
+if(leave.status==='approved'&&['Annual','MC','Emergency'].includes(leave.type)){
+totalPay+=dailySalary;
+}else if(leave.type==='Unpaid'){
+// Approved unpaid and pending unpaid leave receive RM0.
+}else if(leave.status==='pending'){
+// Pending leave is temporarily unpaid.
+// If later approved as paid leave, this calculation automatically changes.
+}else{
+// Rejected leave is excluded by getLeaveForDate(), so normal attendance applies.
+totalHoursWorked+=attendance.payableHours;
+totalLateMinutes+=attendance.missingMinutes;
+totalLateDeduction+=attendance.missingMinutes/60*hourlyRate;
+totalPay+=attendance.payableHours*hourlyRate;
+}
+}else{
+totalHoursWorked+=attendance.payableHours;
+totalLateMinutes+=attendance.missingMinutes;
+totalLateDeduction+=attendance.missingMinutes/60*hourlyRate;
+totalPay+=attendance.payableHours*hourlyRate;
+}
+});
+
+const ptClasses=ptCountForMonth(p.uid,yearMonth);
+const ptCommission=ptClasses*PT_RATE;
+
+return{
+uid:p.uid,
+name:p.name,
+email:p.email,
+incomplete:false,
+basicSalary:p.basicSalary,
+totalScheduledDays,
+totalHoursWorked,
+totalLateMinutes,
+totalLateDeduction,
+ptClasses,
+ptCommission,
+totalPay:totalPay+ptCommission
+};
+});
+}
 
 function renderPayroll(){
-
-  const rows =
-    computePayrollForMonth(
-      payrollMonthInput.value
-    );
-
-
-  const body =
-    document.getElementById(
-      'payrollBody'
-    );
-
-  const empty =
-    document.getElementById(
-      'payrollEmptyState'
-    );
-
-
-  const complete =
-    rows.filter(
-      r => !r.incomplete
-    );
-
-
-  if(
-    complete.length === 0
-  ){
-
-    body.innerHTML = '';
-
-    empty.classList.remove(
-      'hidden'
-    );
-
-    return;
-
-  }
-
-
-  empty.classList.add(
-    'hidden'
-  );
-
-
-  body.innerHTML =
-    complete.map(r => `
-
-      <tr>
-
-        <td>
-
-          <div class="emp-name">
-            ${r.name || 'Unknown'}
-          </div>
-
-          <div class="emp-email">
-            ${r.email || ''}
-          </div>
-
-        </td>
-
-        <td class="mono">
-          RM ${r.basicSalary.toFixed(2)}
-        </td>
-
-        <td class="mono">
-          ${r.totalScheduledDays}
-        </td>
-
-        <td class="mono">
-          ${r.totalHoursWorked.toFixed(2)}h
-        </td>
-
-        <td class="mono">
-          ${r.totalLateMinutes}
-        </td>
-
-        <td class="mono">
-          RM ${r.totalLateDeduction.toFixed(2)}
-        </td>
-
-        <td class="mono">
-          ${r.ptClasses}
-        </td>
-
-        <td class="mono">
-          RM ${r.ptCommission.toFixed(2)}
-        </td>
-
-        <td
-          class="mono"
-          style="font-weight:700;">
-          RM ${r.totalPay.toFixed(2)}
-        </td>
-
-      </tr>
-
-    `).join('');
-
+const rows=computePayrollForMonth(payrollMonthInput.value);
+const body=document.getElementById('payrollBody');
+const empty=document.getElementById('payrollEmptyState');
+const complete=rows.filter(r=>!r.incomplete);
+if(complete.length===0){
+body.innerHTML='';
+empty.classList.remove('hidden');
+return;
+}
+empty.classList.add('hidden');
+body.innerHTML=complete.map(r=>`<tr><td><div class="emp-name">${r.name||'Unknown'}</div><div class="emp-email">${r.email||''}</div></td><td class="mono">RM ${r.basicSalary.toFixed(2)}</td><td class="mono">${r.totalScheduledDays}</td><td class="mono">${r.totalHoursWorked.toFixed(2)}h</td><td class="mono">${r.totalLateMinutes}</td><td class="mono">RM ${r.totalLateDeduction.toFixed(2)}</td><td class="mono">${r.ptClasses}</td><td class="mono">RM ${r.ptCommission.toFixed(2)}</td><td class="mono" style="font-weight:700;">RM ${r.totalPay.toFixed(2)}</td></tr>`).join('');
 }
 
+document.getElementById('exportPayrollBtn').addEventListener('click',()=>{
+const rows=computePayrollForMonth(payrollMonthInput.value).filter(r=>!r.incomplete);
+const csvRows=[['Employee','Email','Basic Salary','Scheduled Days','Hours Worked','Late (min)','Late Deduction','PT Classes','PT Commission','Total Pay'],...rows.map(r=>[r.name||'Unknown',r.email||'',r.basicSalary.toFixed(2),r.totalScheduledDays,r.totalHoursWorked.toFixed(2),r.totalLateMinutes,r.totalLateDeduction.toFixed(2),r.ptClasses,r.ptCommission.toFixed(2),r.totalPay.toFixed(2)])];
+downloadCSV(`payroll-${payrollMonthInput.value}.csv`,csvRows);
+});
 
-document.getElementById(
-  'exportPayrollBtn'
-).addEventListener(
-  'click',
-  () => {
+// ================= UNIFIED MONTHLY REPORT =================
 
-    const rows =
-      computePayrollForMonth(
-        payrollMonthInput.value
-      )
-      .filter(
-        r => !r.incomplete
-      );
+function getDayAttendance(uid,date){
+const punches=allRecords.filter(r=>{
+if(r.uid!==uid||!r.createdAt?.toDate)return false;
+const d=r.createdAt.toDate();
+return d.getFullYear()===date.getFullYear()&&d.getMonth()===date.getMonth()&&d.getDate()===date.getDate();
+}).sort((a,b)=>a.createdAt.toMillis()-b.createdAt.toMillis());
 
-
-    const csvRows = [
-
-      [
-        'Employee',
-        'Email',
-        'Basic Salary',
-        'Scheduled Days',
-        'Hours Worked',
-        'Late (min)',
-        'Late Deduction',
-        'PT Classes',
-        'PT Commission',
-        'Total Pay'
-      ],
-
-      ...rows.map(
-        r => [
-
-          r.name ||
-            'Unknown',
-
-          r.email ||
-            '',
-
-          r.basicSalary
-            .toFixed(2),
-
-          r.totalScheduledDays,
-
-          r.totalHoursWorked
-            .toFixed(2),
-
-          r.totalLateMinutes,
-
-          r.totalLateDeduction
-            .toFixed(2),
-
-          r.ptClasses,
-
-          r.ptCommission
-            .toFixed(2),
-
-          r.totalPay
-            .toFixed(2)
-
-        ]
-      )
-
-    ];
-
-
-    downloadCSV(
-      `payroll-${payrollMonthInput.value}.csv`,
-      csvRows
-    );
-
-  }
-);
-
-
-/* ============================================================
-   LEAVE HELPER
-   ============================================================ */
-
-function getLeaveForDate(
-  uid,
-  ymd
-){
-
-  const active =
-    allLeaveRequests.filter(
-      r =>
-        r.uid === uid &&
-        r.startDate &&
-        r.endDate &&
-        ymd >= r.startDate &&
-        ymd <= r.endDate &&
-        r.status !== 'rejected'
-    );
-
-
-  /*
-    If multiple leave records overlap,
-    unpaid approved leave takes priority.
-  */
-
-  const unpaid =
-    active.find(
-      r =>
-        r.status === 'approved' &&
-        r.type === 'Unpaid'
-    );
-
-
-  if(unpaid){
-
-    return {
-      type:unpaid.type,
-      status:unpaid.status
-    };
-
-  }
-
-
-  const paid =
-    active.find(
-      r =>
-        r.status === 'approved' &&
-        [
-          'Annual',
-          'MC',
-          'Emergency'
-        ].includes(
-          r.type
-        )
-    );
-
-
-  if(paid){
-
-    return {
-      type:paid.type,
-      status:paid.status
-    };
-
-  }
-
-
-  const pending =
-    active.find(
-      r =>
-        r.status === 'pending'
-    );
-
-
-  if(pending){
-
-    return {
-      type:pending.type,
-      status:pending.status
-    };
-
-  }
-
-
-  return null;
-
+let firstIn=null,lastOut=null,openIn=null,actualHours=0;
+punches.forEach(r=>{
+const t=r.createdAt.toDate();
+if(r.type==='IN'){
+if(!firstIn)firstIn=t;
+openIn=t;
+}else if(r.type==='OUT'){
+if(openIn){
+actualHours+=(t-openIn)/3600000;
+openIn=null;
+if(!lastOut||t>lastOut)lastOut=t;
+}else{
+lastOut=t;
+}
+}
+});
+return{firstIn,lastOut,actualHours};
 }
 
+function getMonthlyReportRows(yearMonth){
+const[year,month]=yearMonth.split('-').map(Number),daysInMonth=new Date(year,month,0).getDate();
+const DAY_INDEX={Sun:0,Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6},holidayMap={};
+allHolidays.forEach(h=>holidayMap[h.date]=h.name||'Holiday');
+const rows=[];
 
-/* ============================================================
-   MONTHLY REPORT ATTENDANCE
-   ============================================================ */
+allProfiles.forEach(p=>{
+const schedule=p.schedule||{},hasSchedule=DAYS.some(d=>schedule[d]);
+if(!hasSchedule||p.basicSalary==null)return;
 
-function getDayAttendance(
-  uid,
-  date
-){
+const myOverrides={};
+allOverrides.filter(o=>o.uid===p.uid).forEach(o=>myOverrides[o.date]=o);
 
-  const punches =
-    allRecords.filter(
-      r => {
-
-        if(
-          r.uid !== uid ||
-          !r.createdAt?.toDate
-        ){
-          return false;
-        }
-
-        const d =
-          r.createdAt.toDate();
-
-        return (
-
-          d.getFullYear() ===
-            date.getFullYear() &&
-
-          d.getMonth() ===
-            date.getMonth() &&
-
-          d.getDate() ===
-            date.getDate()
-
-        );
-
-      }
-    )
-    .sort(
-      (a,b) =>
-        a.createdAt.toMillis() -
-        b.createdAt.toMillis()
-    );
-
-
-  let firstIn = null;
-  let lastOut = null;
-  let openIn = null;
-
-  let actualHours = 0;
-
-
-  punches.forEach(r => {
-
-    const t =
-      r.createdAt.toDate();
-
-
-    if(r.type === 'IN'){
-
-      if(!firstIn){
-        firstIn = t;
-      }
-
-      openIn = t;
-
-
-    }else if(
-      r.type === 'OUT'
-    ){
-
-      if(openIn){
-
-        if(t > openIn){
-
-          actualHours +=
-            (
-              t -
-              openIn
-            ) / 3600000;
-
-        }
-
-        openIn = null;
-
-      }
-
-
-      if(
-        !lastOut ||
-        t > lastOut
-      ){
-
-        lastOut = t;
-
-      }
-
-    }
-
-  });
-
-
-  return {
-    firstIn,
-    lastOut,
-    actualHours,
-    punches
-  };
-
+const scheduledDates=[];
+for(let day=1;day<=daysInMonth;day++){
+const date=new Date(year,month-1,day),ymd=dateToYMD(date),override=myOverrides[ymd];
+if(override){
+if(!override.off)scheduledDates.push({date,range:{start:override.start,end:override.end}});
+continue;
+}
+if(holidayMap[ymd])continue;
+const dayName=DAYS.find(d=>DAY_INDEX[d]===date.getDay());
+if(schedule[dayName])scheduledDates.push({date,range:schedule[dayName]});
 }
 
-
-/* ============================================================
-   MONTHLY REPORT
-   ============================================================ */
-
-function getMonthlyReportRows(
-  yearMonth
-){
-
-  const [
-    year,
-    month
-  ] =
-    yearMonth
-      .split('-')
-      .map(Number);
-
-
-  const daysInMonth =
-    new Date(
-      year,
-      month,
-      0
-    ).getDate();
-
-
-  const DAY_INDEX = {
-    Sun:0,
-    Mon:1,
-    Tue:2,
-    Wed:3,
-    Thu:4,
-    Fri:5,
-    Sat:6
-  };
-
-
-  const holidayMap = {};
-
-
-  allHolidays.forEach(
-    h => {
-
-      holidayMap[h.date] =
-        h.name ||
-        'Holiday';
-
-    }
-  );
-
-
-  const rows = [];
-
-
-  allProfiles.forEach(p => {
-
-    const schedule =
-      p.schedule || {};
-
-    const hasSchedule =
-      DAYS.some(
-        d => schedule[d]
-      );
-
-
-    if(
-      !hasSchedule ||
-      p.basicSalary == null
-    ){
-      return;
-    }
-
-
-    const scheduledDates =
-      getScheduledDatesForEmployee(
-        p,
-        year,
-        month,
-        daysInMonth
-      );
-
-
-    const scheduledMap = {};
-
-
-    scheduledDates.forEach(
-      x => {
-
-        scheduledMap[
-          dateToYMD(
-            x.date
-          )
-        ] = x.range;
-
-      }
-    );
-
-
-    const totalScheduledDays =
-      scheduledDates.length;
-
-
-    const dailySalary =
-      totalScheduledDays > 0
-        ? p.basicSalary /
-          totalScheduledDays
-        : 0;
-
-
-    for(
-      let day = 1;
-      day <= daysInMonth;
-      day++
-    ){
-
-      const date =
-        new Date(
-          year,
-          month - 1,
-          day
-        );
-
-
-      const ymd =
-        dateToYMD(date);
-
-
-      const range =
-        scheduledMap[ymd] ||
-        null;
-
-
-      const leave =
-        getLeaveForDate(
-          p.uid,
-          ymd
-        );
-
-
-      const attendance =
-        getDayAttendance(
-          p.uid,
-          date
-        );
-
-
-      const scheduledHours =
-        range
-          ? computeHoursForRange(
-              range
-            )
-          : 0;
-
-
-      const hourlyRate =
-        scheduledHours > 0
-          ? dailySalary /
-            scheduledHours
-          : 0;
-
-
-      /*
-        Calculate scheduled overlap
-        for normal attendance.
-      */
-
-      let scheduledAttendance = {
-
-        firstIn:
-          attendance.firstIn,
-
-        lastOut:
-          attendance.lastOut,
-
-        actualHours:
-          attendance.actualHours,
-
-        payableHours:0,
-
-        missingMinutes:0,
-
-        status:'Absent'
-
-      };
-
-
-      if(range){
-
-        scheduledAttendance =
-          getScheduledAttendance(
-            date,
-            range,
-            attendance.punches
-          );
-
-      }
-
-
-      let status =
-        'Off Day';
-
-      let dailyPay = 0;
-
-      let reportHours = 0;
-
-      let lateMin = 0;
-
-      let lateDeduction = 0;
-
-
-      /*
-        Holiday without override.
-      */
-
-      if(
-        holidayMap[ymd] &&
-        !range
-      ){
-
-        status =
-          'Holiday';
-
-      }
-
-
-      /*
-        Scheduled day with leave.
-      */
-
-      else if(
-        range &&
-        leave
-      ){
-
-        /*
-          Approved paid leave.
-        */
-
-        if(
-          leave.status === 'approved' &&
-          [
-            'Annual',
-            'MC',
-            'Emergency'
-          ].includes(
-            leave.type
-          )
-        ){
-
-          status =
-            'Paid Leave';
-
-          /*
-            Paid leave gets the complete
-            daily salary.
-
-            Hours column is the scheduled
-            payable hours for that day.
-          */
-
-          reportHours =
-            scheduledHours;
-
-          dailyPay =
-            dailySalary;
-
-          lateMin = 0;
-
-          lateDeduction = 0;
-
-        }
-
-
-        /*
-          Approved unpaid leave.
-        */
-
-        else if(
-          leave.type ===
-            'Unpaid' &&
-          leave.status ===
-            'approved'
-        ){
-
-          status =
-            'Unpaid Leave';
-
-          reportHours = 0;
-
-          dailyPay = 0;
-
-          lateMin = 0;
-
-          lateDeduction = 0;
-
-        }
-
-
-        /*
-          Pending unpaid leave.
-        */
-
-        else if(
-          leave.type ===
-            'Unpaid' &&
-          leave.status ===
-            'pending'
-        ){
-
-          status =
-            'Pending Unpaid';
-
-          reportHours = 0;
-
-          dailyPay = 0;
-
-          lateMin = 0;
-
-          lateDeduction = 0;
-
-        }
-
-
-        /*
-          Any other pending leave.
-        */
-
-        else if(
-          leave.status ===
-            'pending'
-        ){
-
-          status =
-            'Pending Leave';
-
-          reportHours = 0;
-
-          dailyPay = 0;
-
-          lateMin = 0;
-
-          lateDeduction = 0;
-
-        }
-
-      }
-
-
-      /*
-        Normal scheduled attendance.
-      */
-
-      else if(range){
-
-        reportHours =
-          scheduledAttendance
-            .payableHours;
-
-
-        lateMin =
-          scheduledAttendance
-            .missingMinutes;
-
-
-        lateDeduction =
-          (
-            lateMin /
-            60
-          ) *
-          hourlyRate;
-
-
-        dailyPay =
-          reportHours *
-          hourlyRate;
-
-
-        if(
-          scheduledAttendance.status ===
-          'Present'
-        ){
-
-          status =
-            'Present';
-
-        }else if(
-          scheduledAttendance.status ===
-          'Late'
-        ){
-
-          status =
-            'Late';
-
-        }else{
-
-          status =
-            'Absent';
-
-        }
-
-      }
-
-
-      /*
-        PT commission.
-
-        IMPORTANT:
-        Every PT session counts.
-        No approval/status filter.
-      */
-
-      const ptClasses =
-        allPtSessions.filter(
-          x =>
-            x.coachUid === p.uid &&
-            x.date === ymd
-        ).length;
-
-
-      const ptCommission =
-        ptClasses *
-        PT_RATE;
-
-
-      rows.push({
-
-        uid:p.uid,
-
-        name:
-          p.name ||
-          'Unknown',
-
-        email:
-          p.email ||
-          '',
-
-        date:ymd,
-
-        schedule:
-          range
-            ? `${range.start}–${range.end}`
-            : '-',
-
-        clockIn:
-          attendance.firstIn
-            ? attendance.firstIn
-                .toLocaleTimeString(
-                  [],
-                  {
-                    hour:'2-digit',
-                    minute:'2-digit',
-                    hour12:false
-                  }
-                )
-            : '-',
-
-        clockOut:
-          attendance.lastOut
-            ? attendance.lastOut
-                .toLocaleTimeString(
-                  [],
-                  {
-                    hour:'2-digit',
-                    minute:'2-digit',
-                    hour12:false
-                  }
-                )
-            : '-',
-
-        /*
-          IMPORTANT:
-          Monthly Report Hours =
-          PAYABLE scheduled hours,
-          not raw actual hours.
-        */
-
-        hours:
-          reportHours,
-
-        status,
-
-        leaveType:
-          leave?.type ||
-          '-',
-
-        leaveStatus:
-          leave?.status ||
-          '-',
-
-        lateMin,
-
-        lateDeduction,
-
-        ptClasses,
-
-        ptCommission,
-
-        dailyPay:
-          dailyPay +
-          ptCommission
-
-      });
-
-    }
-
-  });
-
-
-  return rows;
-
+const scheduledMap={};
+scheduledDates.forEach(x=>scheduledMap[dateToYMD(x.date)]=x.range);
+const totalScheduledDays=scheduledDates.length;
+const dailySalary=totalScheduledDays>0?p.basicSalary/totalScheduledDays:0;
+
+for(let day=1;day<=daysInMonth;day++){
+const date=new Date(year,month-1,day);
+const ymd=dateToYMD(date);
+const range=scheduledMap[ymd]||null;
+const leave=getLeaveForDate(p.uid,ymd);
+const attendancePunches=allRecords.filter(r=>{
+if(r.uid!==p.uid||!r.createdAt?.toDate)return false;
+const d=r.createdAt.toDate();
+return d.getFullYear()===date.getFullYear()&&d.getMonth()===date.getMonth()&&d.getDate()===date.getDate();
+}).sort((a,b)=>a.createdAt.toMillis()-b.createdAt.toMillis());
+
+const scheduledHours=range?computeHoursForRange(range):0;
+const hourlyRate=scheduledHours>0?dailySalary/scheduledHours:0;
+const attendance=range?getScheduledAttendance(date,range,attendancePunches):getDayAttendance(p.uid,date);
+let lateMin=range?attendance.missingMinutes:0;
+let lateDeduction=range?(lateMin/60)*hourlyRate:0;
+let status='Off Day';
+let dailyPay=0;
+
+if(holidayMap[ymd]&&!range){
+status='Holiday';
+lateMin=0;
+lateDeduction=0;
+}else if(range&&leave){
+if(leave.status==='approved'&&['Annual','MC','Emergency'].includes(leave.type)){
+status='Paid Leave';
+dailyPay=dailySalary;
+lateMin=0;
+lateDeduction=0;
+}else if(leave.type==='Unpaid'){
+status=leave.status==='pending'?'Pending Unpaid':'Unpaid Leave';
+lateMin=0;
+lateDeduction=0;
+}else if(leave.status==='pending'){
+status='Pending Leave';
+lateMin=0;
+lateDeduction=0;
+}else{
+status=attendance.status;
+dailyPay=attendance.payableHours*hourlyRate;
+}
+}else if(range){
+status=attendance.status;
+dailyPay=attendance.payableHours*hourlyRate;
 }
 
+const ptClasses=allPtSessions.filter(x=>x.coachUid===p.uid&&x.date===ymd).length;
+const ptCommission=ptClasses*PT_RATE;
 
-/* ================= REPORT FILTER ================= */
+rows.push({
+uid:p.uid,
+name:p.name||'Unknown',
+email:p.email||'',
+date:ymd,
+schedule:range?`${range.start}–${range.end}`:'-',
+clockIn:attendance.firstIn?attendance.firstIn.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',hour12:false}):'-',
+clockOut:attendance.lastOut?attendance.lastOut.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',hour12:false}):'-',
+hours:range?(leave&&leave.status==='approved'&&['Annual','MC','Emergency'].includes(leave.type)?scheduledHours:leave&&leave.type==='Unpaid'?0:leave&&leave.status==='pending'?0:attendance.payableHours):0,
+status,
+leaveType:leave?.type||'-',
+leaveStatus:leave?.status||'-',
+lateMin,
+lateDeduction,
+ptClasses,
+ptCommission,
+dailyPay:dailyPay+ptCommission
+});
+}
+});
+return rows;
+}
 
 function populateReportEmployeeFilter(){
-
-  const current =
-    reportEmployeeFilter.value;
-
-
-  const names =
-    [
-      ...new Set(
-        allProfiles
-          .map(p => p.name)
-          .filter(Boolean)
-      )
-    ].sort();
-
-
-  reportEmployeeFilter.innerHTML =
-    '<option value="">All employees</option>' +
-
-    names
-      .map(
-        n =>
-          `<option value="${n}">
-            ${n}
-          </option>`
-      )
-      .join('');
-
-
-  if(
-    names.includes(current)
-  ){
-
-    reportEmployeeFilter.value =
-      current;
-
-  }
-
+const current=reportEmployeeFilter.value;
+const names=[...new Set(allProfiles.map(p=>p.name).filter(Boolean))].sort();
+reportEmployeeFilter.innerHTML='<option value="">All employees</option>'+names.map(n=>`<option value="${n}">${n}</option>`).join('');
+if(names.includes(current))reportEmployeeFilter.value=current;
 }
-
-
-/* ================= RENDER MONTHLY REPORT ================= */
 
 function renderMonthlyReport(){
-
-  populateReportEmployeeFilter();
-
-
-  const selected =
-    reportEmployeeFilter.value;
-
-
-  const rows =
-    getMonthlyReportRows(
-      reportMonthInput.value
-    )
-    .filter(
-      r =>
-        !selected ||
-        r.name === selected
-    );
-
-
-  const body =
-    document.getElementById(
-      'monthlyReportBody'
-    );
-
-  const empty =
-    document.getElementById(
-      'monthlyReportEmptyState'
-    );
-
-
-  if(!rows.length){
-
-    body.innerHTML = '';
-
-    empty.classList.remove(
-      'hidden'
-    );
-
-    return;
-
-  }
-
-
-  empty.classList.add(
-    'hidden'
-  );
-
-
-  body.innerHTML =
-    rows.map(r => {
-
-      let statusClass =
-        'ongoing';
-
-
-      if(
-        [
-          'Present',
-          'Paid Leave'
-        ].includes(
-          r.status
-        )
-      ){
-
-        statusClass =
-          'complete';
-
-      }else if(
-        [
-          'Absent',
-          'Unpaid Leave',
-          'Pending Unpaid',
-          'Pending Leave'
-        ].includes(
-          r.status
-        )
-      ){
-
-        statusClass =
-          'orphan';
-
-      }else if(
-        r.status === 'Late'
-      ){
-
-        statusClass =
-          'late';
-
-      }
-
-
-      return `
-
-        <tr>
-
-          <td class="mono">
-            ${r.date}
-          </td>
-
-          <td>
-
-            <div class="emp-name">
-              ${r.name}
-            </div>
-
-            <div class="emp-email">
-              ${r.email}
-            </div>
-
-          </td>
-
-          <td class="mono">
-            ${r.schedule}
-          </td>
-
-          <td class="mono">
-            ${r.clockIn}
-          </td>
-
-          <td class="mono">
-            ${r.clockOut}
-          </td>
-
-          <td class="mono">
-            ${r.hours.toFixed(2)}h
-          </td>
-
-          <td>
-
-            <span
-              class="status-pill2 ${statusClass}">
-              ${r.status}
-            </span>
-
-          </td>
-
-          <td class="mono">
-            ${r.leaveType}
-          </td>
-
-          <td class="mono">
-            ${r.leaveStatus}
-          </td>
-
-          <td class="mono">
-            ${r.lateMin}
-          </td>
-
-          <td class="mono">
-            RM ${r.lateDeduction.toFixed(2)}
-          </td>
-
-          <td class="mono">
-            ${r.ptClasses}
-          </td>
-
-          <td class="mono">
-            RM ${r.ptCommission.toFixed(2)}
-          </td>
-
-          <td
-            class="mono"
-            style="font-weight:700;">
-            RM ${r.dailyPay.toFixed(2)}
-          </td>
-
-        </tr>
-
-      `;
-
-    }).join('');
-
+populateReportEmployeeFilter();
+const selected=reportEmployeeFilter.value;
+const rows=getMonthlyReportRows(reportMonthInput.value).filter(r=>!selected||r.name===selected);
+const body=document.getElementById('monthlyReportBody');
+const empty=document.getElementById('monthlyReportEmptyState');
+if(!rows.length){
+body.innerHTML='';
+empty.classList.remove('hidden');
+return;
+}
+empty.classList.add('hidden');
+body.innerHTML=rows.map(r=>`<tr><td class="mono">${r.date}</td><td><div class="emp-name">${r.name}</div><div class="emp-email">${r.email}</div></td><td class="mono">${r.schedule}</td><td class="mono">${r.clockIn}</td><td class="mono">${r.clockOut}</td><td class="mono">${r.hours.toFixed(2)}h</td><td><span class="status-pill2 ${['Present','Paid Leave'].includes(r.status)?'complete':['Absent','Unpaid Leave','Pending Unpaid','Pending Leave'].includes(r.status)?'orphan':'ongoing'}">${r.status}</span></td><td class="mono">${r.leaveType}</td><td class="mono">${r.leaveStatus}</td><td class="mono">${r.lateMin}</td><td class="mono">RM ${r.lateDeduction.toFixed(2)}</td><td class="mono">${r.ptClasses}</td><td class="mono">RM ${r.ptCommission.toFixed(2)}</td><td class="mono" style="font-weight:700;">RM ${r.dailyPay.toFixed(2)}</td></tr>`).join('');
 }
 
-
-/* ================= EXPORT MONTHLY REPORT ================= */
-
-document.getElementById(
-  'exportMonthlyReportBtn'
-).addEventListener(
-  'click',
-  () => {
-
-    const selected =
-      reportEmployeeFilter.value;
-
-
-    const rows =
-      getMonthlyReportRows(
-        reportMonthInput.value
-      )
-      .filter(
-        r =>
-          !selected ||
-          r.name === selected
-      );
-
-
-    const csvRows = [
-
-      [
-        'Date',
-        'Employee',
-        'Email',
-        'Schedule',
-        'Clock In',
-        'Clock Out',
-        'Hours',
-        'Status',
-        'Leave Type',
-        'Leave Status',
-        'Late (min)',
-        'Late Deduction',
-        'PT Classes',
-        'PT Commission',
-        'Daily Pay'
-      ],
-
-      ...rows.map(
-        r => [
-
-          r.date,
-
-          r.name,
-
-          r.email,
-
-          r.schedule,
-
-          r.clockIn,
-
-          r.clockOut,
-
-          r.hours.toFixed(2),
-
-          r.status,
-
-          r.leaveType,
-
-          r.leaveStatus,
-
-          r.lateMin,
-
-          r.lateDeduction
-            .toFixed(2),
-
-          r.ptClasses,
-
-          r.ptCommission
-            .toFixed(2),
-
-          r.dailyPay
-            .toFixed(2)
-
-        ]
-      )
-
-    ];
-
-
-    downloadCSV(
-
-      `monthly-report-${reportMonthInput.value}${
-        selected
-          ? '-' +
-            selected.replace(
-              /[^a-z0-9]+/gi,
-              '-'
-            )
-          : ''
-      }.csv`,
-
-      csvRows
-
-    );
-
-  }
-);
-
-
-/* ============================================================
-   SAVE WEEKLY SCHEDULE
-   ============================================================ */
-
-document.getElementById(
-  'scheduleSaveBtn'
-).addEventListener(
-  'click',
-  async () => {
-
-    if(!scheduleModalUid){
-      return;
-    }
-
-
-    const schedule = {};
-
-
-    document
-      .querySelectorAll(
-        '#scheduleRows .schedule-row'
-      )
-      .forEach(row => {
-
-        const day =
-          row.dataset.day;
-
-        const off =
-          row.querySelector(
-            '.day-off-checkbox'
-          ).checked;
-
-
-        schedule[day] =
-          off
-            ? null
-            : {
-
-                start:
-                  row.querySelector(
-                    '.day-start'
-                  ).value,
-
-                end:
-                  row.querySelector(
-                    '.day-end'
-                  ).value
-
-              };
-
-      });
-
-
-    const btn =
-      document.getElementById(
-        'scheduleSaveBtn'
-      );
-
-    btn.disabled = true;
-
-
-    const originalLabel =
-      btn.textContent;
-
-    btn.textContent =
-      'Saving…';
-
-
-    try{
-
-      await updateDoc(
-        doc(
-          db,
-          "employee_profiles",
-          scheduleModalUid
-        ),
-        {
-          schedule
-        }
-      );
-
-
-      await loadPeople();
-
-
-      document.getElementById(
-        'scheduleModal'
-      ).classList.add(
-        'hidden'
-      );
-
-
-      scheduleModalUid = null;
-
-
-    }catch(err){
-
-      alert(
-        'Could not save schedule: ' +
-        err.message
-      );
-
-    }
-
-
-    btn.disabled = false;
-
-    btn.textContent =
-      originalLabel;
-
-  }
-);
-
+document.getElementById('exportMonthlyReportBtn').addEventListener('click',()=>{
+const selected=reportEmployeeFilter.value;
+const rows=getMonthlyReportRows(reportMonthInput.value).filter(r=>!selected||r.name===selected);
+const csvRows=[['Date','Employee','Email','Schedule','Clock In','Clock Out','Hours','Status','Leave Type','Leave Status','Late (min)','Late Deduction','PT Classes','PT Commission','Daily Pay'],...rows.map(r=>[r.date,r.name,r.email,r.schedule,r.clockIn,r.clockOut,r.hours.toFixed(2),r.status,r.leaveType,r.leaveStatus,r.lateMin,r.lateDeduction.toFixed(2),r.ptClasses,r.ptCommission.toFixed(2),r.dailyPay.toFixed(2)])];
+downloadCSV(`monthly-report-${reportMonthInput.value}${selected?'-'+selected.replace(/[^a-z0-9]+/gi,'-'):''}.csv`,csvRows);
+});
+
+document.getElementById('scheduleSaveBtn').addEventListener('click',async()=>{
+if(!scheduleModalUid)return;
+const schedule={};
+document.querySelectorAll('#scheduleRows .schedule-row').forEach(row=>{
+const day=row.dataset.day;
+const off=row.querySelector('.day-off-checkbox').checked;
+schedule[day]=off?null:{start:row.querySelector('.day-start').value,end:row.querySelector('.day-end').value};
+});
+const btn=document.getElementById('scheduleSaveBtn');
+btn.disabled=true;
+const originalLabel=btn.textContent;
+btn.textContent='Saving…';
+try{
+await updateDoc(doc(db,"employee_profiles",scheduleModalUid),{schedule});
+await loadPeople();
+document.getElementById('scheduleModal').classList.add('hidden');
+scheduleModalUid=null;
+if(!document.getElementById('payrollTab').classList.contains('hidden'))renderPayroll();
+if(!document.getElementById('monthlyreportTab').classList.contains('hidden'))renderMonthlyReport();
+}catch(err){
+alert('Could not save schedule: '+err.message);
+}
+btn.disabled=false;
+btn.textContent=originalLabel;
+});
 </script>
-
 </body>
 </html>
