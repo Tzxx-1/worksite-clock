@@ -265,11 +265,15 @@ background:var(--card);border:1px solid var(--line);border-radius:14px;
 padding:16px;margin-bottom:20px;
 }
 .add-holiday-form>div{flex:1;min-width:150px;}
+.access-grid{display:flex;flex-wrap:wrap;gap:6px 14px;max-width:420px;}
+.access-chk{display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;color:var(--text-onlight);white-space:nowrap;cursor:pointer;}
+.access-actions{display:flex;flex-direction:column;gap:4px;align-items:stretch;}
 .hidden{display:none !important;}
 @media(max-width:640px){
 .table-card{overflow-x:auto;}
 table{min-width:640px;}
 #peopleTable{min-width:620px;}
+#accessTable{min-width:760px;}
 }
 </style>
 </head>
@@ -345,6 +349,7 @@ Signed in as <b id="adminEmail">-</b>
 <button class="tab-btn" data-tab="ptsessions">PT Sessions</button>
 <button class="tab-btn" data-tab="payroll">Payroll</button>
 <button class="tab-btn" data-tab="monthlyreport">Monthly Report</button>
+<button class="tab-btn" data-tab="access">Access</button>
 </div>
 
 <!-- ===== ATTENDANCE TAB ===== -->
@@ -619,6 +624,30 @@ Signed in as <b id="adminEmail">-</b>
 <div class="empty-state hidden" id="monthlyReportEmptyState">No report data for this month.</div>
 </div>
 </div>
+
+<!-- ===== ACCESS TAB ===== -->
+<div id="accessTab" class="hidden">
+<div class="section-head">
+<h2>Manager Access <span class="hint">— choose who can open this dashboard and which tabs they can see</span></h2>
+</div>
+<div class="filter-bar">
+<input type="text" id="accessSearch" placeholder="Search by name or email…">
+</div>
+<div class="table-card">
+<table id="accessTable">
+<thead>
+<tr>
+<th>Person</th>
+<th>Status</th>
+<th>Tabs they can see</th>
+<th></th>
+</tr>
+</thead>
+<tbody id="accessBody"></tbody>
+</table>
+<div class="empty-state hidden" id="accessEmptyState">No accounts found. Employees appear here after they sign up in the employee app.</div>
+</div>
+</div>
 </div>
 </div>
 
@@ -689,6 +718,7 @@ const holidaysRef=collection(db,"holidays");
 const leaveRef=collection(db,"leave_requests");
 const ptSessionsRef=collection(db,"pt_sessions");
 const overridesRef=collection(db,"schedule_overrides");
+const adminsRef=collection(db,"admins");
 
 const authGate=document.getElementById('authGate');
 const notAdminGate=document.getElementById('notAdminGate');
@@ -733,6 +763,49 @@ document.getElementById('signInLabel').textContent='Sign In';
 document.getElementById('signOutBtn').addEventListener('click',()=>signOut(auth));
 document.getElementById('signOutFromDenied').addEventListener('click',()=>signOut(auth));
 
+// ================= TAB PERMISSIONS =================
+
+const TAB_DEFS=[
+['attendance','Attendance'],
+['locations','Locations'],
+['people','People'],
+['holidays','Holidays'],
+['leave','Leave'],
+['ptsessions','PT Sessions'],
+['payroll','Payroll'],
+['monthlyreport','Monthly Report'],
+['access','Access']
+];
+const ALL_TAB_KEYS=TAB_DEFS.map(t=>t[0]);
+
+// Which data each tab needs (so restricted tabs never load their data)
+const PAYROLL_NEEDS=['profiles','holidays','leave','ptsessions','overrides','records'];
+const TAB_NEEDS={
+attendance:['records'],
+locations:['locations'],
+people:['locations','profiles','overrides'],
+holidays:['holidays'],
+leave:['leave'],
+ptsessions:['ptsessions','records'],
+payroll:PAYROLL_NEEDS,
+monthlyreport:PAYROLL_NEEDS,
+access:['profiles','admins']
+};
+const LOAD_ORDER=['locations','profiles','holidays','leave','ptsessions','overrides','admins','records'];
+const LOADERS={
+locations:()=>loadLocations(),
+profiles:()=>loadPeople(),
+holidays:()=>loadHolidays(),
+leave:()=>loadLeaveRequests(),
+ptsessions:()=>loadPtSessions(),
+overrides:()=>loadOverrides(),
+admins:()=>loadAdmins(),
+records:()=>loadRecords()
+};
+
+let currentUser=null;
+let currentAllowedTabs=[];
+
 const tabButtons=document.querySelectorAll('.tab-btn');
 const tabPanels={
 attendance:document.getElementById('attendanceTab'),
@@ -743,15 +816,28 @@ leave:document.getElementById('leaveTab'),
 ptsessions:document.getElementById('ptsessionsTab'),
 payroll:document.getElementById('payrollTab'),
 monthlyreport:document.getElementById('monthlyreportTab'),
+access:document.getElementById('accessTab'),
 };
+
+function showPanel(key){
+tabButtons.forEach(b=>b.classList.toggle('active',b.dataset.tab===key));
+Object.entries(tabPanels).forEach(([k,el])=>el.classList.toggle('hidden',k!==key));
+}
+
+function applyTabPermissions(allowed){
+currentAllowedTabs=allowed;
+tabButtons.forEach(b=>b.classList.toggle('hidden',!allowed.includes(b.dataset.tab)));
+}
+
 tabButtons.forEach(btn=>btn.addEventListener('click',()=>{
-tabButtons.forEach(b=>b.classList.remove('active'));
-btn.classList.add('active');
-Object.entries(tabPanels).forEach(([key,el])=>el.classList.toggle('hidden',key!==btn.dataset.tab));
-if(btn.dataset.tab==='payroll')renderPayroll();
-if(btn.dataset.tab==='leave')loadLeaveRequests();
-if(btn.dataset.tab==='ptsessions')loadPtSessions();
-if(btn.dataset.tab==='monthlyreport')renderMonthlyReport();
+const key=btn.dataset.tab;
+if(!currentAllowedTabs.includes(key))return;
+showPanel(key);
+if(key==='payroll')renderPayroll();
+if(key==='leave')loadLeaveRequests();
+if(key==='ptsessions')loadPtSessions();
+if(key==='monthlyreport')renderMonthlyReport();
+if(key==='access')loadAdmins();
 }));
 
 let allRecords=[];
@@ -761,10 +847,13 @@ let allHolidays=[];
 
 onAuthStateChanged(auth,async(user)=>{
 if(!user){
+currentUser=null;
+currentAllowedTabs=[];
 showGate('auth');
 signInForm.reset();
 return;
 }
+currentUser=user;
 try{
 const adminDoc=await getDoc(doc(db,"admins",user.uid));
 if(!adminDoc.exists()){
@@ -772,15 +861,29 @@ document.getElementById('notAdminEmail').textContent=`${user.email} is signed in
 showGate('denied');
 return;
 }
+const data=adminDoc.data();
+// Old admin docs without a "tabs" field keep full access
+const allowed=Array.isArray(data.tabs)?data.tabs.filter(t=>ALL_TAB_KEYS.includes(t)):[...ALL_TAB_KEYS];
+if(allowed.length===0){
+document.getElementById('notAdminEmail').textContent=`${user.email} has manager access, but no tabs have been assigned yet.`;
+showGate('denied');
+return;
+}
 document.getElementById('adminEmail').textContent=user.email;
+applyTabPermissions(allowed);
+const firstTab=ALL_TAB_KEYS.find(k=>allowed.includes(k));
+showPanel(firstTab);
 showGate('dashboard');
-await loadLocations();
-await loadPeople();
-await loadHolidays();
-await loadLeaveRequests();
-await loadPtSessions();
-await loadOverrides();
-await loadRecords();
+
+const needed=new Set();
+allowed.forEach(t=>TAB_NEEDS[t].forEach(n=>needed.add(n)));
+for(const name of LOAD_ORDER){
+if(!needed.has(name))continue;
+try{await LOADERS[name]();}
+catch(err){console.error(`Failed to load ${name}:`,err);}
+}
+if(firstTab==='payroll')renderPayroll();
+if(firstTab==='monthlyreport')renderMonthlyReport();
 }catch(err){
 document.getElementById('notAdminEmail').textContent=`Couldn't check manager access for ${user.email}. (${err.message})`;
 showGate('denied');
@@ -1818,6 +1921,124 @@ alert('Could not save schedule: '+err.message);
 }
 btn.disabled=false;
 btn.textContent=originalLabel;
+});
+
+// ================= ACCESS MANAGEMENT =================
+
+let allAdmins=[];
+
+async function loadAdmins(){
+const snap=await getDocs(adminsRef);
+allAdmins=snap.docs.map(d=>({uid:d.id,...d.data()}));
+renderAccessTable();
+}
+
+function adminTabsOf(admin){
+if(!admin)return[];
+return Array.isArray(admin.tabs)?admin.tabs:[...ALL_TAB_KEYS];
+}
+
+function renderAccessTable(){
+const body=document.getElementById('accessBody');
+const empty=document.getElementById('accessEmptyState');
+const rows=[];
+const seen=new Set();
+allProfiles.forEach(p=>{
+seen.add(p.uid);
+rows.push({uid:p.uid,name:p.name||'',email:p.email||'',admin:allAdmins.find(a=>a.uid===p.uid)||null});
+});
+allAdmins.forEach(a=>{
+if(!seen.has(a.uid))rows.push({uid:a.uid,name:a.name||'',email:a.email||'',admin:a});
+});
+rows.sort((a,b)=>{
+if(!!a.admin!==!!b.admin)return a.admin?-1:1;
+return (a.name||a.email||a.uid).localeCompare(b.name||b.email||b.uid);
+});
+if(rows.length===0){
+body.innerHTML='';
+empty.classList.remove('hidden');
+return;
+}
+empty.classList.add('hidden');
+body.innerHTML=rows.map(r=>{
+const tabs=adminTabsOf(r.admin);
+const isMe=currentUser&&r.uid===currentUser.uid;
+const title=r.name||r.email||r.uid;
+const checks=TAB_DEFS.map(([key,label])=>`<label class="access-chk"><input type="checkbox" value="${key}" ${tabs.includes(key)?'checked':''}> ${label}</label>`).join('');
+const statusPill=r.admin?`<span class="status-pill2 complete">Manager</span>`:`<span class="status-pill2 ongoing" style="background:#EFF0F3;color:var(--text-onlight-mut);">No access</span>`;
+return`<tr data-uid="${r.uid}" data-name="${(r.name||'').replace(/"/g,'&quot;')}" data-email="${(r.email||'').replace(/"/g,'&quot;')}" data-search="${(title+' '+(r.email||'')).toLowerCase().replace(/"/g,'')}"><td><div class="emp-name">${title}${isMe?' (you)':''}</div><div class="emp-email">${r.email||''}</div></td><td>${statusPill}</td><td><div class="access-grid">${checks}</div></td><td><div class="access-actions"><button class="export-btn access-save-btn" style="justify-content:center;">${r.admin?'Save access':'Grant access'}</button><button class="export-btn access-all-btn" style="justify-content:center;">Select all</button>${r.admin&&!isMe?'<button class="delete-btn access-remove-btn">Remove access</button>':''}</div></td></tr>`;
+}).join('');
+applyAccessSearch();
+}
+
+function applyAccessSearch(){
+const q=document.getElementById('accessSearch').value.trim().toLowerCase();
+document.querySelectorAll('#accessBody tr').forEach(tr=>{
+tr.classList.toggle('hidden',!!q&&!(tr.dataset.search||'').includes(q));
+});
+}
+document.getElementById('accessSearch').addEventListener('input',applyAccessSearch);
+
+document.getElementById('accessBody').addEventListener('click',async(e)=>{
+const row=e.target.closest('tr');
+if(!row)return;
+const uid=row.dataset.uid;
+
+if(e.target.closest('.access-all-btn')){
+const boxes=row.querySelectorAll('.access-grid input[type="checkbox"]');
+const allChecked=[...boxes].every(b=>b.checked);
+boxes.forEach(b=>b.checked=!allChecked);
+return;
+}
+
+const saveBtn=e.target.closest('.access-save-btn');
+if(saveBtn){
+const tabs=[...row.querySelectorAll('.access-grid input:checked')].map(b=>b.value);
+if(tabs.length===0){
+alert('Tick at least one tab, or use "Remove access" to take away dashboard access completely.');
+return;
+}
+if(currentUser&&uid===currentUser.uid&&!tabs.includes('access')){
+alert("You can't remove the Access tab from your own account, or you'd lock yourself out.");
+return;
+}
+const originalLabel=saveBtn.textContent;
+saveBtn.disabled=true;
+saveBtn.textContent='Saving…';
+try{
+await setDoc(doc(db,"admins",uid),{
+uid,
+name:row.dataset.name||null,
+email:row.dataset.email||null,
+tabs,
+updatedAt:serverTimestamp(),
+updatedBy:currentUser?currentUser.uid:null
+},{merge:true});
+await loadAdmins();
+}catch(err){
+alert('Could not save access: '+err.message);
+saveBtn.textContent=originalLabel;
+saveBtn.disabled=false;
+}
+return;
+}
+
+const removeBtn=e.target.closest('.access-remove-btn');
+if(removeBtn){
+if(currentUser&&uid===currentUser.uid){
+alert("You can't remove your own access.");
+return;
+}
+if(!confirm('Remove dashboard access for this person?'))return;
+removeBtn.disabled=true;
+try{
+await deleteDoc(doc(db,"admins",uid));
+await loadAdmins();
+}catch(err){
+alert('Could not remove access: '+err.message);
+removeBtn.disabled=false;
+}
+}
 });
 </script>
 </body>
