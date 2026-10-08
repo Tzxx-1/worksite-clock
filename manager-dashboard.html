@@ -29,6 +29,7 @@
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
+  html{overflow-y:scroll;}
   body{
     background: radial-gradient(circle at 50% 0%, var(--bg-2), var(--bg) 60%);
     min-height:100vh;
@@ -36,7 +37,7 @@
     color:var(--text-onlight);
     padding:32px 20px 64px;
   }
-  .wrap{ max-width:1020px; margin:0 auto; }
+  .wrap{ max-width:1200px; margin:0 auto; }
 
   .topbar{
     display:flex;
@@ -168,7 +169,7 @@
   .date-sep{ font-size:12.5px; color:var(--text-onlight-mut); font-weight:600; align-self:center; }
 
   .table-card{
-    background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden;
+    background:var(--card); border:1px solid var(--line); border-radius:14px; overflow-x:auto; overflow-y:hidden;
   }
   table{ width:100%; border-collapse:collapse; }
   thead th{
@@ -651,7 +652,7 @@
         <select id="reportEmployeeFilter" class="form-input" style="max-width:220px;"><option value="">All employees</option></select>
       </div>
       <div class="table-card">
-        <table style="min-width:1500px;">
+        <table style="min-width:1450px;">
           <thead><tr><th>Date</th><th>Employee</th><th>Schedule</th><th>Clock In</th><th>Clock Out</th><th>Hours</th><th>Status</th><th>Leave</th><th>Leave Status</th><th>Late (min)</th><th>Late Deduction</th><th>PT Classes</th><th>PT Commission</th><th>Daily Pay</th></tr></thead>
           <tbody id="monthlyReportBody"></tbody>
         </table>
