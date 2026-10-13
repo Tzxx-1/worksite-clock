@@ -622,7 +622,7 @@ Signed in as <b id="adminEmail">-</b>
 <!-- ===== MONTHLY REPORT TAB ===== -->
 <div id="monthlyreportTab" class="hidden">
 <div class="section-head">
-<h2>Unified Monthly Report <span class="hint">— one row per employee per day. Shift 1 / Shift 2 show in/out limited to each shift window, with late arrival / early leave per shift</span></h2>
+<h2>Unified Monthly Report <span class="hint">— one row per employee per day. Shift 1 / Shift 2 show in/out limited to each shift window, with late arrival / early leave per shift, plus the location of each clock-in and clock-out</span></h2>
 <button class="export-btn" id="exportMonthlyReportBtn">Export CSV</button>
 </div>
 <div class="filter-bar">
@@ -630,8 +630,8 @@ Signed in as <b id="adminEmail">-</b>
 <select id="reportEmployeeFilter" class="form-input" style="max-width:220px;"><option value="">All employees</option></select>
 </div>
 <div class="table-card">
-<table style="min-width:2000px;">
-<thead><tr><th>Date</th><th>Employee</th><th>Schedule</th><th>Shift 1 In</th><th>Shift 1 Out</th><th>Shift 1 Status</th><th>Shift 2 In</th><th>Shift 2 Out</th><th>Shift 2 Status</th><th>Hours</th><th>Day Status</th><th>Leave</th><th>Leave Status</th><th>Late (min)</th><th>Late Deduction</th><th>PT Classes</th><th>PT Commission</th><th>Daily Pay</th></tr></thead>
+<table style="min-width:2300px;">
+<thead><tr><th>Date</th><th>Employee</th><th>Schedule</th><th>Shift 1 In</th><th>Shift 1 Out</th><th>Shift 1 Status</th><th>Shift 2 In</th><th>Shift 2 Out</th><th>Shift 2 Status</th><th>Clock-In Location</th><th>Clock-Out Location</th><th>Hours</th><th>Day Status</th><th>Leave</th><th>Leave Status</th><th>Late (min)</th><th>Late Deduction</th><th>PT Classes</th><th>PT Commission</th><th>Daily Pay</th></tr></thead>
 <tbody id="monthlyReportBody"></tbody>
 </table>
 <div class="empty-state hidden" id="monthlyReportEmptyState">No report data for this month.</div>
@@ -804,6 +804,8 @@ const ALL_TAB_KEYS=TAB_DEFS.map(t=>t[0]);
 
 // Which data each tab needs (so restricted tabs never load their data)
 const PAYROLL_NEEDS=['profiles','holidays','leave','ptsessions','overrides','records'];
+// Monthly report also needs the locations list to show clock-in/out sites
+const MONTHLY_NEEDS=[...PAYROLL_NEEDS,'locations'];
 const TAB_NEEDS={
 attendance:['records'],
 locations:['locations'],
@@ -812,7 +814,7 @@ holidays:['holidays'],
 leave:['leave'],
 ptsessions:['ptsessions','records'],
 payroll:PAYROLL_NEEDS,
-monthlyreport:PAYROLL_NEEDS,
+monthlyreport:MONTHLY_NEEDS,
 access:['profiles','admins']
 };
 const LOAD_ORDER=['locations','profiles','holidays','leave','ptsessions','overrides','admins','records'];
@@ -1743,6 +1745,15 @@ function fmtTime(d){
 return d?d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',hour12:false}):'-';
 }
 
+// Name of the site a punch happened at.
+// New punches store regionName; older ones only store the location id in "region".
+function siteOfPunch(rec){
+if(!rec)return'';
+if(rec.regionName)return rec.regionName;
+const loc=allLocations.find(l=>l.id===rec.region);
+return loc?loc.name:'';
+}
+
 // Index punches by "uid|YYYY-MM-DD", sorted oldest first.
 function buildPunchIndex(){
 const idx={};
@@ -1755,16 +1766,16 @@ Object.values(idx).forEach(list=>list.sort((a,b)=>a.createdAt.toMillis()-b.creat
 return idx;
 }
 
-// Pair IN -> OUT into sessions.
+// Pair IN -> OUT into sessions (keeps the punch records so the site can be shown).
 function sessionsFromPunches(punches){
 const sessions=[];
 let open=null;
 punches.forEach(r=>{
 const t=r.createdAt.toDate();
 if(r.type==='IN'){
-open=t;
+open={t,rec:r};
 }else if(r.type==='OUT'&&open){
-sessions.push({start:open,end:t});
+sessions.push({start:open.t,end:t,startRec:open.rec,endRec:r});
 open=null;
 }
 });
@@ -1779,27 +1790,28 @@ return sessions;
    IN 17:45 OUT 22:30  -> Shift 2: Late 15m
   If someone stays on site all day (no OUT between shifts), each shift is still
   evaluated only inside its own window.
+  inSite / outSite = where the first clock-in and last clock-out of this shift happened.
 */
 function getShiftAttendance(date,range,sessions){
 const s=parseTimeToDate(date,range.start);
 const e=parseTimeToDate(date,range.end);
 const scheduledMin=Math.max(0,Math.round((e-s)/60000));
-let payableMs=0,firstStart=null,lastEnd=null;
+let payableMs=0,firstSess=null,lastSess=null;
 sessions.forEach(x=>{
 const os=Math.max(x.start.getTime(),s.getTime());
 const oe=Math.min(x.end.getTime(),e.getTime());
 if(oe>os){
 payableMs+=oe-os;
-if(!firstStart||x.start<firstStart)firstStart=x.start;
-if(!lastEnd||x.end>lastEnd)lastEnd=x.end;
+if(!firstSess||x.start<firstSess.start)firstSess=x;
+if(!lastSess||x.end>lastSess.end)lastSess=x;
 }
 });
 const missingMinutes=Math.max(0,Math.round(scheduledMin-payableMs/60000));
 if(payableMs<=0){
-return{range,inTime:null,outTime:null,payableHours:0,missingMinutes,lateMin:0,earlyMin:0,status:'Absent',state:'absent'};
+return{range,inTime:null,outTime:null,inSite:'',outSite:'',payableHours:0,missingMinutes,lateMin:0,earlyMin:0,status:'Absent',state:'absent'};
 }
-const inTime=new Date(Math.max(firstStart.getTime(),s.getTime()));
-const outTime=new Date(Math.min(lastEnd.getTime(),e.getTime()));
+const inTime=new Date(Math.max(firstSess.start.getTime(),s.getTime()));
+const outTime=new Date(Math.min(lastSess.end.getTime(),e.getTime()));
 const lateMin=Math.max(0,Math.round((inTime-s)/60000));
 const earlyMin=Math.max(0,Math.round((e-outTime)/60000));
 const parts=[];
@@ -1808,6 +1820,8 @@ if(earlyMin>0)parts.push(`Early leave ${earlyMin}m`);
 if(!parts.length&&missingMinutes>0)parts.push(`Short ${missingMinutes}m`);
 return{
 range,inTime,outTime,
+inSite:siteOfPunch(firstSess.startRec),
+outSite:siteOfPunch(lastSess.endRec),
 payableHours:payableMs/3600000,
 missingMinutes,lateMin,earlyMin,
 status:parts.length?parts.join(' + '):'Present',
@@ -1906,7 +1920,9 @@ status:'Off Day',pay:0,displayHours:0,workedHours:0,lateMin:0,deduction:0,leave,
 shiftResults:[],
 scheduleText:shifts.length?shifts.map(r=>`${r.start}–${r.end}`).join(' + '):'-',
 firstIn:sessions.length?sessions[0].start:null,
-lastOut:sessions.length?sessions[sessions.length-1].end:null
+lastOut:sessions.length?sessions[sessions.length-1].end:null,
+firstInSite:sessions.length?siteOfPunch(sessions[0].startRec):'',
+lastOutSite:sessions.length?siteOfPunch(sessions[sessions.length-1].endRec):''
 };
 if(!shifts.length){
 ev.status=holiday?'Holiday':'Off Day';
@@ -2002,6 +2018,14 @@ downloadCSV(`payroll-${payrollMonthInput.value}.csv`,csvRows);
 
 // ================= UNIFIED MONTHLY REPORT =================
 
+// Builds the text for the Clock-In / Clock-Out Location columns.
+// One shift: "Bukit Jalil". Split shift: "S1: Bukit Jalil | S2: Cheras".
+function siteColumn(shiftResults,key,fallback){
+if(!shiftResults.length)return fallback||'-';
+if(shiftResults.length===1)return shiftResults[0][key]||'-';
+return shiftResults.map((r,i)=>`S${i+1}: ${r[key]||'-'}`).join(' | ');
+}
+
 function getMonthlyReportRows(yearMonth){
 const[year,month]=yearMonth.split('-').map(Number);
 const punchIdx=buildPunchIndex();
@@ -2031,6 +2055,8 @@ date:day.ymd,
 schedule:ev.scheduleText,
 s1In:c1.in,s1Out:c1.out,s1Status:c1.status,s1Cls:c1.cls,
 s2In:c2.in,s2Out:c2.out,s2Status:c2.status,s2Cls:c2.cls,
+inLocation:siteColumn(sr,'inSite',ev.firstInSite),
+outLocation:siteColumn(sr,'outSite',ev.lastOutSite),
 hours:ev.displayHours,
 status:ev.status,
 leaveType:ev.leave?.type||'-',
@@ -2069,13 +2095,13 @@ empty.classList.remove('hidden');
 return;
 }
 empty.classList.add('hidden');
-body.innerHTML=rows.map(r=>`<tr><td class="mono">${r.date}</td><td><div class="emp-name">${r.name}</div><div class="emp-email">${r.email}</div></td><td class="mono" style="white-space:nowrap;">${r.schedule}</td><td class="mono">${r.s1In}</td><td class="mono">${r.s1Out}</td><td>${shiftStatusCell(r.s1Status,r.s1Cls)}</td><td class="mono">${r.s2In}</td><td class="mono">${r.s2Out}</td><td>${shiftStatusCell(r.s2Status,r.s2Cls)}</td><td class="mono">${r.hours.toFixed(2)}h</td><td><span class="status-pill2 ${statusClass(r.status)}">${r.status}</span></td><td class="mono">${r.leaveType}</td><td class="mono">${r.leaveStatus}</td><td class="mono">${r.lateMin}</td><td class="mono">RM ${r.lateDeduction.toFixed(2)}</td><td class="mono">${r.ptClasses}</td><td class="mono">RM ${r.ptCommission.toFixed(2)}</td><td class="mono" style="font-weight:700;">RM ${r.dailyPay.toFixed(2)}</td></tr>`).join('');
+body.innerHTML=rows.map(r=>`<tr><td class="mono">${r.date}</td><td><div class="emp-name">${r.name}</div><div class="emp-email">${r.email}</div></td><td class="mono" style="white-space:nowrap;">${r.schedule}</td><td class="mono">${r.s1In}</td><td class="mono">${r.s1Out}</td><td>${shiftStatusCell(r.s1Status,r.s1Cls)}</td><td class="mono">${r.s2In}</td><td class="mono">${r.s2Out}</td><td>${shiftStatusCell(r.s2Status,r.s2Cls)}</td><td style="font-size:12px;white-space:nowrap;">${r.inLocation}</td><td style="font-size:12px;white-space:nowrap;">${r.outLocation}</td><td class="mono">${r.hours.toFixed(2)}h</td><td><span class="status-pill2 ${statusClass(r.status)}">${r.status}</span></td><td class="mono">${r.leaveType}</td><td class="mono">${r.leaveStatus}</td><td class="mono">${r.lateMin}</td><td class="mono">RM ${r.lateDeduction.toFixed(2)}</td><td class="mono">${r.ptClasses}</td><td class="mono">RM ${r.ptCommission.toFixed(2)}</td><td class="mono" style="font-weight:700;">RM ${r.dailyPay.toFixed(2)}</td></tr>`).join('');
 }
 
 document.getElementById('exportMonthlyReportBtn').addEventListener('click',()=>{
 const selected=reportEmployeeFilter.value;
 const rows=getMonthlyReportRows(reportMonthInput.value).filter(r=>!selected||r.name===selected);
-const csvRows=[['Date','Employee','Email','Schedule','Shift 1 In','Shift 1 Out','Shift 1 Status','Shift 2 In','Shift 2 Out','Shift 2 Status','Hours','Day Status','Leave Type','Leave Status','Late (min)','Late Deduction','PT Classes','PT Commission','Daily Pay'],...rows.map(r=>[r.date,r.name,r.email,r.schedule,r.s1In,r.s1Out,r.s1Status,r.s2In,r.s2Out,r.s2Status,r.hours.toFixed(2),r.status,r.leaveType,r.leaveStatus,r.lateMin,r.lateDeduction.toFixed(2),r.ptClasses,r.ptCommission.toFixed(2),r.dailyPay.toFixed(2)])];
+const csvRows=[['Date','Employee','Email','Schedule','Shift 1 In','Shift 1 Out','Shift 1 Status','Shift 2 In','Shift 2 Out','Shift 2 Status','Clock-In Location','Clock-Out Location','Hours','Day Status','Leave Type','Leave Status','Late (min)','Late Deduction','PT Classes','PT Commission','Daily Pay'],...rows.map(r=>[r.date,r.name,r.email,r.schedule,r.s1In,r.s1Out,r.s1Status,r.s2In,r.s2Out,r.s2Status,r.inLocation,r.outLocation,r.hours.toFixed(2),r.status,r.leaveType,r.leaveStatus,r.lateMin,r.lateDeduction.toFixed(2),r.ptClasses,r.ptCommission.toFixed(2),r.dailyPay.toFixed(2)])];
 downloadCSV(`monthly-report-${reportMonthInput.value}${selected?'-'+selected.replace(/[^a-z0-9]+/gi,'-'):''}.csv`,csvRows);
 });
 
