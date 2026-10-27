@@ -2137,7 +2137,23 @@ body.innerHTML=rows.map(r=>`<tr><td class="mono">${r.date}</td><td><div class="e
 document.getElementById('exportMonthlyReportBtn').addEventListener('click',()=>{
 const selected=reportEmployeeFilter.value;
 const rows=getMonthlyReportRows(reportMonthInput.value).filter(r=>!selected||r.name===selected);
-const csvRows=[['Date','Employee','Email','Schedule','Shift 1 In','Shift 1 Out','Shift 1 Status','Shift 2 In','Shift 2 Out','Shift 2 Status','Clock-In Location','Clock-Out Location','Hours','Day Status','Leave Type','Leave Status','Late (min)','Late Deduction','PT Classes','PT Commission','Daily Pay'],...rows.map(r=>[r.date,r.name,r.email,r.schedule,r.s1In,r.s1Out,r.s1Status,r.s2In,r.s2Out,r.s2Status,r.inLocation,r.outLocation,r.hours.toFixed(2),r.status,r.leaveType,r.leaveStatus,r.lateMin,r.lateDeduction.toFixed(2),r.ptClasses,r.ptCommission.toFixed(2),r.dailyPay.toFixed(2)])];
+// '\uFEFF' at the start of the first header = UTF-8 BOM, so Excel shows the "–" in Schedule correctly
+const csvRows=[['\uFEFFDate','Employee','Email','Schedule','Shift','Time','Shift Status','Clock-In Location','Clock-Out Location','Hours','Day Status','Leave Type','Leave Status','Late (min)','Late Deduction','PT Classes','PT Commission','Daily Pay']];
+rows.forEach(r=>{
+const shiftLines=[
+['Shift 1 In',r.s1In,r.s1Status],
+['Shift 1 Out',r.s1Out,''],
+['Shift 2 In',r.s2In,r.s2Status],
+['Shift 2 Out',r.s2Out,'']
+];
+shiftLines.forEach(([label,time,status],i)=>{
+if(i===0){
+csvRows.push([r.date,r.name,r.email,r.schedule,label,time,status,r.inLocation,r.outLocation,r.hours.toFixed(2),r.status,r.leaveType,r.leaveStatus,r.lateMin,r.lateDeduction.toFixed(2),r.ptClasses,r.ptCommission.toFixed(2),r.dailyPay.toFixed(2)]);
+}else{
+csvRows.push(['','','','',label,time,status,...Array(11).fill('')]);
+}
+});
+});
 downloadCSV(`monthly-report-${reportMonthInput.value}${selected?'-'+selected.replace(/[^a-z0-9]+/gi,'-'):''}.csv`,csvRows);
 });
 
