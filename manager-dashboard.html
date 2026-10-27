@@ -482,7 +482,7 @@ Signed in as <b id="adminEmail">-</b>
 <!-- ===== PEOPLE TAB ===== -->
 <div id="peopleTab" class="hidden">
 <div class="section-head">
-<h2>People <span class="hint">— assign one or more locations, salary, and per-day schedule (incl. split shifts) for each employee</span></h2>
+<h2>People <span class="hint">— assign one or more locations, employment type (Full-Time salary or Part-Time hourly rate), and per-day schedule (incl. split shifts) for each employee</span></h2>
 </div>
 <div class="table-card">
 <table id="peopleTable">
@@ -490,7 +490,7 @@ Signed in as <b id="adminEmail">-</b>
 <tr>
 <th>Employee</th>
 <th>Locations</th>
-<th>Basic Salary</th>
+<th>Type / Pay</th>
 <th>Schedule</th>
 <th></th>
 </tr>
@@ -504,7 +504,7 @@ Signed in as <b id="adminEmail">-</b>
 <!-- ===== HOLIDAYS TAB ===== -->
 <div id="holidaysTab" class="hidden">
 <div class="section-head">
-<h2>Holidays <span class="hint">— Paid: staff scheduled that day still get a full daily salary. Unpaid: day is removed from working days (no pay)</span></h2>
+<h2>Holidays <span class="hint">— Paid: staff scheduled that day still get a full daily salary (part-timers: scheduled hours × hourly rate). Unpaid: day is removed from working days (no pay)</span></h2>
 </div>
 <form id="addHolidayForm" class="add-holiday-form">
 <div>
@@ -592,7 +592,7 @@ Signed in as <b id="adminEmail">-</b>
 <!-- ===== PAYROLL TAB ===== -->
 <div id="payrollTab" class="hidden">
 <div class="section-head">
-<h2>Payroll <span class="hint">— Daily Salary = Basic ÷ scheduled working days (paid holidays count as working days; unpaid holidays/one-off off-days excluded). Hourly Rate = Daily Salary ÷ that day's total scheduled hours (all shifts), plus PT commission</span></h2>
+<h2>Payroll <span class="hint">— Full-Time: Daily Salary = Basic ÷ scheduled working days (paid holidays count as working days; unpaid holidays/one-off off-days excluded), Hourly Rate = Daily Salary ÷ that day's total scheduled hours (all shifts). Part-Time: Hourly Rate is the fixed rate entered in People; pay = payable hours × rate (paid holiday/paid leave = scheduled hours × rate). Plus PT commission.</span></h2>
 <button class="export-btn" id="exportPayrollBtn">Export CSV</button>
 </div>
 <div class="filter-bar">
@@ -603,7 +603,8 @@ Signed in as <b id="adminEmail">-</b>
 <thead>
 <tr>
 <th>Employee</th>
-<th>Basic Salary</th>
+<th>Type</th>
+<th>Basic Salary / Rate</th>
 <th>Scheduled Days</th>
 <th>Hours Worked</th>
 <th>Late (min)</th>
@@ -615,7 +616,7 @@ Signed in as <b id="adminEmail">-</b>
 </thead>
 <tbody id="payrollBody"></tbody>
 </table>
-<div class="empty-state hidden" id="payrollEmptyState">No profiles with salary and schedule set yet.</div>
+<div class="empty-state hidden" id="payrollEmptyState">No profiles with salary (or hourly rate) and schedule set yet.</div>
 </div>
 </div>
 
@@ -1243,6 +1244,11 @@ allProfiles=snap.docs.map(d=>({uid:d.id,...d.data()}));
 renderPeopleTable();
 }
 
+// Employment type. Profiles without the field are Full-Time (existing staff unchanged).
+function isPartTime(p){
+return p&&p.employmentType==='part-time';
+}
+
 // Location state of a profile: supports old single locationId + new locationIds / allLocations.
 function profileLocState(p){
 const allLoc=p.allLocations===true;
@@ -1282,7 +1288,8 @@ return;
 empty.classList.add('hidden');
 body.innerHTML=allProfiles.map(p=>{
 const{allLoc,ids}=profileLocState(p);
-return`<tr data-uid="${p.uid}"><td><div class="emp-name">${p.name||'Unknown'}</div><div class="emp-email">${p.email||''}</div></td><td>${locMultiHtml(allLoc,ids)}</td><td><input type="number" class="form-input salary-input" value="${p.basicSalary??''}" placeholder="RM" style="width:90px;"></td><td><div style="font-size:12px;color:var(--text-onlight-mut);margin-bottom:6px;">${scheduleSummary(p.schedule)}</div><button class="delete-btn edit-schedule-btn" style="border-color:var(--line);color:var(--text-onlight);">Edit Schedule</button><button class="delete-btn edit-override-btn" style="border-color:var(--line);color:var(--text-onlight);margin-top:4px;">One-off Changes</button></td><td><button class="export-btn save-profile-btn">Save</button></td></tr>`;
+const part=isPartTime(p);
+return`<tr data-uid="${p.uid}"><td><div class="emp-name">${p.name||'Unknown'}</div><div class="emp-email">${p.email||''}</div></td><td>${locMultiHtml(allLoc,ids)}</td><td><select class="form-input emp-type-select" style="width:120px;margin-bottom:6px;"><option value="full-time" ${part?'':'selected'}>Full-Time</option><option value="part-time" ${part?'selected':''}>Part-Time</option></select><input type="number" step="0.01" class="form-input salary-input ${part?'hidden':''}" value="${p.basicSalary??''}" placeholder="Basic RM" style="width:120px;"><input type="number" step="0.01" class="form-input rate-input ${part?'':'hidden'}" value="${p.hourlyRate??''}" placeholder="RM / hour" style="width:120px;"></td><td><div style="font-size:12px;color:var(--text-onlight-mut);margin-bottom:6px;">${scheduleSummary(p.schedule)}</div><button class="delete-btn edit-schedule-btn" style="border-color:var(--line);color:var(--text-onlight);">Edit Schedule</button><button class="delete-btn edit-override-btn" style="border-color:var(--line);color:var(--text-onlight);margin-top:4px;">One-off Changes</button></td><td><button class="export-btn save-profile-btn">Save</button></td></tr>`;
 }).join('');
 }
 
@@ -1297,6 +1304,13 @@ multi.outerHTML=locMultiHtml(allLoc,ids);
 }
 
 document.getElementById('peopleBody').addEventListener('change',e=>{
+if(e.target.classList.contains('emp-type-select')){
+const cell=e.target.closest('td');
+const part=e.target.value==='part-time';
+cell.querySelector('.salary-input').classList.toggle('hidden',part);
+cell.querySelector('.rate-input').classList.toggle('hidden',!part);
+return;
+}
 if(!e.target.classList.contains('loc-all'))return;
 const multi=e.target.closest('.loc-multi');
 const on=e.target.checked;
@@ -1329,16 +1343,20 @@ const pickedIds=[...multi.querySelectorAll('.loc-one:checked')].map(b=>b.value);
 const locationIds=allLoc?[]:pickedIds;
 // locationId kept for older app versions that only read a single location
 const locationId=allLoc?(allLocations[0]?.id||null):(pickedIds[0]||null);
+const employmentType=row.querySelector('.emp-type-select').value==='part-time'?'part-time':'full-time';
 const basicSalaryVal=row.querySelector('.salary-input').value;
+const hourlyRateVal=row.querySelector('.rate-input').value;
 saveBtn.disabled=true;
 const originalLabel=saveBtn.textContent;
 saveBtn.textContent='Saving…';
 try{
 const basicSalary=basicSalaryVal===''?null:parseFloat(basicSalaryVal);
-await updateDoc(doc(db,"employee_profiles",uid),{allLocations:allLoc,locationIds,locationId,basicSalary});
+const hourlyRate=hourlyRateVal===''?null:parseFloat(hourlyRateVal);
+await updateDoc(doc(db,"employee_profiles",uid),{allLocations:allLoc,locationIds,locationId,basicSalary,hourlyRate,employmentType});
 const profile=allProfiles.find(p=>p.uid===uid);
-if(profile){profile.allLocations=allLoc;profile.locationIds=locationIds;profile.locationId=locationId;profile.basicSalary=basicSalary;}
+if(profile){profile.allLocations=allLoc;profile.locationIds=locationIds;profile.locationId=locationId;profile.basicSalary=basicSalary;profile.hourlyRate=hourlyRate;profile.employmentType=employmentType;}
 saveBtn.textContent='Saved ✓';
+refreshPayrollViews();
 setTimeout(()=>{saveBtn.textContent=originalLabel;saveBtn.disabled=false;},1500);
 }catch(err){
 alert('Could not save: '+err.message);
@@ -1858,8 +1876,11 @@ if(pending)return{type:pending.type,status:pending.status};
 return null;
 }
 
+// Full-Time needs a basic salary; Part-Time needs an hourly rate. Both need a schedule.
 function profileReady(p){
-return p.basicSalary!=null&&DAYS.some(d=>getShifts((p.schedule||{})[d]).length>0);
+const hasSchedule=DAYS.some(d=>getShifts((p.schedule||{})[d]).length>0);
+if(!hasSchedule)return false;
+return isPartTime(p)?p.hourlyRate!=null:p.basicSalary!=null;
 }
 
 /*
@@ -1909,12 +1930,21 @@ days.push({date,ymd,shifts,kind,holiday});
 return days;
 }
 
-function evaluateDay(uid,day,dailySalary,punchIdx){
+/*
+  fixedRate:
+   null   -> Full-Time. Hourly rate = daily salary ÷ that day's scheduled hours.
+             Paid holiday / paid leave = full daily salary.
+   number -> Part-Time. Hourly rate = the fixed rate entered in People.
+             Paid holiday / paid leave = that day's scheduled hours × fixed rate.
+*/
+function evaluateDay(uid,day,dailySalary,punchIdx,fixedRate=null){
 const{date,ymd,shifts,kind,holiday}=day;
 const sessions=sessionsFromPunches(punchIdx[uid+'|'+ymd]||[]);
 const leave=getLeaveForDate(uid,ymd);
 const totalHours=totalShiftHours(shifts);
-const hourlyRate=totalHours>0?dailySalary/totalHours:0;
+const isFixed=fixedRate!=null;
+const hourlyRate=isFixed?fixedRate:(totalHours>0?dailySalary/totalHours:0);
+const fullDayPay=isFixed?totalHours*fixedRate:dailySalary;
 const ev={
 status:'Off Day',pay:0,displayHours:0,workedHours:0,lateMin:0,deduction:0,leave,
 shiftResults:[],
@@ -1930,13 +1960,13 @@ return ev;
 }
 if(kind==='paidHoliday'){
 ev.status='Paid Holiday';
-ev.pay=dailySalary;
+ev.pay=fullDayPay;
 ev.displayHours=totalHours;
 return ev;
 }
 if(leave&&leave.status==='approved'&&PAID_LEAVE_TYPES.includes(leave.type)){
 ev.status='Paid Leave';
-ev.pay=dailySalary;
+ev.pay=fullDayPay;
 ev.displayHours=totalHours;
 return ev;
 }
@@ -1965,13 +1995,15 @@ const[year,month]=yearMonth.split('-').map(Number);
 const punchIdx=buildPunchIndex();
 return allProfiles.map(p=>{
 if(!profileReady(p))return{uid:p.uid,name:p.name,incomplete:true};
+const part=isPartTime(p);
+const fixedRate=part?p.hourlyRate:null;
 const days=getMonthPlan(p,year,month);
 const scheduled=days.filter(d=>d.shifts.length>0);
 const totalScheduledDays=scheduled.length;
-const dailySalary=totalScheduledDays>0?p.basicSalary/totalScheduledDays:0;
+const dailySalary=(!part&&totalScheduledDays>0)?p.basicSalary/totalScheduledDays:0;
 let totalHoursWorked=0,totalLateMinutes=0,totalLateDeduction=0,totalPay=0;
 scheduled.forEach(d=>{
-const ev=evaluateDay(p.uid,d,dailySalary,punchIdx);
+const ev=evaluateDay(p.uid,d,dailySalary,punchIdx,fixedRate);
 totalHoursWorked+=ev.workedHours;
 totalLateMinutes+=ev.lateMin;
 totalLateDeduction+=ev.deduction;
@@ -1984,7 +2016,9 @@ uid:p.uid,
 name:p.name,
 email:p.email,
 incomplete:false,
+isPart:part,
 basicSalary:p.basicSalary,
+hourlyRate:p.hourlyRate,
 totalScheduledDays,
 totalHoursWorked,
 totalLateMinutes,
@@ -2007,12 +2041,12 @@ empty.classList.remove('hidden');
 return;
 }
 empty.classList.add('hidden');
-body.innerHTML=complete.map(r=>`<tr><td><div class="emp-name">${r.name||'Unknown'}</div><div class="emp-email">${r.email||''}</div></td><td class="mono">RM ${r.basicSalary.toFixed(2)}</td><td class="mono">${r.totalScheduledDays}</td><td class="mono">${r.totalHoursWorked.toFixed(2)}h</td><td class="mono">${r.totalLateMinutes}</td><td class="mono">RM ${r.totalLateDeduction.toFixed(2)}</td><td class="mono">${r.ptClasses}</td><td class="mono">RM ${r.ptCommission.toFixed(2)}</td><td class="mono" style="font-weight:700;">RM ${r.totalPay.toFixed(2)}</td></tr>`).join('');
+body.innerHTML=complete.map(r=>`<tr><td><div class="emp-name">${r.name||'Unknown'}</div><div class="emp-email">${r.email||''}</div></td><td><span class="status-pill2 ${r.isPart?'ongoing':'complete'}">${r.isPart?'Part-Time':'Full-Time'}</span></td><td class="mono">${r.isPart?`RM ${r.hourlyRate.toFixed(2)}/hr`:`RM ${r.basicSalary.toFixed(2)}`}</td><td class="mono">${r.totalScheduledDays}</td><td class="mono">${r.totalHoursWorked.toFixed(2)}h</td><td class="mono">${r.totalLateMinutes}</td><td class="mono">RM ${r.totalLateDeduction.toFixed(2)}</td><td class="mono">${r.ptClasses}</td><td class="mono">RM ${r.ptCommission.toFixed(2)}</td><td class="mono" style="font-weight:700;">RM ${r.totalPay.toFixed(2)}</td></tr>`).join('');
 }
 
 document.getElementById('exportPayrollBtn').addEventListener('click',()=>{
 const rows=computePayrollForMonth(payrollMonthInput.value).filter(r=>!r.incomplete);
-const csvRows=[['Employee','Email','Basic Salary','Scheduled Days','Hours Worked','Late (min)','Late Deduction','PT Classes','PT Commission','Total Pay'],...rows.map(r=>[r.name||'Unknown',r.email||'',r.basicSalary.toFixed(2),r.totalScheduledDays,r.totalHoursWorked.toFixed(2),r.totalLateMinutes,r.totalLateDeduction.toFixed(2),r.ptClasses,r.ptCommission.toFixed(2),r.totalPay.toFixed(2)])];
+const csvRows=[['Employee','Email','Type','Basic Salary','Hourly Rate','Scheduled Days','Hours Worked','Late (min)','Late Deduction','PT Classes','PT Commission','Total Pay'],...rows.map(r=>[r.name||'Unknown',r.email||'',r.isPart?'Part-Time':'Full-Time',r.isPart?'':r.basicSalary.toFixed(2),r.isPart?r.hourlyRate.toFixed(2):'',r.totalScheduledDays,r.totalHoursWorked.toFixed(2),r.totalLateMinutes,r.totalLateDeduction.toFixed(2),r.ptClasses,r.ptCommission.toFixed(2),r.totalPay.toFixed(2)])];
 downloadCSV(`payroll-${payrollMonthInput.value}.csv`,csvRows);
 });
 
@@ -2032,11 +2066,13 @@ const punchIdx=buildPunchIndex();
 const rows=[];
 allProfiles.forEach(p=>{
 if(!profileReady(p))return;
+const part=isPartTime(p);
+const fixedRate=part?p.hourlyRate:null;
 const days=getMonthPlan(p,year,month);
 const totalScheduledDays=days.filter(d=>d.shifts.length>0).length;
-const dailySalary=totalScheduledDays>0?p.basicSalary/totalScheduledDays:0;
+const dailySalary=(!part&&totalScheduledDays>0)?p.basicSalary/totalScheduledDays:0;
 days.forEach(day=>{
-const ev=evaluateDay(p.uid,day,dailySalary,punchIdx);
+const ev=evaluateDay(p.uid,day,dailySalary,punchIdx,fixedRate);
 const ptClasses=allPtSessions.filter(x=>x.coachUid===p.uid&&x.date===day.ymd).length;
 const ptCommission=ptClasses*PT_RATE;
 const sr=ev.shiftResults;
